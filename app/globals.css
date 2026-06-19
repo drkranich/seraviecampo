@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --campo-bg: #14160f;
+  --gold: #c9a86a;
+}
+
+html,
+body {
+  background-color: var(--campo-bg);
+  color: #e8eadf;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+}

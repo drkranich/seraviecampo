@@ -1,0 +1,54 @@
+# 🌿 Seravie Campo
+
+**Sistema Operacional da Economia Local** — conectando produtores rurais, consumidores, entregadores e o poder público dentro de um único ecossistema digital.
+
+> Seravie Campo não é um marketplace. É a infraestrutura digital que conecta agro, gastronomia, turismo, logística, assinaturas e comércio local de uma região.
+
+## Visão
+
+O pequeno produtor não sofre apenas para vender — ele não possui canal digital, catálogo organizado, logística, previsão de demanda nem CRM. O consumidor de cidades pequenas não sabe quem produz nem onde comprar produtos frescos. O Seravie Campo resolve os dois lados criando uma **rede econômica regional**.
+
+## Os 4 perfis
+
+| Perfil | Experiência | Essência |
+| --- | --- | --- |
+| **Seravie OS (Super Admin)** | Dashboard executivo, mapa nacional, aprovações estilo Stripe, moderação, inteligência estratégica | O cérebro do ecossistema |
+| **Produtor Rural** | Minha Produção, calendário de safra, produtos com história, pedidos, IA Rural, turismo rural | Vender mais, perder menos tempo |
+| **Cliente Final** | Home cinematográfica, descobertas, perfil do produtor, Clube Gourmet, feed social | Um clube gourmet, não um marketplace |
+| **Entregador** | Rotas, ganhos, entregas, GPS, comprovante por foto | Economia logística local |
+
+## Posicionamento jurídico
+
+A Seravie Campo nasce como **plataforma de intermediação tecnológica** (modelo Airbnb/Uber/iFood): conecta usuários, disponibiliza tecnologia, catálogo, comunicação, geolocalização, reputação e ferramentas — **não** produz, armazena, transporta, embala nem garante qualidade. Aceite obrigatório de termos por perfil, verificação forte e Central de Conflitos fazem parte da arquitetura.
+
+## Stack
+
+- **Frontend:** Next.js 15 (App Router) + TypeScript + Tailwind CSS
+- **Backend:** Supabase (Postgres + Auth + Storage + RLS)
+- **Deploy:** Vercel (recomendado)
+
+## Rodando localmente
+
+\`\`\`bash
+npm install
+cp .env.example .env.local   # preencha com as chaves do seu projeto Supabase
+npm run dev
+\`\`\`
+
+Acesse http://localhost:3000
+
+## Banco de dados (Supabase)
+
+As migrations ficam em \`supabase/migrations/\`. A integração GitHub do Supabase sincroniza o schema com o banco de produção ao fazer merge no branch \`main\`.
+
+## Roadmap por fases
+
+1. **Fase 1** — Marketplace local: catálogo, pedidos, entregas
+2. **Fase 2** — Assinaturas, logística compartilhada, PWA
+3. **Fase 3** — ERP Rural: financeiro, emissão fiscal, CRM
+4. **Fase 4** — Crédito rural, seguro agrícola, insumos, cooperativas
+5. **Fase 5** — IA de previsão de demanda, plantio e preços
+
+---
+
+© 2026 Seravie Campo — Conectando campo e cidade com produtos extraordinários.
