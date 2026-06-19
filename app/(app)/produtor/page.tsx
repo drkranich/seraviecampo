@@ -39,12 +39,17 @@ export default async function ProdutorPage() {
 
       <div className="mb-6 flex items-center justify-between">
         <h2 className="font-serif text-xl text-forest-100">Meus produtos</h2>
-        <Link
-          href="/produtor/produtos/novo"
-          className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light"
-        >
-          + Novo produto
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/produtor/perfil" className="text-sm text-stone-400 transition hover:text-gold">
+            Meu perfil público
+          </Link>
+          <Link
+            href="/produtor/produtos/novo"
+            className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light"
+          >
+            + Novo produto
+          </Link>
+        </div>
       </div>
 
       {total === 0 ? (
