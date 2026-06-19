@@ -21,7 +21,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // Chamado de um Server Component — pode ser ignorado se houver middleware.
+            // Chamado de um Server Component - pode ser ignorado se houver middleware.
           }
         },
       },

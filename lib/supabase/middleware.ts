@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
-// Rotas que exigem autenticação
+// Rotas que exigem autenticacao
 const PROTECTED_PREFIXES = ["/admin", "/produtor", "/cliente", "/entregador"];
 
 export async function updateSession(request: NextRequest) {
@@ -30,7 +30,6 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // IMPORTANTE: não rodar lógica entre createServerClient e getUser().
   const {
     data: { user },
   } = await supabase.auth.getUser();
