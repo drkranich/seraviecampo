@@ -3,40 +3,39 @@
 @tailwind utilities;
 
 :root {
-  --campo-bg: #14160f;
-  --gold: #c9a86a;
+  --campo-bg: #14160F;
+  --gold: #C2A878;
 }
 
 html,
 body {
   background-color: var(--campo-bg);
-  color: #e8eadf;
+  color: #E7E9DB;
 }
 
-/* Fundo ambiente — manchas de cor (verde-oliva + dourado) para o vidro refletir */
+/* Fundo ambiente sutil — leve calor verde/dourado, como no modelo */
 body {
   -webkit-font-smoothing: antialiased;
   background-image:
-    radial-gradient(55% 45% at 12% -5%, rgba(70, 95, 51, 0.22), transparent 70%),
-    radial-gradient(45% 40% at 105% 8%, rgba(201, 168, 106, 0.12), transparent 70%),
-    radial-gradient(60% 50% at 100% 110%, rgba(56, 75, 43, 0.20), transparent 70%);
+    radial-gradient(50% 40% at 10% -5%, rgba(79, 122, 53, 0.10), transparent 70%),
+    radial-gradient(45% 35% at 105% 5%, rgba(194, 168, 120, 0.07), transparent 70%);
   background-attachment: fixed;
 }
 
-/* Glassmorphism — superfície translúcida com blur, tingida com as cores da marca */
+/* Glassmorphism tingido com as cores do modelo (cards translúcidos com blur) */
 @layer components {
   .glass {
     background:
-      linear-gradient(180deg, rgba(35, 39, 29, 0.62), rgba(20, 22, 15, 0.5));
-    -webkit-backdrop-filter: blur(16px) saturate(130%);
-    backdrop-filter: blur(16px) saturate(130%);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      linear-gradient(180deg, rgba(31, 35, 24, 0.72), rgba(25, 28, 19, 0.66));
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    backdrop-filter: blur(14px) saturate(120%);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.03);
   }
   .glass-strong {
     background:
-      linear-gradient(180deg, rgba(40, 45, 33, 0.78), rgba(24, 27, 18, 0.68));
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
-    backdrop-filter: blur(22px) saturate(140%);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      linear-gradient(180deg, rgba(36, 41, 28, 0.85), rgba(28, 31, 21, 0.78));
+    -webkit-backdrop-filter: blur(20px) saturate(130%);
+    backdrop-filter: blur(20px) saturate(130%);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 }
