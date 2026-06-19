@@ -48,7 +48,7 @@ export default async function CestaPage({
       )}
 
       {rows.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-campo-border bg-campo-surface p-10 text-center text-stone-400">
+        <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center text-stone-400">
           Sua cesta está vazia.{" "}
           <Link href="/cliente" className="text-gold hover:underline">
             Explore os produtos
@@ -64,7 +64,7 @@ export default async function CestaPage({
               const update = updateCartItem.bind(null, p.id);
               const remove = removeCartItem.bind(null, p.id);
               return (
-                <div key={p.id} className="flex items-center gap-4 rounded-2xl border border-campo-border bg-campo-surface p-4">
+                <div key={p.id} className="flex items-center gap-4 rounded-2xl border border-campo-border glass p-4">
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-campo-surface2 text-2xl">
                     {p.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -108,7 +108,7 @@ export default async function CestaPage({
 
           {/* Checkout */}
           <div className="lg:col-span-1">
-            <form action={checkout} className="space-y-4 rounded-2xl border border-campo-border bg-campo-surface p-5">
+            <form action={checkout} className="space-y-4 rounded-2xl border border-campo-border glass p-5">
               <div className="flex items-center justify-between border-b border-campo-border pb-3">
                 <span className="text-stone-400">Total</span>
                 <span className="font-serif text-2xl text-gold">{formatBRL(total)}</span>

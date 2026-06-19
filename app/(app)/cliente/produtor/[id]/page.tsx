@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import { ProductCard, type ProductWithProducer } from "@/components/ProductCard";
 import { producerName, locationLabel, type PublicProfile } from "@/lib/profile";
 
@@ -38,13 +38,13 @@ export default async function PerfilProdutorPage({
   }));
 
   return (
-    <AppShell badge="Clube Gourmet" title={producerName(producer)} subtitle={locationLabel(producer)}>
+    <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} title={producerName(producer)} subtitle={locationLabel(producer)}>
       <Link href="/cliente" className="mb-6 inline-block text-sm text-stone-400 hover:text-gold">
         ← Voltar para descobertas
       </Link>
 
       {/* Capa + identidade */}
-      <section className="overflow-hidden rounded-2xl border border-campo-border bg-campo-surface">
+      <section className="overflow-hidden rounded-2xl border border-campo-border glass">
         <div className="relative h-40 bg-gradient-to-br from-forest-800 to-campo-bg sm:h-56">
           {producer.cover_url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -69,7 +69,7 @@ export default async function PerfilProdutorPage({
 
       {/* História */}
       {producer.bio && (
-        <section className="mt-6 rounded-2xl border border-campo-border bg-campo-surface p-6">
+        <section className="mt-6 rounded-2xl border border-campo-border glass p-6">
           <h3 className="font-serif text-lg text-forest-100">Nossa história</h3>
           <p className="mt-2 whitespace-pre-line leading-relaxed text-stone-300">{producer.bio}</p>
         </section>
@@ -79,7 +79,7 @@ export default async function PerfilProdutorPage({
       <section className="mt-8">
         <h3 className="mb-4 font-serif text-xl text-forest-100">Produtos disponíveis</h3>
         {products.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-campo-border bg-campo-surface p-8 text-center text-sm text-stone-400">
+          <div className="rounded-2xl border border-dashed border-campo-border glass p-8 text-center text-sm text-stone-400">
             Este produtor ainda não tem produtos publicados.
           </div>
         ) : (

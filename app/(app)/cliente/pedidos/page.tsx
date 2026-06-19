@@ -45,14 +45,14 @@ export default async function PedidosClientePage({
       )}
 
       {orders.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-campo-border bg-campo-surface p-10 text-center text-stone-400">
+        <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center text-stone-400">
           Você ainda não fez pedidos.{" "}
           <Link href="/cliente" className="text-gold hover:underline">Explore os produtos</Link>.
         </div>
       ) : (
         <div className="space-y-4">
           {orders.map((o) => (
-            <article key={o.id} className="rounded-2xl border border-campo-border bg-campo-surface p-5">
+            <article key={o.id} className="rounded-2xl border border-campo-border glass p-5">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-campo-border pb-3">
                 <div>
                   <p className="font-serif text-lg text-forest-100">{producerName(o.producer)}</p>

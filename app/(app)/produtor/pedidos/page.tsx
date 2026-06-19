@@ -34,7 +34,7 @@ export default async function PedidosProdutorPage() {
   return (
     <AppShell badge="Produtor Rural" nav={PRODUTOR_NAV} title="Pedidos recebidos" subtitle={`${ativos.length} em andamento`}>
       {orders.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-campo-border bg-campo-surface p-10 text-center text-stone-400">
+        <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center text-stone-400">
           Nenhum pedido recebido ainda.
         </div>
       ) : (
@@ -69,7 +69,7 @@ function OrderCard({ order: o }: { order: OrderRow }) {
   const cancel = cancelOrder.bind(null, o.id);
 
   return (
-    <article className="rounded-2xl border border-campo-border bg-campo-surface p-5">
+    <article className="rounded-2xl border border-campo-border glass p-5">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-campo-border pb-3">
         <div>
           <p className="font-serif text-lg text-forest-100">{o.delivery_name || "Cliente"}</p>

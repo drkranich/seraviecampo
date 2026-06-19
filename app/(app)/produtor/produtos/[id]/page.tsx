@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { ProductFormFields } from "@/components/ProductFormFields";
 import { type Product } from "@/lib/catalog";
 import { updateProduct, deleteProduct } from "../actions";
@@ -33,7 +33,7 @@ export default async function EditarProdutoPage({
   const deleteAction = deleteProduct.bind(null, id);
 
   return (
-    <AppShell badge="Produtor Rural" title="Editar produto" subtitle={product.name}>
+    <AppShell badge="Produtor Rural" nav={PRODUTOR_NAV} title="Editar produto" subtitle={product.name}>
       <Link href="/produtor/produtos" className="mb-6 inline-block text-sm text-stone-400 hover:text-gold">
         ← Voltar para produtos
       </Link>
@@ -44,7 +44,7 @@ export default async function EditarProdutoPage({
         </div>
       )}
 
-      <form action={updateAction} className="max-w-2xl rounded-2xl border border-campo-border bg-campo-surface p-6">
+      <form action={updateAction} className="max-w-2xl rounded-2xl border border-campo-border glass p-6">
         <ProductFormFields product={product} />
         <div className="mt-6 flex gap-3">
           <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">

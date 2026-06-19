@@ -56,7 +56,7 @@ export default async function PerfilProdutorPage({
         </div>
       )}
 
-      <form action={updateProducerProfile} className="max-w-2xl space-y-4 rounded-2xl border border-campo-border bg-campo-surface p-6">
+      <form action={updateProducerProfile} className="max-w-2xl space-y-4 rounded-2xl border border-campo-border glass p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Seu nome</label>

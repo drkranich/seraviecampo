@@ -28,7 +28,7 @@ export default function Home() {
 
       <section className="grid gap-5 sm:grid-cols-2">
         {perfis.map((p) => (
-          <article key={p.nome} className="rounded-2xl border border-campo-border bg-campo-surface p-6 transition hover:border-gold/50">
+          <article key={p.nome} className="rounded-2xl border border-campo-border glass p-6 transition hover:border-gold/50">
             <span className="inline-block rounded-full border border-gold/40 px-3 py-1 text-xs uppercase tracking-wider text-gold">{p.tag}</span>
             <h2 className="mt-4 font-serif text-2xl text-forest-100">{p.nome}</h2>
             <p className="mt-2 text-sm leading-relaxed text-stone-400">{p.desc}</p>

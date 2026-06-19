@@ -89,7 +89,7 @@ export default async function ProdutoDetalhePage({
           {product.producer && (
             <Link
               href={`/cliente/produtor/${product.producer.id}`}
-              className="mt-6 flex items-center gap-3 rounded-2xl border border-campo-border bg-campo-surface p-4 transition hover:border-gold/50"
+              className="mt-6 flex items-center gap-3 rounded-2xl border border-campo-border glass p-4 transition hover:border-gold/50"
             >
               <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-campo-surface2 text-lg">
                 {product.producer.avatar_url ? (

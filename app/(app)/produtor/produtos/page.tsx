@@ -37,7 +37,7 @@ export default async function ProdutosPage() {
       </div>
 
       {products.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-campo-border bg-campo-surface p-10 text-center text-stone-400">
+        <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center text-stone-400">
           Nenhum produto cadastrado ainda.
         </div>
       ) : (
@@ -53,7 +53,7 @@ export default async function ProdutosPage() {
                 <th className="px-4 py-3">Visível</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-campo-border bg-campo-surface">
+            <tbody className="divide-y divide-campo-border glass">
               {products.map((p) => (
                 <tr key={p.id} className="transition hover:bg-campo-surface2">
                   <td className="px-4 py-3">

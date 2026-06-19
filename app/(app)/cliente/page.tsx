@@ -36,7 +36,7 @@ export default async function ClientePage() {
   const firstName = profile?.full_name?.split(" ")[0] || "";
 
   return (
-    <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} title={`Olá${firstName ? ", " + firstName : ""}`} subtitle="Sabores que nascem na serra. Conheça quem produz.">
+    <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title={`Olá${firstName ? ", " + firstName : ""}`} subtitle="Sabores que nascem na serra. Conheça quem produz.">
       {/* Hero */}
       <section className="mb-10 overflow-hidden rounded-2xl border border-campo-border bg-gradient-to-br from-forest-900 via-campo-surface to-campo-bg p-8 sm:p-12">
         <p className="font-serif text-sm uppercase tracking-[0.3em] text-gold">Colheita fresca</p>
@@ -82,7 +82,7 @@ export default async function ClientePage() {
               <Link
                 key={prod.id}
                 href={`/cliente/produtor/${prod.id}`}
-                className="flex items-center gap-4 rounded-2xl border border-campo-border bg-campo-surface p-4 transition hover:border-gold/50"
+                className="flex items-center gap-4 rounded-2xl border border-campo-border glass p-4 transition hover:border-gold/50"
               >
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-campo-surface2 text-xl">
                   {prod.avatar_url ? (
@@ -123,7 +123,7 @@ function Grid({ children }: { children: React.ReactNode }) {
 
 function Empty({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-campo-border bg-campo-surface p-8 text-center text-sm text-stone-400">
+    <div className="rounded-2xl border border-dashed border-campo-border glass p-8 text-center text-sm text-stone-400">
       {children}
     </div>
   );

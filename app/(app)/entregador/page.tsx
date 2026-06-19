@@ -1,11 +1,13 @@
 import { requireRole } from "@/lib/guard";
-import { AppShell, ModuleCard } from "@/components/AppShell";
+import { AppShell, ModuleCard, ENTREGADOR_NAV } from "@/components/AppShell";
 
 export default async function EntregadorPage() {
   const { profile } = await requireRole("entregador");
   return (
     <AppShell
       badge="Entregador"
+      nav={ENTREGADOR_NAV}
+      userName={profile?.full_name ?? "Entregador"}
       title={`Olá, ${profile?.full_name?.split(" ")[0] || "entregador"}!`}
       subtitle="Suas rotas e ganhos do dia."
     >

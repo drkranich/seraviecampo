@@ -28,6 +28,8 @@ export default async function ProdutorPage() {
     <AppShell
       badge="Produtor Rural"
       nav={PRODUTOR_NAV}
+      userName={profile?.full_name ?? "Produtor"}
+      profileHref="/produtor/perfil"
       title={`Bom dia, ${firstName}!`}
       subtitle="Aqui está o resumo da sua operação gourmet de hoje."
     >
@@ -54,7 +56,7 @@ export default async function ProdutorPage() {
       </div>
 
       {total === 0 ? (
-        <div className="rounded-2xl border border-dashed border-campo-border bg-campo-surface p-10 text-center">
+        <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center">
           <p className="mx-auto max-w-md text-stone-400">
             Você ainda não cadastrou produtos. Comece pelo primeiro — adicione a foto
             e a história dele. Isso vende muito mais.
@@ -72,7 +74,7 @@ export default async function ProdutorPage() {
             <Link
               key={p.id}
               href={`/produtor/produtos/${p.id}`}
-              className="rounded-2xl border border-campo-border bg-campo-surface p-5 transition hover:border-gold/50"
+              className="rounded-2xl border border-campo-border glass p-5 transition hover:border-gold/50"
             >
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-serif text-lg text-forest-100">{p.name}</h3>
@@ -112,7 +114,7 @@ function Stat({
   accent?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-campo-border bg-campo-surface p-5">
+    <div className="rounded-2xl border border-campo-border glass p-5">
       <p className="text-xs uppercase tracking-wider text-stone-500">{label}</p>
       <p className={`mt-2 font-serif text-3xl ${accent ? "text-gold" : "text-forest-100"}`}>
         {value}

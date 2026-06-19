@@ -1,11 +1,13 @@
 import { requireRole } from "@/lib/guard";
-import { AppShell, ModuleCard } from "@/components/AppShell";
+import { AppShell, ModuleCard, ADMIN_NAV } from "@/components/AppShell";
 
 export default async function AdminPage() {
   const { profile } = await requireRole("super_admin");
   return (
     <AppShell
       badge="Seravie OS"
+      nav={ADMIN_NAV}
+      userName={profile?.full_name ?? "Administrador"}
       title="Painel Executivo"
       subtitle={`Bem-vindo, ${profile?.full_name || "Administrador"}. Você enxerga o ecossistema inteiro.`}
     >

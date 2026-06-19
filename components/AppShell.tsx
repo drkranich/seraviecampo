@@ -1,60 +1,49 @@
-import Link from "next/link";
+import { Sidebar, type NavItem } from "@/components/Sidebar";
 
-export type NavItem = { href: string; label: string };
+export type { NavItem };
 
 export function AppShell({
   title,
   subtitle,
   badge,
   nav,
+  userName,
+  profileHref,
   children,
 }: {
   title: string;
   subtitle?: string;
   badge?: string;
   nav?: NavItem[];
+  userName?: string;
+  profileHref?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-campo-border bg-campo-surface/60 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-4">
-            <span className="font-serif text-xl text-forest-100">
-              Seravie <span className="text-gold">Campo</span>
-            </span>
+    <div className="flex min-h-screen">
+      <Sidebar nav={nav ?? []} badge={badge} userName={userName} profileHref={profileHref} />
+
+      <div className="min-w-0 flex-1">
+        <main className="mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
+          <div className="mb-8">
             {badge && (
-              <span className="rounded-full border border-gold/40 px-3 py-0.5 text-xs uppercase tracking-wider text-gold">
+              <span className="mb-2 inline-block rounded-full border border-gold/40 px-3 py-0.5 text-xs uppercase tracking-wider text-gold">
                 {badge}
               </span>
             )}
+            <h1 className="font-serif text-3xl text-forest-100">{title}</h1>
+            {subtitle && <p className="mt-1 text-stone-400">{subtitle}</p>}
           </div>
-
-          <div className="flex items-center gap-5">
-            {nav?.map((n) => (
-              <Link key={n.href} href={n.href} className="text-sm text-stone-400 transition hover:text-gold">
-                {n.label}
-              </Link>
-            ))}
-            <form action="/auth/signout" method="post">
-              <button className="text-sm text-stone-400 transition hover:text-gold">Sair</button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <h1 className="font-serif text-3xl text-forest-100">{title}</h1>
-        {subtitle && <p className="mt-1 text-stone-400">{subtitle}</p>}
-        <div className="mt-8">{children}</div>
-      </main>
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
 
 export function ModuleCard({ title, desc }: { title: string; desc: string }) {
   return (
-    <article className="rounded-2xl border border-campo-border bg-campo-surface p-5">
+    <article className="glass rounded-2xl border border-campo-border p-5">
       <h3 className="font-serif text-lg text-forest-100">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-stone-400">{desc}</p>
       <span className="mt-3 inline-block text-xs uppercase tracking-wider text-stone-600">Em breve</span>
@@ -62,16 +51,28 @@ export function ModuleCard({ title, desc }: { title: string; desc: string }) {
   );
 }
 
-// Barras de navegação por perfil
+// Navegação por perfil (barra lateral)
 export const CLIENTE_NAV: NavItem[] = [
-  { href: "/cliente", label: "Descobertas" },
-  { href: "/cliente/cesta", label: "Cesta" },
-  { href: "/cliente/pedidos", label: "Meus pedidos" },
+  { href: "/cliente", label: "Descobertas", icon: "discover" },
+  { href: "/cliente/cesta", label: "Cesta", icon: "cart" },
+  { href: "/cliente/pedidos", label: "Meus pedidos", icon: "orders" },
 ];
 
 export const PRODUTOR_NAV: NavItem[] = [
-  { href: "/produtor", label: "Início" },
-  { href: "/produtor/produtos", label: "Produtos" },
-  { href: "/produtor/pedidos", label: "Pedidos" },
-  { href: "/produtor/perfil", label: "Perfil" },
+  { href: "/produtor", label: "Início", icon: "home" },
+  { href: "/produtor/produtos", label: "Produtos", icon: "products" },
+  { href: "/produtor/pedidos", label: "Pedidos", icon: "orders" },
+  { href: "/produtor/perfil", label: "Perfil", icon: "profile" },
+];
+
+export const ADMIN_NAV: NavItem[] = [
+  { href: "/admin", label: "Visão geral", icon: "chart" },
+  { href: "/admin/aprovacoes", label: "Aprovações", icon: "approve" },
+  { href: "/admin/usuarios", label: "Usuários", icon: "users" },
+];
+
+export const ENTREGADOR_NAV: NavItem[] = [
+  { href: "/entregador", label: "Rotas", icon: "routes" },
+  { href: "/entregador/ganhos", label: "Ganhos", icon: "earnings" },
+  { href: "/entregador/historico", label: "Histórico", icon: "history" },
 ];

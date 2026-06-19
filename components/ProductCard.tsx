@@ -11,7 +11,7 @@ export function ProductCard({ product }: { product: ProductWithProducer }) {
   return (
     <Link
       href={`/cliente/produto/${product.id}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-campo-border bg-campo-surface transition hover:border-gold/50"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-campo-border glass transition hover:border-gold/50"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-campo-surface2">
         {product.image_url ? (

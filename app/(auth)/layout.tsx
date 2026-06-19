@@ -11,7 +11,7 @@ export default function AuthLayout({
         <div className="mb-8 flex justify-center">
           <Logo />
         </div>
-        <div className="rounded-2xl border border-campo-border bg-campo-surface p-8 shadow-2xl">
+        <div className="rounded-2xl border border-campo-border glass p-8 shadow-2xl">
           {children}
         </div>
         <p className="mt-6 text-center text-xs text-stone-600">

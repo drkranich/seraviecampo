@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/guard";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { ProductFormFields } from "@/components/ProductFormFields";
 import { createProduct } from "../actions";
 
@@ -13,7 +13,7 @@ export default async function NovoProdutoPage({
   const { error } = await searchParams;
 
   return (
-    <AppShell badge="Produtor Rural" title="Novo produto" subtitle="Cadastre um item do seu catálogo.">
+    <AppShell badge="Produtor Rural" nav={PRODUTOR_NAV} title="Novo produto" subtitle="Cadastre um item do seu catálogo.">
       <Link href="/produtor/produtos" className="mb-6 inline-block text-sm text-stone-400 hover:text-gold">
         ← Voltar para produtos
       </Link>
@@ -24,7 +24,7 @@ export default async function NovoProdutoPage({
         </div>
       )}
 
-      <form action={createProduct} className="max-w-2xl rounded-2xl border border-campo-border bg-campo-surface p-6">
+      <form action={createProduct} className="max-w-2xl rounded-2xl border border-campo-border glass p-6">
         <ProductFormFields />
         <div className="mt-6 flex gap-3">
           <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">
