@@ -1,0 +1,85 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { ROLE_HOME, type UserRole } from "@/lib/roles";
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; redirect?: string }>;
+}) {
+  const { error } = await searchParams;
+
+  async function login(formData: FormData) {
+    "use server";
+    const email = String(formData.get("email"));
+    const password = String(formData.get("password"));
+    const supabase = await createClient();
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      redirect(`/login?error=${encodeURIComponent("E-mail ou senha inválidos")}`);
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user!.id)
+      .single();
+
+    const role = (profile?.role ?? "cliente") as UserRole;
+    redirect(ROLE_HOME[role]);
+  }
+
+  return (
+    <>
+      <h1 className="font-serif text-2xl text-forest-100">Bem-vindo de volta</h1>
+      <p className="mt-1 text-sm text-stone-400">Acesse sua conta Seravie Campo</p>
+
+      {error && (
+        <div className="mt-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">
+          {error}
+        </div>
+      )}
+
+      <form action={login} className="mt-6 space-y-4">
+        <div>
+          <label className="mb-1 block text-sm text-stone-300">E-mail</label>
+          <input
+            name="email"
+            type="email"
+            required
+            className="w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold"
+            placeholder="voce@email.com"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm text-stone-300">Senha</label>
+          <input
+            name="password"
+            type="password"
+            required
+            className="w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold"
+            placeholder="••••••••"
+          />
+        </div>
+        <button
+          type="submit"
+          className="w-full rounded-lg bg-gold py-2.5 font-medium text-campo-bg transition hover:bg-gold-light"
+        >
+          Entrar
+        </button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-stone-400">
+        Ainda não tem conta?{" "}
+        <Link href="/signup" className="text-gold hover:underline">
+          Cadastre-se
+        </Link>
+      </p>
+    </>
+  );
+}

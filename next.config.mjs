@@ -8,3 +8,7 @@ const nextConfig = {
 };
 
 export default nextConfig;
+
+// Integração OpenNext para desenvolvimento local com bindings da Cloudflare.
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+initOpenNextCloudflareForDev();

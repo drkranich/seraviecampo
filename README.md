@@ -52,3 +52,49 @@ As migrations ficam em \`supabase/migrations/\`. A integração GitHub do Supaba
 ---
 
 © 2026 Seravie Campo — Conectando campo e cidade com produtos extraordinários.
+
+---
+
+## Autenticação (Supabase)
+
+Fluxo implementado com `@supabase/ssr`:
+
+- `/signup` — cadastro com escolha de papel (cliente, produtor, entregador) e aceite obrigatório de termos
+- `/login` — acesso, com redirecionamento automático para o dashboard do papel
+- `/auth/callback` — troca de código (confirmação de e-mail / OAuth)
+- `/auth/signout` — encerrar sessão
+- `middleware.ts` — protege `/admin`, `/produtor`, `/cliente`, `/entregador`
+
+Cada perfil tem seu dashboard guardado por papel (`lib/guard.ts`). O papel `super_admin` é interno (atribuído manualmente no banco), não aparece no cadastro público.
+
+### Configuração no painel Supabase
+
+Em **Authentication > URL Configuration**, adicione as Redirect URLs:
+
+- `http://localhost:3000/auth/callback` (dev)
+- `https://SEU-DOMINIO.workers.dev/auth/callback` (produção)
+
+Para promover alguém a admin, no SQL Editor:
+
+```sql
+update public.profiles set role = 'super_admin' where id = 'UUID-DO-USUARIO';
+```
+
+## Deploy na Cloudflare (OpenNext)
+
+O projeto usa o adaptador **`@opennextjs/cloudflare`** (Cloudflare Workers, runtime Node.js).
+
+```bash
+# preview local no runtime do Workers
+npm run preview
+
+# deploy manual
+npm run deploy
+```
+
+Para CI/CD via Git, conecte o repositório em **Cloudflare > Workers & Pages > Create > Workers > Connect to Git**. Defina as variáveis de ambiente no painel da Cloudflare:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+> Variáveis `NEXT_PUBLIC_*` são embutidas no build — configure-as antes do build na Cloudflare.
