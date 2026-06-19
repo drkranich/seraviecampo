@@ -23,7 +23,7 @@ export default async function SignupPage({
     }
 
     const supabase = await createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -35,15 +35,17 @@ export default async function SignupPage({
       redirect(`/signup?error=${encodeURIComponent(error.message)}`);
     }
 
-    // Registra aceite dos termos no perfil
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
+    // Sem sessão = o projeto exige confirmação de e-mail antes de entrar
+    if (!data.session) {
+      redirect("/login?check_email=1");
+    }
+
+    // Sessão criada: registra aceite dos termos e segue para o painel
+    if (data.user) {
       await supabase
         .from("profiles")
         .update({ terms_accepted_at: new Date().toISOString() })
-        .eq("id", user.id);
+        .eq("id", data.user.id);
     }
 
     redirect(ROLE_HOME[role] ?? "/cliente");

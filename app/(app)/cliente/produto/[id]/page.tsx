@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import {
   formatBRL,
   UNIT_LABEL,
@@ -11,6 +11,7 @@ import {
   type Product,
 } from "@/lib/catalog";
 import { producerName, locationLabel, type PublicProfile } from "@/lib/profile";
+import { addToCart } from "../../cesta/actions";
 
 type ProductDetail = Product & { producer: Partial<PublicProfile> | null };
 
@@ -36,7 +37,7 @@ export default async function ProdutoDetalhePage({
   const product = data as unknown as ProductDetail;
 
   return (
-    <AppShell badge="Clube Gourmet" title={product.name} subtitle={CATEGORY_LABEL[product.category]}>
+    <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} title={product.name} subtitle={CATEGORY_LABEL[product.category]}>
       <Link href="/cliente" className="mb-6 inline-block text-sm text-stone-400 hover:text-gold">
         ← Voltar para descobertas
       </Link>
@@ -105,17 +106,25 @@ export default async function ProdutoDetalhePage({
             </Link>
           )}
 
-          <div className="mt-6">
-            <button
-              disabled
-              className="w-full cursor-not-allowed rounded-lg border border-gold/40 bg-gold/10 py-3 font-medium text-gold/70"
-            >
-              Adicionar à cesta · em breve
-            </button>
+          <form action={addToCart.bind(null, product.id)} className="mt-6">
+            <div className="flex gap-3">
+              <input
+                name="quantity"
+                type="number"
+                step="any"
+                min="1"
+                defaultValue={1}
+                className="w-24 rounded-lg border border-campo-border bg-campo-bg px-3 py-3 text-center text-stone-100 outline-none focus:border-gold"
+              />
+              <button className="flex-1 rounded-lg bg-gold py-3 font-medium text-campo-bg transition hover:bg-gold-light">
+                Adicionar à cesta
+              </button>
+            </div>
             <p className="mt-2 text-center text-xs text-stone-600">
-              Cesta e pagamento chegam na próxima etapa.
+              A Seravie Campo conecta você ao produtor. Pagamento e entrega são
+              combinados diretamente com ele.
             </p>
-          </div>
+          </form>
         </div>
       </div>
     </AppShell>

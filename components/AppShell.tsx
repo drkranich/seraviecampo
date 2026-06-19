@@ -1,13 +1,18 @@
+import Link from "next/link";
+
+export type NavItem = { href: string; label: string };
 
 export function AppShell({
   title,
   subtitle,
   badge,
+  nav,
   children,
 }: {
   title: string;
   subtitle?: string;
   badge?: string;
+  nav?: NavItem[];
   children: React.ReactNode;
 }) {
   return (
@@ -24,11 +29,17 @@ export function AppShell({
               </span>
             )}
           </div>
-          <form action="/auth/signout" method="post">
-            <button className="text-sm text-stone-400 transition hover:text-gold">
-              Sair
-            </button>
-          </form>
+
+          <div className="flex items-center gap-5">
+            {nav?.map((n) => (
+              <Link key={n.href} href={n.href} className="text-sm text-stone-400 transition hover:text-gold">
+                {n.label}
+              </Link>
+            ))}
+            <form action="/auth/signout" method="post">
+              <button className="text-sm text-stone-400 transition hover:text-gold">Sair</button>
+            </form>
+          </div>
         </div>
       </header>
 
@@ -41,21 +52,26 @@ export function AppShell({
   );
 }
 
-// Cartão de módulo "em construção" para os placeholders
-export function ModuleCard({
-  title,
-  desc,
-}: {
-  title: string;
-  desc: string;
-}) {
+export function ModuleCard({ title, desc }: { title: string; desc: string }) {
   return (
     <article className="rounded-2xl border border-campo-border bg-campo-surface p-5">
       <h3 className="font-serif text-lg text-forest-100">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-stone-400">{desc}</p>
-      <span className="mt-3 inline-block text-xs uppercase tracking-wider text-stone-600">
-        Em breve
-      </span>
+      <span className="mt-3 inline-block text-xs uppercase tracking-wider text-stone-600">Em breve</span>
     </article>
   );
 }
+
+// Barras de navegação por perfil
+export const CLIENTE_NAV: NavItem[] = [
+  { href: "/cliente", label: "Descobertas" },
+  { href: "/cliente/cesta", label: "Cesta" },
+  { href: "/cliente/pedidos", label: "Meus pedidos" },
+];
+
+export const PRODUTOR_NAV: NavItem[] = [
+  { href: "/produtor", label: "Início" },
+  { href: "/produtor/produtos", label: "Produtos" },
+  { href: "/produtor/pedidos", label: "Pedidos" },
+  { href: "/produtor/perfil", label: "Perfil" },
+];

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { updateProducerProfile } from "./actions";
 
 const inputCls =
@@ -35,7 +35,7 @@ export default async function PerfilProdutorPage({
   const p = (data ?? {}) as Partial<ProfileForm>;
 
   return (
-    <AppShell badge="Produtor Rural" title="Meu perfil público" subtitle="É isto que o cliente vê. Capriche na história.">
+    <AppShell badge="Produtor Rural" nav={PRODUTOR_NAV} title="Meu perfil público" subtitle="É isto que o cliente vê. Capriche na história.">
       <div className="mb-6 flex items-center justify-between">
         <Link href="/produtor" className="text-sm text-stone-400 hover:text-gold">
           ← Voltar

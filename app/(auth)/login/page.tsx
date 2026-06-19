@@ -6,9 +6,9 @@ import { ROLE_HOME, type UserRole } from "@/lib/roles";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; redirect?: string }>;
+  searchParams: Promise<{ error?: string; redirect?: string; check_email?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, check_email } = await searchParams;
 
   async function login(formData: FormData) {
     "use server";
@@ -18,7 +18,10 @@ export default async function LoginPage({
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      redirect(`/login?error=${encodeURIComponent("E-mail ou senha inválidos")}`);
+      const msg = /confirm/i.test(error.message)
+        ? "Confirme seu e-mail antes de entrar. Verifique sua caixa de entrada (e o spam)."
+        : "E-mail ou senha inválidos.";
+      redirect(`/login?error=${encodeURIComponent(msg)}`);
     }
 
     const {
@@ -38,6 +41,12 @@ export default async function LoginPage({
     <>
       <h1 className="font-serif text-2xl text-forest-100">Bem-vindo de volta</h1>
       <p className="mt-1 text-sm text-stone-400">Acesse sua conta Seravie Campo</p>
+
+      {check_email && (
+        <div className="mt-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">
+          Conta criada! Confirme seu e-mail pelo link que enviamos e depois entre aqui.
+        </div>
+      )}
 
       {error && (
         <div className="mt-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">
@@ -63,7 +72,7 @@ export default async function LoginPage({
             type="password"
             required
             className="w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold"
-            placeholder="••••••••"
+            placeholder="********"
           />
         </div>
         <button

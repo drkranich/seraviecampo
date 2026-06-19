@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { formatBRL, type Product } from "@/lib/catalog";
 
 export default async function ProdutorPage() {
@@ -27,6 +27,7 @@ export default async function ProdutorPage() {
   return (
     <AppShell
       badge="Produtor Rural"
+      nav={PRODUTOR_NAV}
       title={`Bom dia, ${firstName}!`}
       subtitle="Aqui está o resumo da sua operação gourmet de hoje."
     >

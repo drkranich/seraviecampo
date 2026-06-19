@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell } from "@/components/AppShell";
+import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import {
   formatBRL,
   CATEGORY_LABEL,
@@ -23,7 +23,7 @@ export default async function ProdutosPage() {
   const products = (data ?? []) as Product[];
 
   return (
-    <AppShell badge="Produtor Rural" title="Meus produtos" subtitle={`${products.length} item(ns) no catálogo`}>
+    <AppShell badge="Produtor Rural" nav={PRODUTOR_NAV} title="Meus produtos" subtitle={`${products.length} item(ns) no catálogo`}>
       <div className="mb-6 flex items-center justify-between">
         <Link href="/produtor" className="text-sm text-stone-400 hover:text-gold">
           ← Voltar
