@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_HOME, SIGNUP_ROLES, type UserRole } from "@/lib/roles";
+import { getRequestInfo } from "@/lib/request-info";
 
 export default async function SignupPage({
   searchParams,
@@ -40,12 +41,29 @@ export default async function SignupPage({
       redirect("/login?check_email=1");
     }
 
-    // Sessão criada: registra aceite dos termos e segue para o painel
+    // Sessão criada: registra o aceite dos termos (com IP/país/dispositivo) e segue
     if (data.user) {
+      const info = await getRequestInfo();
       await supabase
         .from("profiles")
-        .update({ terms_accepted_at: new Date().toISOString() })
+        .update({
+          terms_accepted_at: new Date().toISOString(),
+          last_ip: info.ip, last_country: info.country, last_device: info.device,
+        })
         .eq("id", data.user.id);
+
+      const { data: terms } = await supabase
+        .from("legal_terms").select("slug, content, version").eq("slug", "cancelamento").single();
+      if (terms) {
+        await supabase.from("term_acceptances").insert({
+          user_id: data.user.id,
+          terms_slug: terms.slug,
+          terms_version: terms.version,
+          content_snapshot: terms.content,
+          ip: info.ip, country: info.country, device: info.device, user_agent: info.userAgent,
+          full_name: fullName, email,
+        });
+      }
     }
 
     redirect("/verificacao");
@@ -125,9 +143,9 @@ export default async function SignupPage({
         <label className="flex items-start gap-2 text-xs text-stone-400">
           <input type="checkbox" name="terms" className="mt-0.5 accent-gold" />
           <span>
-            Aceito os Termos de Uso, a Política de Privacidade e a Política de
-            Intermediação. A Seravie Campo conecta usuários e não se responsabiliza
-            por produção, transporte ou pagamento.
+            Li e aceito os Termos de Uso, a Política de Privacidade e o{" "}
+            <strong>Termo de Cancelamento e Políticas de Compra</strong> (cancelamento em até 24h após a compra; sem frete grátis).
+            Entendo que a Seravie Campo conecta usuários e que meu aceite é registrado com data, IP, país e dispositivo.
           </span>
         </label>
 

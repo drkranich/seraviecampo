@@ -50,8 +50,8 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 - [x] (6) Produtor escolhe receber: (a) acumulado mensal já com mensalidade+comissão descontadas, ou (b) no dia útil seguinte à compra. Criar COMISSÃO em todos os planos pagos do produtor. NENHUM plano do produtor é gratuito.
 
 ### Super admin / dados
-- [ ] (4) Área Usuários: ver e-mail, cidade, IP, dados sensíveis (identidade), comprovantes e orofacial — inclusive dos CLIENTES (hoje não aparecem).
-- [ ] (terms) Termos de cancelamento assinados: aceite no cadastro com IP, dispositivo, país, hora; PDF; super admin vê aceites e edita os termos versionados.
+- [x] (4) Área Usuários: ver e-mail, cidade, IP, dados sensíveis (identidade), comprovantes e orofacial — inclusive dos CLIENTES (hoje não aparecem).
+- [x] (terms) Termos de cancelamento assinados: aceite no cadastro com IP, dispositivo, país, hora; PDF; super admin vê aceites e edita os termos versionados.
 
 ### Alcance / planos
 - [ ] (3) Internacionalizar: Europa, América Latina e EUA; GPS e moeda adequados a cada país (não limitar ao Brasil).
@@ -70,3 +70,9 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 - Frete calculado no checkout por distância (haversine produtor↔cliente). Tarifa: base R$5 + R$1,20/km, mín. R$6 (R$9 sem GPS). Plataforma fica com 20% do frete; o resto é do entregador.
 - Planos do produtor agora são todos pagos com comissão (Campo 12%, Gourmet 8%, Premium 5%). Adicionar `STRIPE_PRICE_CAMPO` no Stripe.
 - Produtor escolhe repasse (mensal x dia útil seguinte) em Financeiro. O processamento real do repasse/cobrança depende da ativação do Stripe.
+
+## Notas (dados admin + termos)
+- Super admin: Usuários agora lista e-mail e tem página de detalhe com IP/país/dispositivo, documento (RG/CNH) e orofacial (selfie) via link assinado — inclusive clientes.
+- Aba Termos: edita a política (versionada) e lista todos os aceites; cada aceite gera um 'documento assinado' imprimível (PDF pelo navegador) com IP, país, dispositivo, data/hora.
+- IP/país dependem dos headers do Cloudflare (cf-connecting-ip / cf-ipcountry) — funcionam em produção; em localhost podem vir vazios.
+- E-mail vem de auth.users via função SECURITY DEFINER admin_emails() (só super_admin).

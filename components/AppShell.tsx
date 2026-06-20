@@ -91,6 +91,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/cidades", label: "Cidades", icon: "map" },
   { href: "/admin/moderacao", label: "Moderação", icon: "shield" },
   { href: "/admin/disputas", label: "Disputas", icon: "approve" },
+  { href: "/admin/termos", label: "Termos", icon: "shield" },
 ];
 
 export const ENTREGADOR_NAV: NavItem[] = [
