@@ -23,7 +23,7 @@ export default async function FeedClientePage() {
       {posts.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center text-stone-400">Nenhuma publicação ainda. Volte em breve!</div>
       ) : (
-        <div className="mx-auto max-w-2xl space-y-5">
+        <div className="max-w-2xl space-y-5">
           {posts.map((post) => {
             const a = aMap.get(post.author_id);
             return (

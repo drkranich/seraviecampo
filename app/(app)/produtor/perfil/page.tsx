@@ -63,7 +63,7 @@ export default async function PerfilProdutorPage({
         </div>
       )}
 
-      <form action={updateProducerProfile} className="max-w-2xl space-y-4 rounded-2xl border border-campo-border glass p-6">
+      <form action={updateProducerProfile} className="relative z-20 max-w-2xl space-y-4 rounded-2xl border border-campo-border glass p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Seu nome</label>
@@ -109,7 +109,7 @@ export default async function PerfilProdutorPage({
         </button>
       </form>
 
-      <div className="mt-6 max-w-2xl">
+      <div className="relative z-0 mt-6 max-w-2xl">
         <LocationCapture redirectTo="/produtor/perfil" hasLocation={p.lat != null} />
       </div>
     </AppShell>
