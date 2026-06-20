@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAuthedClient } from "@/lib/supabase/server";
 import { parseToCents } from "@/lib/catalog";
 import { resolveImageUrl } from "@/lib/upload";
 
@@ -32,9 +32,11 @@ export async function createProduct(formData: FormData) {
     redirect("/produtor/produtos/novo?error=" + encodeURIComponent("Informe o nome do produto"));
   }
 
+  const { data: { session } } = await supabase.auth.getSession();
+  const storage = session ? createAuthedClient(session.access_token) : supabase;
   let image_url: string | null = null;
   try {
-    image_url = await resolveImageUrl(supabase, user.id, formData, "image_url", "produto");
+    image_url = await resolveImageUrl(storage, user.id, formData, "image_url", "produto");
   } catch (e) {
     redirect("/produtor/produtos/novo?error=" + encodeURIComponent(e instanceof Error ? e.message : "Falha na imagem"));
   }
@@ -62,9 +64,11 @@ export async function updateProduct(id: string, formData: FormData) {
     redirect(`/produtor/produtos/${id}?error=` + encodeURIComponent("Informe o nome do produto"));
   }
 
+  const { data: { session } } = await supabase.auth.getSession();
+  const storage = session ? createAuthedClient(session.access_token) : supabase;
   let image_url: string | null = null;
   try {
-    image_url = await resolveImageUrl(supabase, user.id, formData, "image_url", "produto");
+    image_url = await resolveImageUrl(storage, user.id, formData, "image_url", "produto");
   } catch (e) {
     redirect(`/produtor/produtos/${id}?error=` + encodeURIComponent(e instanceof Error ? e.message : "Falha na imagem"));
   }

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAuthedClient } from "@/lib/supabase/server";
 import { resolveImageUrl } from "@/lib/upload";
 
 export async function updateProducerProfile(formData: FormData) {
@@ -10,11 +10,13 @@ export async function updateProducerProfile(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const { data: { session } } = await supabase.auth.getSession();
+  const storage = session ? createAuthedClient(session.access_token) : supabase;
   let avatar_url: string | null = null;
   let cover_url: string | null = null;
   try {
-    avatar_url = await resolveImageUrl(supabase, user.id, formData, "avatar_url", "avatar");
-    cover_url = await resolveImageUrl(supabase, user.id, formData, "cover_url", "cover");
+    avatar_url = await resolveImageUrl(storage, user.id, formData, "avatar_url", "avatar");
+    cover_url = await resolveImageUrl(storage, user.id, formData, "cover_url", "cover");
   } catch (e) {
     redirect("/produtor/perfil?error=" + encodeURIComponent(e instanceof Error ? e.message : "Falha na imagem"));
   }

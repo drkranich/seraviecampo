@@ -25,3 +25,13 @@ export async function createClient() {
     },
   });
 }
+
+// Cliente com o token de acesso do usuário no header Authorization.
+// Garante que operações de Storage cheguem autenticadas (auth.uid() válido),
+// fazendo as políticas RLS reconhecerem o dono do arquivo.
+export function createAuthedClient(accessToken: string) {
+  return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    cookies: { getAll() { return []; }, setAll() {} },
+  });
+}
