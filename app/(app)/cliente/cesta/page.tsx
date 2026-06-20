@@ -5,6 +5,7 @@ import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import { formatBRL, UNIT_LABEL, type Product } from "@/lib/catalog";
 import { producerName, type PublicProfile } from "@/lib/profile";
 import { PAYMENT_METHODS, PAYMENT_LABEL } from "@/lib/orders";
+import { FancySelect } from "@/components/FancySelect";
 import { updateCartItem, removeCartItem, checkout } from "./actions";
 
 type CartRow = {
@@ -124,11 +125,8 @@ export default async function CestaPage({
 
               <div>
                 <label className="mb-1 block text-sm text-stone-300">Pagamento</label>
-                <select name="payment" className={inputCls} defaultValue="pix">
-                  {PAYMENT_METHODS.map((m) => (
-                    <option key={m} value={m}>{PAYMENT_LABEL[m]}</option>
-                  ))}
-                </select>
+                <FancySelect name="payment" defaultValue="pix"
+                  options={PAYMENT_METHODS.map((m) => ({ value: m, label: PAYMENT_LABEL[m] }))} />
               </div>
 
               <button className="w-full rounded-lg bg-gold py-3 font-medium text-campo-bg transition hover:bg-gold-light">

@@ -1,4 +1,5 @@
 import { ImageUpload } from "@/components/ImageUpload";
+import { FancySelect } from "@/components/FancySelect";
 import {
   CATEGORIES,
   STATUSES,
@@ -36,27 +37,13 @@ export function ProductFormFields({ product, userId }: { product?: Product; user
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className={labelCls}>Categoria</label>
-          <select name="category" defaultValue={product?.category ?? "outros"} className={inputCls}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORY_LABEL[c]}
-              </option>
-            ))}
-          </select>
+          <FancySelect name="category" defaultValue={product?.category ?? "outros"} searchable
+            options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABEL[c] }))} />
         </div>
         <div>
           <label className={labelCls}>Status de produção</label>
-          <select
-            name="production_status"
-            defaultValue={product?.production_status ?? "pronto"}
-            className={inputCls}
-          >
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {STATUS_LABEL[s]}
-              </option>
-            ))}
-          </select>
+          <FancySelect name="production_status" defaultValue={product?.production_status ?? "pronto"}
+            options={STATUSES.map((st) => ({ value: st, label: STATUS_LABEL[st] }))} />
         </div>
       </div>
 
@@ -67,13 +54,8 @@ export function ProductFormFields({ product, userId }: { product?: Product; user
         </div>
         <div>
           <label className={labelCls}>Unidade</label>
-          <select name="unit" defaultValue={product?.unit ?? "unidade"} className={inputCls}>
-            {UNITS.map((u) => (
-              <option key={u} value={u}>
-                {UNIT_LABEL[u]}
-              </option>
-            ))}
-          </select>
+          <FancySelect name="unit" defaultValue={product?.unit ?? "unidade"}
+            options={UNITS.map((u) => ({ value: u, label: UNIT_LABEL[u] }))} />
         </div>
         <div>
           <label className={labelCls}>Estoque</label>

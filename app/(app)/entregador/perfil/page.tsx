@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ENTREGADOR_NAV } from "@/components/AppShell";
+import { FancySelect } from "@/components/FancySelect";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { updateCourierProfile } from "./actions";
@@ -41,14 +42,14 @@ export default async function PerfilEntregadorPage({
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Tipo de veículo</label>
-            <select name="vehicle_type" defaultValue={p.vehicle_type ?? ""} className={inputCls}>
-              <option value="">Selecione</option>
-              <option value="moto">Moto</option>
-              <option value="carro">Carro</option>
-              <option value="bicicleta">Bicicleta</option>
-              <option value="van">Van / Furgão</option>
-              <option value="caminhonete">Caminhonete</option>
-            </select>
+            <FancySelect name="vehicle_type" defaultValue={p.vehicle_type ?? ""} placeholder="Selecione"
+              options={[
+                { value: "moto", label: "Moto" },
+                { value: "carro", label: "Carro" },
+                { value: "bicicleta", label: "Bicicleta" },
+                { value: "van", label: "Van / Furgão" },
+                { value: "caminhonete", label: "Caminhonete" },
+              ]} />
           </div>
           <div><label className={labelCls}>Placa</label><input name="vehicle_plate" defaultValue={p.vehicle_plate ?? ""} className={inputCls} placeholder="ABC1D23" /></div>
         </div>

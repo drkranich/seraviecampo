@@ -11,6 +11,7 @@ import {
 } from "@/lib/orders";
 import { producerName, type PublicProfile } from "@/lib/profile";
 import { OpenDisputeButton } from "@/components/OpenDisputeButton";
+import { FancySelect } from "@/components/FancySelect";
 import { cancelOrder } from "./actions";
 
 type OrderRow = Order & { producer: Partial<PublicProfile> | null; items: OrderItem[] };
@@ -94,28 +95,20 @@ export default async function PedidosClientePage({
 
       <form className="mb-6 flex flex-wrap items-end gap-3" action="/cliente/pedidos">
         <Field label="Ano">
-          <select name="ano" defaultValue={sp.ano ?? ""} className={selectCls}>
-            <option value="">Todos</option>
-            {years.map((y) => <option key={y} value={y}>{y}</option>)}
-          </select>
+          <FancySelect name="ano" defaultValue={sp.ano ?? ""}
+            options={[{ value: "", label: "Todos" }, ...years.map((y) => ({ value: String(y), label: String(y) }))]} />
         </Field>
         <Field label="Mês">
-          <select name="mes" defaultValue={sp.mes ?? ""} className={selectCls}>
-            <option value="">Todos</option>
-            {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
-          </select>
+          <FancySelect name="mes" defaultValue={sp.mes ?? ""}
+            options={[{ value: "", label: "Todos" }, ...MONTHS.map((m, i) => ({ value: String(i + 1), label: m }))]} />
         </Field>
         <Field label="Pagamento">
-          <select name="pagamento" defaultValue={sp.pagamento ?? ""} className={selectCls}>
-            <option value="">Todos</option>
-            {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{PAYMENT_LABEL[m]}</option>)}
-          </select>
+          <FancySelect name="pagamento" defaultValue={sp.pagamento ?? ""}
+            options={[{ value: "", label: "Todos" }, ...PAYMENT_METHODS.map((m) => ({ value: m, label: PAYMENT_LABEL[m] }))]} />
         </Field>
         <Field label="Fornecedor">
-          <select name="fornecedor" defaultValue={sp.fornecedor ?? ""} className={selectCls}>
-            <option value="">Todos</option>
-            {producers.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-          </select>
+          <FancySelect name="fornecedor" defaultValue={sp.fornecedor ?? ""} searchable
+            options={[{ value: "", label: "Todos" }, ...producers.map(([id, name]) => ({ value: id, label: name }))]} />
         </Field>
         <button className="rounded-lg bg-gold px-5 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Filtrar</button>
         <Link href="/cliente/pedidos" className="px-2 py-2 text-sm text-stone-400 hover:text-gold">Limpar</Link>
