@@ -93,3 +93,8 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 - Produtor (em "Pedidos"), no status "Em preparo": "Despachar p/ entregador" (entra no pool) OU "Vou entregar eu mesmo".
 - Se despachado e ninguém aceitar: botão "Assumir a entrega" no lado do produtor.
 - Entregador vê o pool de entregas disponíveis (exceto as próprias do produtor), aceita e marca como entregue. Frete (delivery_fee) é o ganho do entregador.
+
+## Cancelamento de assinatura (20/06)
+- Botão "Cancelar assinatura" nas 3 áreas (cliente, produtor, entregador), visível quando há plano pago ativo.
+- Regra: cancela a renovação (cancel_at_period_end=true). O mês atual é cobrado integral (sem pró-rata/reembolso) e nada é cobrado no próximo ciclo; acesso segue até o fim do período.
+- Quando o Stripe for ativado: a ação deve também chamar a API do Stripe para cancelar no fim do período (hoje só marca no banco).
