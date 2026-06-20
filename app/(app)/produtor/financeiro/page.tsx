@@ -2,19 +2,22 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { stripeEnabled, getAccount } from "@/lib/stripe";
+import { formatBRL } from "@/lib/catalog";
+import { getPlan, producerCommissionPct, DEFAULT_PRODUCER_PLAN } from "@/lib/plans";
+import { setPayoutMode } from "./actions";
 
 export default async function FinanceiroPage({
   searchParams,
 }: {
-  searchParams: Promise<{ refresh?: string; error?: string }>;
+  searchParams: Promise<{ refresh?: string; error?: string; ok?: string }>;
 }) {
   const { user, profile } = await requireRole("produtor");
-  const { refresh, error } = await searchParams;
+  const { refresh, error, ok } = await searchParams;
   const supabase = await createClient();
 
   const { data: acc } = await supabase
     .from("profiles")
-    .select("stripe_account_id, stripe_charges_enabled")
+    .select("stripe_account_id, stripe_charges_enabled, payout_mode")
     .eq("id", user.id)
     .single();
   let accountId = (acc?.stripe_account_id as string | null) ?? null;
@@ -33,6 +36,27 @@ export default async function FinanceiroPage({
     }
   }
 
+  // Plano do produtor, comissão e repasse
+  const payoutMode = ((acc as { payout_mode?: string } | null)?.payout_mode ?? "mensal");
+  const { data: sub } = await supabase
+    .from("subscriptions").select("plan, status").eq("account_id", user.id)
+    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const planId = ((sub?.plan as string) || DEFAULT_PRODUCER_PLAN);
+  const plan = getPlan(planId);
+  const pct = producerCommissionPct(planId);
+
+  const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
+  const { data: paidOrders } = await supabase
+    .from("orders").select("total_cents, delivery_fee_cents")
+    .eq("producer_id", user.id).neq("status", "cancelado")
+    .in("payment_status", ["pago", "na_entrega"])
+    .gte("created_at", monthStart.toISOString());
+  const rows = (paidOrders ?? []) as { total_cents: number; delivery_fee_cents: number }[];
+  const productRevenue = rows.reduce((acc2, o) => acc2 + (o.total_cents - (o.delivery_fee_cents || 0)), 0);
+  const commission = Math.round((productRevenue * pct) / 100);
+  const subscriptionCost = plan?.price_cents ?? 0;
+  const netMensal = productRevenue - commission - subscriptionCost;
+
   const errMsg: Record<string, string> = {
     stripe_off: "A plataforma ainda não ativou o Stripe. Volte em breve.",
   };
@@ -46,6 +70,11 @@ export default async function FinanceiroPage({
       {error && (
         <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">
           {errMsg[error] ?? decodeURIComponent(error)}
+        </div>
+      )}
+      {ok && (
+        <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">
+          Preferência de repasse atualizada.
         </div>
       )}
       {refresh && chargesEnabled && (
@@ -93,7 +122,49 @@ export default async function FinanceiroPage({
           )}
         </div>
       </section>
+
+      <section className="glass mt-6 max-w-2xl rounded-2xl border border-campo-border p-6">
+        <h2 className="font-serif text-xl text-forest-100">Plano, comissão e repasse</h2>
+        <p className="mt-2 text-sm text-stone-400">
+          Plano atual: <strong className="text-gold">{plan?.name ?? planId}</strong> · mensalidade {formatBRL(subscriptionCost)} · comissão <strong className="text-gold">{pct}%</strong> por venda.
+        </p>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Line label="Vendas do mês (produtos)" value={formatBRL(productRevenue)} />
+          <Line label={`Comissão (${pct}%)`} value={`- ${formatBRL(commission)}`} />
+          <Line label="Mensalidade" value={`- ${formatBRL(subscriptionCost)}`} />
+          <Line label="A receber (mês)" value={formatBRL(netMensal)} accent />
+        </div>
+
+        <form action={setPayoutMode} className="mt-6 space-y-3">
+          <p className="text-sm text-stone-300">Como você quer receber:</p>
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-campo-border bg-campo-bg p-3 transition hover:border-gold/50 has-[:checked]:border-gold has-[:checked]:bg-forest-900/40">
+            <input type="radio" name="payout_mode" value="mensal" defaultChecked={payoutMode !== "imediato"} className="mt-1 accent-gold" />
+            <span>
+              <span className="block text-sm font-medium text-forest-100">Acumulado mensal</span>
+              <span className="block text-xs text-stone-400">Recebe o total do mês já com mensalidade e comissão descontadas.</span>
+            </span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-campo-border bg-campo-bg p-3 transition hover:border-gold/50 has-[:checked]:border-gold has-[:checked]:bg-forest-900/40">
+            <input type="radio" name="payout_mode" value="imediato" defaultChecked={payoutMode === "imediato"} className="mt-1 accent-gold" />
+            <span>
+              <span className="block text-sm font-medium text-forest-100">No dia útil seguinte</span>
+              <span className="block text-xs text-stone-400">Recebe a cada venda no próximo dia útil, com comissão e mensalidade descontadas.</span>
+            </span>
+          </label>
+          <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">Salvar preferência</button>
+        </form>
+      </section>
     </AppShell>
+  );
+}
+
+function Line({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="rounded-xl border border-campo-border bg-campo-surface2/50 p-3">
+      <p className="text-xs uppercase tracking-wider text-stone-500">{label}</p>
+      <p className={`mt-1 font-serif text-lg ${accent ? "text-gold" : "text-forest-100"}`}>{value}</p>
+    </div>
   );
 }
 

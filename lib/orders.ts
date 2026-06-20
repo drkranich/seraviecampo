@@ -69,5 +69,23 @@ export type Order = {
   delivery_notes: string | null;
   delivery_person_id: string | null;
   delivery_fee_cents: number;
+  payment_status: PaymentStatus;
+  paid_at: string | null;
   created_at: string;
+};
+
+export type PaymentStatus = "pendente" | "pago" | "na_entrega" | "reembolsado";
+
+export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
+  pendente: "Pagamento pendente",
+  pago: "Pago",
+  na_entrega: "Pagar na entrega",
+  reembolsado: "Reembolsado",
+};
+
+export const PAYMENT_STATUS_STYLE: Record<PaymentStatus, string> = {
+  pendente: "border-gold/40 bg-gold/10 text-gold",
+  pago: "border-forest-700 bg-forest-900/40 text-forest-200",
+  na_entrega: "border-blue-900/60 bg-blue-950/40 text-blue-300",
+  reembolsado: "border-red-900/50 bg-red-950/40 text-red-300",
 };

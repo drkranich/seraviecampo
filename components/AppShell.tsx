@@ -57,6 +57,7 @@ export const CLIENTE_NAV: NavItem[] = [
   { href: "/cliente/explorar", label: "Explorar", icon: "search" },
   { href: "/cliente/clube", label: "Clube Gourmet", icon: "crown" },
   { href: "/cliente/cesta", label: "Cesta", icon: "cart" },
+  { href: "/cliente/pagamento", label: "Pagamento", icon: "cash" },
   { href: "/cliente/pedidos", label: "Meus pedidos", icon: "orders" },
   { href: "/cliente/proximos", label: "Perto de mim", icon: "map" },
   { href: "/cliente/reservas", label: "Reservas", icon: "sprout" },
@@ -84,10 +85,12 @@ export const PRODUTOR_NAV: NavItem[] = [
 
 export const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Visão Geral", icon: "chart" },
+  { href: "/admin/pagamentos", label: "Pagamentos", icon: "cash" },
   { href: "/admin/aprovacoes", label: "Aprovações", icon: "approve" },
   { href: "/admin/usuarios", label: "Usuários", icon: "users" },
   { href: "/admin/cidades", label: "Cidades", icon: "map" },
   { href: "/admin/moderacao", label: "Moderação", icon: "shield" },
+  { href: "/admin/disputas", label: "Disputas", icon: "approve" },
 ];
 
 export const ENTREGADOR_NAV: NavItem[] = [

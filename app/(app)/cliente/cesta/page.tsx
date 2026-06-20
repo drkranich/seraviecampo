@@ -113,6 +113,9 @@ export default async function CestaPage({
                 <span className="text-stone-400">Total</span>
                 <span className="font-serif text-2xl text-gold">{formatBRL(total)}</span>
               </div>
+              <p className="text-xs leading-relaxed text-stone-500">
+                Subtotal dos produtos. O <strong className="text-stone-400">frete é calculado por distância</strong> (sua localização → produtor) e somado na etapa de pagamento.
+              </p>
 
               <input name="name" required defaultValue={profile?.full_name ?? ""} placeholder="Seu nome" className={inputCls} />
               <input name="phone" required placeholder="Telefone / WhatsApp" className={inputCls} />

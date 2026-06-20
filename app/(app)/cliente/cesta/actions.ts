@@ -79,5 +79,5 @@ export async function checkout(formData: FormData) {
   revalidatePath("/cliente/cesta");
 
   const count = Array.isArray(data) ? data.length : 0;
-  redirect("/cliente/pedidos?novo=" + count);
+  redirect("/cliente/pagamento?novo=" + count);
 }

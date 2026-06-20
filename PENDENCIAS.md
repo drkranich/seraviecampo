@@ -41,13 +41,13 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 ## Backlog grande (solicitado em 20/06/2026) — priorizar por leva
 ### Bugs críticos do fluxo de compra
 - [x] (8) RLS "new row violates row-level security policy" AINDA ocorre em: foto do usuário, capa do produtor, foto de produto, e entregador/cliente. Corrigir DEFINITIVAMENTE (investigar bucket/policy real).
-- [ ] (9) Etapa de PAGAMENTO final não existe: cliente faz pedido e escolhe forma de pagamento, mas não há a tela de pagar de fato. Criar a finalização de pagamento.
+- [x] (9) Etapa de PAGAMENTO final não existe: cliente faz pedido e escolhe forma de pagamento, mas não há a tela de pagar de fato. Criar a finalização de pagamento.
 - [x] (5) Upload de documento (RG/CNH) aceita foto de papel em branco. Adicionar validação de que é documento oficial.
 
 ### Dinheiro / repasses
-- [ ] (1) Frete dinâmico por localização (estilo Uber), automático, incluso no valor final, sem prejuízo a produtor/cliente, beneficiando o entregador. REMOVER toda menção a "frete grátis".
-- [ ] (2) Super admin: aba PAGAMENTOS — ver valores de entregadores pagos à plataforma (% de entrega e/ou assinatura), valores do produtor (mensalidade), valores de cada cliente.
-- [ ] (6) Produtor escolhe receber: (a) acumulado mensal já com mensalidade+comissão descontadas, ou (b) no dia útil seguinte à compra. Criar COMISSÃO em todos os planos pagos do produtor. NENHUM plano do produtor é gratuito.
+- [x] (1) Frete dinâmico por localização (estilo Uber), automático, incluso no valor final, sem prejuízo a produtor/cliente, beneficiando o entregador. REMOVER toda menção a "frete grátis".
+- [x] (2) Super admin: aba PAGAMENTOS — ver valores de entregadores pagos à plataforma (% de entrega e/ou assinatura), valores do produtor (mensalidade), valores de cada cliente.
+- [x] (6) Produtor escolhe receber: (a) acumulado mensal já com mensalidade+comissão descontadas, ou (b) no dia útil seguinte à compra. Criar COMISSÃO em todos os planos pagos do produtor. NENHUM plano do produtor é gratuito.
 
 ### Super admin / dados
 - [ ] (4) Área Usuários: ver e-mail, cidade, IP, dados sensíveis (identidade), comprovantes e orofacial — inclusive dos CLIENTES (hoje não aparecem).
@@ -65,3 +65,8 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 ## Notas técnicas (20/06)
 - Upload corrigido: agora passa por `/api/upload` (rota de servidor autenticada via cookie). Opcional p/ robustez máxima: definir `SUPABASE_SERVICE_ROLE_KEY` como secret no Cloudflare (a rota usa automaticamente se existir; NUNCA commitar essa chave).
 - Validação de documento é heurística (rejeita imagem em branco/uniforme). Verificação oficial de identidade (KYC real) exige provedor de visão — anotado para o futuro.
+
+## Notas (frete/pagamentos)
+- Frete calculado no checkout por distância (haversine produtor↔cliente). Tarifa: base R$5 + R$1,20/km, mín. R$6 (R$9 sem GPS). Plataforma fica com 20% do frete; o resto é do entregador.
+- Planos do produtor agora são todos pagos com comissão (Campo 12%, Gourmet 8%, Premium 5%). Adicionar `STRIPE_PRICE_CAMPO` no Stripe.
+- Produtor escolhe repasse (mensal x dia útil seguinte) em Financeiro. O processamento real do repasse/cobrança depende da ativação do Stripe.

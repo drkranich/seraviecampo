@@ -7,22 +7,26 @@ export type Plan = {
   tagline: string;
   features: string[];
   priceEnv?: string; // env var com o price_xxx do Stripe
+  commissionPct?: number; // comissão da plataforma sobre vendas (planos do produtor)
 };
 
 export const PLANS: Plan[] = [
   {
     id: "campo",
     name: "Campo",
-    price_cents: 0,
+    price_cents: 1990,
     tagline: "Para começar a vender",
-    features: ["Até 15 produtos", "Pedidos e cesta", "Perfil público", "Suporte por e-mail"],
+    commissionPct: 12,
+    features: ["Até 15 produtos", "Pedidos e cesta", "Perfil público", "Comissão de 12% por venda", "Suporte por e-mail"],
+    priceEnv: "STRIPE_PRICE_CAMPO",
   },
   {
     id: "gourmet",
     name: "Gourmet",
     price_cents: 4900,
     tagline: "Para crescer com constância",
-    features: ["Produtos ilimitados", "Assinaturas de cesta", "Insights de vendas", "Selo verificado", "Suporte prioritário"],
+    commissionPct: 8,
+    features: ["Produtos ilimitados", "Assinaturas de cesta", "Insights de vendas", "Selo verificado", "Comissão de 8% por venda", "Suporte prioritário"],
     priceEnv: "STRIPE_PRICE_GOURMET",
   },
   {
@@ -30,7 +34,8 @@ export const PLANS: Plan[] = [
     name: "Premium",
     price_cents: 9900,
     tagline: "Operação gourmet completa",
-    features: ["Tudo do Gourmet", "IA Rural", "Turismo + Agro", "Marketing avançado", "Gerente de conta"],
+    commissionPct: 5,
+    features: ["Tudo do Gourmet", "IA Rural", "Turismo + Agro", "Comissão de 5% por venda", "Marketing avançado", "Gerente de conta"],
     priceEnv: "STRIPE_PRICE_PREMIUM",
   },
 ];
@@ -58,7 +63,7 @@ export const CLIENTE_PLANS: Plan[] = [
     name: "Clube Gourmet",
     price_cents: 3990,
     tagline: "A experiência completa",
-    features: ["Frete grátis", "10% de desconto", "Cesta surpresa mensal", "Acesso a produtores premium", "Prioridade em reservas de colheita"],
+    features: ["Maior desconto no frete", "10% de desconto", "Cesta surpresa mensal", "Acesso a produtores premium", "Prioridade em reservas de colheita"],
     priceEnv: "STRIPE_PRICE_CLI_GOURMET",
   },
 ];
@@ -94,6 +99,14 @@ export const ALL_PLANS: Plan[] = [...PLANS, ...CLIENTE_PLANS, ...ENTREGADOR_PLAN
 
 export function getPlan(id: string): Plan | undefined {
   return ALL_PLANS.find((p) => p.id === id);
+}
+
+// Plano padrão do produtor quando não há assinatura ativa
+export const DEFAULT_PRODUCER_PLAN = "campo";
+
+export function producerCommissionPct(planId?: string | null): number {
+  const p = PLANS.find((x) => x.id === (planId || DEFAULT_PRODUCER_PLAN));
+  return p?.commissionPct ?? 12;
 }
 
 export function formatPlanPrice(cents: number): string {

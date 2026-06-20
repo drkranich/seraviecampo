@@ -6,9 +6,11 @@ import { OrdersCalendar } from "@/components/OrdersCalendar";
 import { formatBRL, UNIT_LABEL } from "@/lib/catalog";
 import {
   ORDER_STATUS_LABEL, ORDER_STATUS_STYLE, PAYMENT_LABEL, PAYMENT_METHODS,
-  type Order, type OrderItem, type PaymentMethod,
+  PAYMENT_STATUS_LABEL, PAYMENT_STATUS_STYLE,
+  type Order, type OrderItem, type PaymentMethod, type PaymentStatus,
 } from "@/lib/orders";
 import { producerName, type PublicProfile } from "@/lib/profile";
+import { OpenDisputeButton } from "@/components/OpenDisputeButton";
 import { cancelOrder } from "./actions";
 
 type OrderRow = Order & { producer: Partial<PublicProfile> | null; items: OrderItem[] };
@@ -19,7 +21,7 @@ const CANCEL_WINDOW_MS = 24 * 60 * 60 * 1000;
 export default async function PedidosClientePage({
   searchParams,
 }: {
-  searchParams: Promise<{ ano?: string; mes?: string; pagamento?: string; fornecedor?: string; canceled?: string; error?: string }>;
+  searchParams: Promise<{ ano?: string; mes?: string; pagamento?: string; fornecedor?: string; canceled?: string; pago?: string; disputa?: string; error?: string }>;
 }) {
   const { profile } = await requireRole("cliente");
   const sp = await searchParams;
@@ -74,6 +76,8 @@ export default async function PedidosClientePage({
   return (
     <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title="Meus pedidos" subtitle="Seu histórico, gastos e calendário de compras.">
       {sp.canceled && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Pedido cancelado.</div>}
+      {sp.pago && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Pagamento confirmado.</div>}
+      {sp.disputa && <div className="mb-4 rounded-lg border border-blue-900/60 bg-blue-950/40 px-3 py-2 text-sm text-blue-300">Sua solicitação foi registrada. Nossa equipe vai analisar.</div>}
       {sp.error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{decodeURIComponent(sp.error)}</div>}
 
       <div className="mb-6 flex items-start gap-2 rounded-lg border border-gold/30 bg-gold/5 px-4 py-3 text-sm text-stone-300">
@@ -167,9 +171,14 @@ export default async function PedidosClientePage({
                       {o.payment_method ? ` · ${PAYMENT_LABEL[o.payment_method as PaymentMethod]}` : ""}
                     </p>
                   </div>
-                  <span className={`rounded-full border px-3 py-1 text-xs ${ORDER_STATUS_STYLE[o.status]}`}>
-                    {ORDER_STATUS_LABEL[o.status]}
-                  </span>
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`rounded-full border px-3 py-1 text-xs ${ORDER_STATUS_STYLE[o.status]}`}>
+                      {ORDER_STATUS_LABEL[o.status]}
+                    </span>
+                    <span className={`rounded-full border px-2.5 py-0.5 text-[0.65rem] ${PAYMENT_STATUS_STYLE[o.payment_status as PaymentStatus]}`}>
+                      {PAYMENT_STATUS_LABEL[o.payment_status as PaymentStatus]}
+                    </span>
+                  </div>
                 </div>
                 <ul className="mt-3 space-y-1 text-sm">
                   {o.items.map((it) => (
@@ -179,17 +188,21 @@ export default async function PedidosClientePage({
                     </li>
                   ))}
                 </ul>
-                <div className="mt-3 flex items-center justify-between border-t border-campo-border pt-3">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-campo-border pt-3">
                   <span className="font-serif text-lg text-gold">{formatBRL(o.total_cents)}</span>
-                  {cancelable ? (
-                    <form action={cancel}>
-                      <button className="rounded-lg border border-red-900/50 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-950/40">
-                        Cancelar compra
-                      </button>
-                    </form>
-                  ) : (o.status === "novo" || o.status === "preparando") ? (
-                    <span className="text-xs text-stone-600">Prazo de cancelamento (24h) expirado</span>
-                  ) : null}
+                  <div className="flex flex-wrap items-center gap-3">
+                    {o.payment_status === "pendente" && (
+                      <Link href="/cliente/pagamento" className="rounded-lg bg-gold px-3 py-1.5 text-xs font-medium text-campo-bg transition hover:bg-gold-light">Finalizar pagamento</Link>
+                    )}
+                    {cancelable ? (
+                      <form action={cancel}>
+                        <button className="rounded-lg border border-red-900/50 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-950/40">Cancelar compra</button>
+                      </form>
+                    ) : (o.status === "novo" || o.status === "preparando") ? (
+                      <span className="text-xs text-stone-600">Prazo de cancelamento (24h) expirado</span>
+                    ) : null}
+                    <OpenDisputeButton orderId={o.id} back="/cliente/pedidos" />
+                  </div>
                 </div>
               </article>
             );
