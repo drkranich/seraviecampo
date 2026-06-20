@@ -9,7 +9,7 @@ export const ROLE_HOME: Record<UserRole, string> = {
 };
 
 export const ROLE_LABEL: Record<UserRole, string> = {
-  super_admin: "Seravie OS",
+  super_admin: "Seravie Hub",
   produtor: "Produtor Rural",
   cliente: "Cliente",
   entregador: "Entregador",

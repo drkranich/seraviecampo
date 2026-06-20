@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   const perfis = [
-    { nome: "Seravie OS", tag: "Super Admin", desc: "O cérebro do ecossistema: dashboard executivo, mapa nacional, aprovações e inteligência estratégica." },
+    { nome: "Seravie Hub", tag: "Super Admin", desc: "O cérebro do ecossistema: dashboard executivo, mapa nacional, aprovações e inteligência estratégica." },
     { nome: "Produtor Rural", tag: "Oferta", desc: "Minha Produção, calendário de safra, produtos com história, pedidos e IA Rural." },
     { nome: "Cliente Final", tag: "Clube Gourmet", desc: "Home cinematográfica, descobertas por proximidade, perfil do produtor e feed social." },
     { nome: "Entregador", tag: "Logística", desc: "Rotas, ganhos, entregas, GPS e comprovante por foto." },

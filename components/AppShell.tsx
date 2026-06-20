@@ -74,9 +74,11 @@ export const PRODUTOR_NAV: NavItem[] = [
 ];
 
 export const ADMIN_NAV: NavItem[] = [
-  { href: "/admin", label: "Visão geral", icon: "chart" },
+  { href: "/admin", label: "Visão Geral", icon: "chart" },
   { href: "/admin/aprovacoes", label: "Aprovações", icon: "approve" },
   { href: "/admin/usuarios", label: "Usuários", icon: "users" },
+  { href: "/admin/cidades", label: "Cidades", icon: "map" },
+  { href: "/admin/moderacao", label: "Moderação", icon: "shield" },
 ];
 
 export const ENTREGADOR_NAV: NavItem[] = [
