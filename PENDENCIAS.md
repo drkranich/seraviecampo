@@ -105,3 +105,37 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 - Chat de suporte: aba "Suporte" para cliente/produtor/entregador + "Inbox" no super admin. Atualiza a cada 4s (quase tempo real). Tabela support_messages com RLS.
 - IA Rural (produtor): aba /produtor/ia + rota /api/ia. Provedor compatível com OpenAI. ATIVAR com secrets no Cloudflare: AI_API_KEY (obrigatória), AI_BASE_URL e AI_MODEL (opcionais). Sem a chave, a interface avisa que está inativa.
 - Lembrete: uploads de comprovante usam a mesma rota /api/upload (recomendado ativar SUPABASE_SERVICE_ROLE_KEY como secret p/ 100% de garantia).
+
+## ⭐ CONFIGURAÇÃO DE AMANHÃ — chaves/APIs (tudo já codado, só faltam os secrets)
+Adicionar como **Secrets** no Cloudflare (Workers & Pages → projeto seraviecampo → Settings → Variables and Secrets) e no `.env.local` para teste. NUNCA commitar os valores.
+
+### 1) Supabase (uploads 100% à prova de RLS)
+- `SUPABASE_SERVICE_ROLE_KEY` = chave service_role (Supabase → Settings → API).
+
+### 2) IA Rural (assistente do produtor)
+- `AI_API_KEY` = chave do provedor (OpenAI-compatível).
+- `AI_BASE_URL` (opcional, padrão https://api.openai.com/v1) · `AI_MODEL` (opcional, padrão gpt-4o-mini).
+
+### 3) Stripe — pagamentos de produtor, entregador e cliente
+Objetivo: cliente paga; produtor e entregador recebem; plataforma fica com mensalidade + comissão + fatia do frete.
+- Chaves base: `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`.
+- Price IDs das assinaturas (criar produtos/preços no painel Stripe e colar):
+  - Produtor: `STRIPE_PRICE_CAMPO`, `STRIPE_PRICE_GOURMET`, `STRIPE_PRICE_PREMIUM`
+  - Cliente: `STRIPE_PRICE_CLI_SABOR`, `STRIPE_PRICE_CLI_GOURMET`
+  - Entregador: `STRIPE_PRICE_ENT_PRO`, `STRIPE_PRICE_ENT_PREMIUM`
+- Stripe Connect (já há /api/stripe/connect): onboarding de produtor e entregador para receberem repasses.
+- A fazer no código quando ativarmos (estrutura já existe, falta plugar valores reais):
+  - Checkout real do pedido (hoje a tela de pagamento só confirma) → cobrar via Stripe e usar split/transfer para produtor e entregador.
+  - Repasse do produtor conforme `payout_mode` (mensal x dia útil seguinte).
+  - Cancelar assinatura também no Stripe (cancel_at_period_end) — hoje só marca no banco.
+  - Reembolso real ao resolver disputa (hoje só marca payment_status='reembolsado').
+- Webhook do Stripe → atualizar status de assinatura/pagamento no banco.
+
+> Estado atual: app inteiro funciona sem essas chaves (modo "em configuração"). Ao adicionar os secrets e plugar os valores, os pagamentos passam a rodar de verdade.
+
+## Anotado p/ amanhã/futuro (20/06, reforço)
+- [x] Frete dinâmico por localização — JÁ FEITO (haversine no checkout; incluso no total; 80% entregador / 20% plataforma; sem frete grátis).
+- [ ] Página pública de apresentação da Seravie Campo.
+- [ ] CMS completo de edição: da página pública E dos 3 painéis (cliente, produtor, entregador); as configurações dos dois CMSs ficam no super admin.
+- [ ] Versão mobile nativa iOS e Android (futuro).
+- [ ] Múltiplas fotos (carrossel) por postagem do feed e por produto — hoje só 1 foto. Exige guardar várias URLs (array/tabela), upload múltiplo e visualizador carrossel.
