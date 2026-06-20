@@ -12,7 +12,7 @@ export async function requireRole(expected: UserRole) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, role, full_name, display_name, verification_status, face_verified")
+    .select("id, role, full_name, display_name, verification_status, face_verified, document_url, kyc_exempt")
     .eq("id", user.id)
     .single();
 
@@ -21,9 +21,10 @@ export async function requireRole(expected: UserRole) {
   // Usuário no dashboard errado -> manda para o dele
   if (role !== expected) redirect(ROLE_HOME[role]);
 
-  // Porta de entrada: confirmação facial obrigatória (exceto admin interno)
-  if (role !== "super_admin" && profile && !profile.face_verified) {
-    redirect("/verificacao");
+  // Portas de entrada obrigatórias (exceto admin interno e contas isentas)
+  if (role !== "super_admin" && profile) {
+    if (!profile.face_verified) redirect("/verificacao");
+    if (!profile.kyc_exempt && !profile.document_url) redirect("/documento");
   }
 
   return { user, profile };
