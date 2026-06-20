@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/guard";
+import { greeting } from "@/lib/greeting";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { Sparkline, AreaChart, Donut, type DonutSegment } from "@/components/charts";
@@ -102,7 +103,7 @@ export default async function ProdutorPage() {
       nav={PRODUTOR_NAV}
       userName={profile?.full_name ?? "Produtor"}
       profileHref="/produtor/perfil"
-      title={`Bom dia, ${firstName}!`}
+      title={greeting(profile?.full_name)}
       subtitle="Aqui está o resumo da sua operação gourmet de hoje."
     >
       {/* Métricas */}

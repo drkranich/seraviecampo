@@ -16,7 +16,8 @@
     "@supabase/supabase-js": "^2.45.4",
     "next": "^15.5.18",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.0.0",

@@ -59,10 +59,18 @@ export const CLIENTE_NAV: NavItem[] = [
 ];
 
 export const PRODUTOR_NAV: NavItem[] = [
-  { href: "/produtor", label: "Início", icon: "home" },
-  { href: "/produtor/produtos", label: "Produtos", icon: "products" },
+  { href: "/produtor", label: "Visão Geral", icon: "home" },
   { href: "/produtor/pedidos", label: "Pedidos", icon: "orders" },
+  { href: "/produtor/produtos", label: "Produtos", icon: "products" },
+  { href: "/produtor/clientes", label: "Clientes", icon: "users" },
+  { href: "/produtor/entregas", label: "Entregas", icon: "routes" },
+  { href: "/produtor/financeiro", label: "Financeiro", icon: "cash" },
+  { href: "/produtor/producao", label: "Produção", icon: "sprout" },
+  { href: "/produtor/insights", label: "Insights", icon: "chart" },
+  { href: "/produtor/marketing", label: "Marketing", icon: "megaphone" },
+  { href: "/produtor/assinatura", label: "Meu Plano", icon: "crown" },
   { href: "/produtor/perfil", label: "Perfil", icon: "profile" },
+  { href: "/produtor/configuracoes", label: "Configurações", icon: "gear" },
 ];
 
 export const ADMIN_NAV: NavItem[] = [

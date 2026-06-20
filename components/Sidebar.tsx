@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 export type IconKey =
   | "home" | "products" | "orders" | "profile" | "cart"
   | "discover" | "routes" | "earnings" | "history" | "chart"
-  | "approve" | "map" | "shield" | "users";
+  | "approve" | "map" | "shield" | "users"
+  | "cash" | "sprout" | "megaphone" | "crown" | "gear";
 
 export type NavItem = { href: string; label: string; icon: IconKey };
 
@@ -31,6 +32,11 @@ function Icon({ name }: { name: IconKey }) {
     map: <><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2z" /><path d="M9 4v14M15 6v14" /></>,
     shield: <><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" /></>,
     users: <><circle cx="9" cy="8" r="3.5" /><path d="M3 20c0-3.5 3-5.5 6-5.5s6 2 6 5.5" /><path d="M16 5.5a3.5 3.5 0 010 6.5M18 20c0-2.5-1-4-2.5-5" /></>,
+    cash: <><rect x="2" y="6" width="20" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" /><path d="M5 9v.01M19 15v.01" /></>,
+    sprout: <><path d="M12 20v-7" /><path d="M12 13c0-3-2-5-5-5 0 3 2 5 5 5z" /><path d="M12 11c0-2.5 2-4.5 5-4.5 0 2.5-2 4.5-5 4.5z" /></>,
+    megaphone: <><path d="M3 11l13-5v12L3 13z" /><path d="M16 8a3 3 0 010 6" /><path d="M6 13v4a2 2 0 003.8.9" /></>,
+    crown: <><path d="M3 7l4.5 4L12 5l4.5 6L21 7l-1.5 11h-15z" /></>,
+    gear: <><circle cx="12" cy="12" r="3" /><path d="M19.4 13.5a7.5 7.5 0 000-3l1.8-1.4-2-3.4-2.2.9a7.5 7.5 0 00-2.6-1.5L12 1.5h-4l-.4 2.6a7.5 7.5 0 00-2.6 1.5l-2.2-.9-2 3.4L2.6 10.5a7.5 7.5 0 000 3l-1.8 1.4 2 3.4 2.2-.9a7.5 7.5 0 002.6 1.5l.4 2.6h4l.4-2.6a7.5 7.5 0 002.6-1.5l2.2.9 2-3.4z" /></>,
   };
   return <svg {...common}>{paths[name]}</svg>;
 }

@@ -48,7 +48,7 @@ export default async function SignupPage({
         .eq("id", data.user.id);
     }
 
-    redirect(ROLE_HOME[role] ?? "/cliente");
+    redirect("/verificacao");
   }
 
   return (

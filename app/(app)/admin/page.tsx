@@ -1,4 +1,5 @@
 import { requireRole } from "@/lib/guard";
+import { greeting } from "@/lib/greeting";
 import { AppShell, ModuleCard, ADMIN_NAV } from "@/components/AppShell";
 
 export default async function AdminPage() {
@@ -8,7 +9,7 @@ export default async function AdminPage() {
       badge="Seravie OS"
       nav={ADMIN_NAV}
       userName={profile?.full_name ?? "Administrador"}
-      title="Painel Executivo"
+      title={greeting(profile?.full_name)}
       subtitle={`Bem-vindo, ${profile?.full_name || "Administrador"}. Você enxerga o ecossistema inteiro.`}
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

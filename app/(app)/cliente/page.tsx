@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/guard";
+import { greeting } from "@/lib/greeting";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import { ProductCard, type ProductWithProducer } from "@/components/ProductCard";
@@ -36,7 +37,7 @@ export default async function ClientePage() {
   const firstName = profile?.full_name?.split(" ")[0] || "";
 
   return (
-    <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title={`Olá${firstName ? ", " + firstName : ""}`} subtitle="Sabores que nascem na serra. Conheça quem produz.">
+    <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title={greeting(profile?.full_name)} subtitle="Sabores que nascem na serra. Conheça quem produz.">
       {/* Hero */}
       <section className="mb-10 overflow-hidden rounded-2xl border border-campo-border bg-gradient-to-br from-forest-900 via-campo-surface to-campo-bg p-8 sm:p-12">
         <p className="font-serif text-sm uppercase tracking-[0.3em] text-gold">Colheita fresca</p>

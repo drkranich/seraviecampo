@@ -1,4 +1,5 @@
 import { requireRole } from "@/lib/guard";
+import { greeting } from "@/lib/greeting";
 import { AppShell, ModuleCard, ENTREGADOR_NAV } from "@/components/AppShell";
 
 export default async function EntregadorPage() {
@@ -8,7 +9,7 @@ export default async function EntregadorPage() {
       badge="Entregador"
       nav={ENTREGADOR_NAV}
       userName={profile?.full_name ?? "Entregador"}
-      title={`Olá, ${profile?.full_name?.split(" ")[0] || "entregador"}!`}
+      title={greeting(profile?.full_name)}
       subtitle="Suas rotas e ganhos do dia."
     >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
