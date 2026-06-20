@@ -13,7 +13,7 @@ export default async function SignupPage({
   async function signup(formData: FormData) {
     "use server";
     const fullName = String(formData.get("full_name"));
-    const email = String(formData.get("email"));
+    const email = String(formData.get("email")).trim().toLowerCase();
     const password = String(formData.get("password"));
     const role = String(formData.get("role")) as UserRole;
     const terms = formData.get("terms");
@@ -78,6 +78,10 @@ export default async function SignupPage({
             name="email"
             type="email"
             required
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="email"
             className="w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold"
             placeholder="voce@email.com"
           />
