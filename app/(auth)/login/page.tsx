@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_HOME, type UserRole } from "@/lib/roles";
+import { PasskeyButton } from "@/components/PasskeyButton";
 
 export default async function LoginPage({
   searchParams,
@@ -82,6 +83,12 @@ export default async function LoginPage({
           Entrar
         </button>
       </form>
+
+      <div className="my-5 flex items-center gap-3 text-xs text-stone-600">
+        <span className="h-px flex-1 bg-campo-border" /> ou <span className="h-px flex-1 bg-campo-border" />
+      </div>
+
+      <PasskeyButton />
 
       <p className="mt-6 text-center text-sm text-stone-400">
         Ainda não tem conta?{" "}
