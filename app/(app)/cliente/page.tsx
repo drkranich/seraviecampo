@@ -5,9 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import { ProductCard, type ProductWithProducer } from "@/components/ProductCard";
 import { producerName, locationLabel, type PublicProfile } from "@/lib/profile";
+import { Avatar } from "@/components/Avatar";
 
 const PRODUCER_FIELDS =
-  "id, full_name, display_name, farm_name, city, state, avatar_url, bio";
+  "id, full_name, display_name, farm_name, city, state, avatar_url, bio, verification_status";
 
 export default async function ClientePage() {
   const { profile } = await requireRole("cliente");
@@ -85,14 +86,7 @@ export default async function ClientePage() {
                 href={`/cliente/produtor/${prod.id}`}
                 className="flex items-center gap-4 rounded-2xl border border-campo-border glass p-4 transition hover:border-gold/50"
               >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-campo-surface2 text-xl">
-                  {prod.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={prod.avatar_url} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    "🌾"
-                  )}
-                </div>
+                <Avatar url={prod.avatar_url} size={56} verified={prod.verification_status === "verificado"} fallback="🌾" />
                 <div className="min-w-0">
                   <p className="truncate font-serif text-lg text-forest-100">{producerName(prod)}</p>
                   <p className="truncate text-xs text-stone-500">{locationLabel(prod) || "Brasil"}</p>

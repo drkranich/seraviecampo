@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import { ProductCard, type ProductWithProducer } from "@/components/ProductCard";
+import { Avatar } from "@/components/Avatar";
 import { producerName, locationLabel, type PublicProfile } from "@/lib/profile";
 
 export default async function PerfilProdutorPage({
@@ -17,7 +18,7 @@ export default async function PerfilProdutorPage({
 
   const { data: profileData } = await supabase
     .from("profiles")
-    .select("id, full_name, display_name, farm_name, city, state, avatar_url, cover_url, bio, role")
+    .select("id, full_name, display_name, farm_name, city, state, avatar_url, cover_url, bio, role, verification_status")
     .eq("id", id)
     .eq("role", "produtor")
     .single();
@@ -52,13 +53,8 @@ export default async function PerfilProdutorPage({
           )}
         </div>
         <div className="flex items-end gap-4 px-6 pb-6">
-          <div className="-mt-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-4 border-campo-surface bg-campo-surface2 text-3xl">
-            {producer.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={producer.avatar_url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              "🌾"
-            )}
+          <div className="-mt-10">
+            <Avatar url={producer.avatar_url} size={80} verified={producer.verification_status === "verificado"} fallback="🌾" />
           </div>
           <div className="pb-1">
             <h2 className="font-serif text-2xl text-forest-100">{producerName(producer)}</h2>

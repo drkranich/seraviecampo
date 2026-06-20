@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient, createAuthedClient } from "@/lib/supabase/server";
 import { resolveImageUrl } from "@/lib/upload";
 
-export async function updateClienteProfile(formData: FormData) {
+export async function updateCourierProfile(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -16,7 +16,7 @@ export async function updateClienteProfile(formData: FormData) {
   try {
     avatar_url = await resolveImageUrl(db, user.id, formData, "avatar_url", "avatar");
   } catch (e) {
-    redirect("/cliente/conta?error=" + encodeURIComponent(e instanceof Error ? e.message : "Falha na imagem"));
+    redirect("/entregador/perfil?error=" + encodeURIComponent(e instanceof Error ? e.message : "Falha na imagem"));
   }
 
   const values = {
@@ -24,12 +24,14 @@ export async function updateClienteProfile(formData: FormData) {
     phone: String(formData.get("phone") || "").trim() || null,
     city: String(formData.get("city") || "").trim() || null,
     state: String(formData.get("state") || "").trim() || null,
+    vehicle_type: String(formData.get("vehicle_type") || "").trim() || null,
+    vehicle_plate: String(formData.get("vehicle_plate") || "").trim() || null,
+    bio: String(formData.get("bio") || "").trim() || null,
     avatar_url,
   };
 
   const { error } = await db.from("profiles").update(values).eq("id", user.id);
-  if (error) redirect("/cliente/conta?error=" + encodeURIComponent(error.message));
-
-  revalidatePath("/cliente/conta");
-  redirect("/cliente/conta?ok=1");
+  if (error) redirect("/entregador/perfil?error=" + encodeURIComponent(error.message));
+  revalidatePath("/entregador/perfil");
+  redirect("/entregador/perfil?ok=1");
 }
