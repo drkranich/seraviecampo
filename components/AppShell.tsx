@@ -82,7 +82,7 @@ export const ADMIN_NAV: NavItem[] = [
 ];
 
 export const ENTREGADOR_NAV: NavItem[] = [
-  { href: "/entregador", label: "Rotas", icon: "routes" },
+  { href: "/entregador", label: "Entregas", icon: "routes" },
   { href: "/entregador/ganhos", label: "Ganhos", icon: "earnings" },
   { href: "/entregador/historico", label: "Histórico", icon: "history" },
 ];

@@ -67,5 +67,7 @@ export type Order = {
   delivery_phone: string | null;
   delivery_address: string | null;
   delivery_notes: string | null;
+  delivery_person_id: string | null;
+  delivery_fee_cents: number;
   created_at: string;
 };
