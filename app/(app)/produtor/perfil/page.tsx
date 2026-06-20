@@ -5,6 +5,7 @@ import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { LocationCapture } from "@/components/LocationCapture";
+import { CountrySelect } from "@/components/CountrySelect";
 import { updateProducerProfile } from "./actions";
 
 const inputCls =
@@ -22,7 +23,7 @@ export default async function PerfilProdutorPage({
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, farm_name, city, state, bio, avatar_url, cover_url, document_url, lat")
+    .select("id, full_name, farm_name, city, state, country, bio, avatar_url, cover_url, document_url, lat")
     .eq("id", user.id)
     .single();
 
@@ -36,6 +37,7 @@ export default async function PerfilProdutorPage({
     cover_url: string | null;
     document_url: string | null;
     lat: number | null;
+    country: string | null;
   };
   const p = (data ?? {}) as Partial<ProfileForm>;
 
@@ -79,10 +81,11 @@ export default async function PerfilProdutorPage({
             <input name="city" defaultValue={p.city ?? ""} className={inputCls} placeholder="Ex: Lavras Novas" />
           </div>
           <div>
-            <label className={labelCls}>Estado (UF)</label>
-            <input name="state" defaultValue={p.state ?? ""} className={inputCls} maxLength={2} placeholder="MG" />
+            <label className={labelCls}>Estado / Região</label>
+            <input name="state" defaultValue={p.state ?? ""} className={inputCls} placeholder="Ex: Minas Gerais" />
           </div>
         </div>
+        <CountrySelect defaultValue={p.country} />
 
         <div>
           <label className={labelCls}>Nossa história</label>

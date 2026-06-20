@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { trialStatus, PAID_CLIENT_PLANS, ACTIVE_SUB_STATUS } from "@/lib/trial";
 
 async function getUser() {
   const supabase = await createClient();
@@ -61,7 +62,18 @@ export async function removeCartItem(productId: string) {
 }
 
 export async function checkout(formData: FormData) {
-  const { supabase } = await getUser();
+  const { supabase, userId } = await getUser();
+
+  // Gate de degustação: plano Avulso = 15 dias OU 5 compras; depois exige plano pago.
+  const { data: prof } = await supabase.from("profiles").select("created_at").eq("id", userId).single();
+  const { count: purchaseCount } = await supabase.from("orders").select("id", { count: "exact", head: true })
+    .eq("customer_id", userId).neq("status", "cancelado");
+  const { data: sub } = await supabase.from("subscriptions").select("plan, status")
+    .eq("account_id", userId).in("plan", PAID_CLIENT_PLANS)
+    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+  const hasPaid = !!(sub && sub.status && ACTIVE_SUB_STATUS.includes(sub.status));
+  const st = trialStatus({ createdAt: prof?.created_at ?? new Date().toISOString(), purchaseCount: purchaseCount ?? 0, hasPaidPlan: hasPaid });
+  if (st.blocked) redirect("/cliente/assinatura?trial=expirado");
 
   const { data, error } = await supabase.rpc("checkout", {
     p_name: String(formData.get("name") || "").trim(),

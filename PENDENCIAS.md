@@ -54,8 +54,8 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 - [x] (terms) Termos de cancelamento assinados: aceite no cadastro com IP, dispositivo, país, hora; PDF; super admin vê aceites e edita os termos versionados.
 
 ### Alcance / planos
-- [ ] (3) Internacionalizar: Europa, América Latina e EUA; GPS e moeda adequados a cada país (não limitar ao Brasil).
-- [ ] (10) Plano "Avulso Grátis" do cliente = degustação de 15 dias / 5 compras; depois exige plano pago.
+- [x] (3) Internacionalizar: Europa, América Latina e EUA; GPS e moeda adequados a cada país (não limitar ao Brasil).
+- [x] (10) Plano "Avulso Grátis" do cliente = degustação de 15 dias / 5 compras; depois exige plano pago.
 
 ### Futuro (anotado)
 - [ ] (7) Apps nativos Android e iOS.
@@ -76,3 +76,11 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 - Aba Termos: edita a política (versionada) e lista todos os aceites; cada aceite gera um 'documento assinado' imprimível (PDF pelo navegador) com IP, país, dispositivo, data/hora.
 - IP/país dependem dos headers do Cloudflare (cf-connecting-ip / cf-ipcountry) — funcionam em produção; em localhost podem vir vazios.
 - E-mail vem de auth.users via função SECURITY DEFINER admin_emails() (só super_admin).
+
+## Notas (i18n + degustação)
+- País e moeda agora ficam no perfil (cadastro, conta do cliente e perfil do produtor); lista cobre Brasil, América Latina, Europa e EUA. GPS já é global (lat/lng + haversine).
+- Helper `formatMoney(cents, currency, locale)` criado. Próximo passo incremental: trocar `formatBRL` por `formatMoney` nas telas onde se conhece a moeda da entidade (produto/produtor/pedido) — base já pronta.
+- Degustação do cliente: plano Avulso = 15 dias OU 5 compras; o checkout bloqueia após o limite e direciona para assinar um plano pago. Banner de status na aba Assinatura.
+
+## Ainda na fila (futuro)
+- (7) Apps nativos Android/iOS · (11) Página pública + CMS completo · (12) Inbox de mensagens/leads no super admin.

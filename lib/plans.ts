@@ -45,10 +45,10 @@ export const PLANS: Plan[] = [
 export const CLIENTE_PLANS: Plan[] = [
   {
     id: "cli_livre",
-    name: "Avulso",
+    name: "Avulso (Degustação)",
     price_cents: 0,
-    tagline: "Compre quando quiser",
-    features: ["Compra avulsa", "Acesso à vitrine completa", "Acompanhar pedidos"],
+    tagline: "Experimente por 15 dias",
+    features: ["Degustação de 15 dias", "Até 5 compras de teste", "Acesso à vitrine completa", "Depois, escolha um plano pago"],
   },
   {
     id: "cli_sabor",

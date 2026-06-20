@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_HOME, SIGNUP_ROLES, type UserRole } from "@/lib/roles";
 import { getRequestInfo } from "@/lib/request-info";
+import { countryOf } from "@/lib/countries";
+import { CountrySelect } from "@/components/CountrySelect";
 
 export default async function SignupPage({
   searchParams,
@@ -17,6 +19,7 @@ export default async function SignupPage({
     const email = String(formData.get("email")).trim().toLowerCase();
     const password = String(formData.get("password"));
     const role = String(formData.get("role")) as UserRole;
+    const country = String(formData.get("country") || "BR");
     const terms = formData.get("terms");
 
     if (!terms) {
@@ -49,6 +52,7 @@ export default async function SignupPage({
         .update({
           terms_accepted_at: new Date().toISOString(),
           last_ip: info.ip, last_country: info.country, last_device: info.device,
+          country, currency: countryOf(country).currency,
         })
         .eq("id", data.user.id);
 
@@ -115,6 +119,8 @@ export default async function SignupPage({
             placeholder="mínimo 6 caracteres"
           />
         </div>
+
+        <CountrySelect />
 
         <fieldset>
           <legend className="mb-2 block text-sm text-stone-300">Eu sou</legend>
