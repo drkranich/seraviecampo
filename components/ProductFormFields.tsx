@@ -1,3 +1,4 @@
+import { ImageUpload } from "@/components/ImageUpload";
 import {
   CATEGORIES,
   STATUSES,
@@ -12,7 +13,7 @@ const inputCls =
   "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold";
 const labelCls = "mb-1 block text-sm text-stone-300";
 
-export function ProductFormFields({ product }: { product?: Product }) {
+export function ProductFormFields({ product, userId }: { product?: Product; userId: string }) {
   const price = product ? (product.price_cents / 100).toFixed(2).replace(".", ",") : "";
   return (
     <div className="space-y-4">
@@ -97,15 +98,14 @@ export function ProductFormFields({ product }: { product?: Product }) {
         />
       </div>
 
-      <div>
-        <label className={labelCls}>URL da imagem</label>
-        <input
-          name="image_url"
-          defaultValue={product?.image_url ?? ""}
-          className={inputCls}
-          placeholder="https://..."
-        />
-      </div>
+      <ImageUpload
+        name="image_url"
+        label="Foto do produto"
+        userId={userId}
+        currentUrl={product?.image_url}
+        folder="produto"
+        shape="wide"
+      />
 
       <div className="flex flex-wrap gap-6 pt-1">
         <label className="flex items-center gap-2 text-sm text-stone-300">

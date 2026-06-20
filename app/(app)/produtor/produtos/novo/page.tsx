@@ -9,7 +9,7 @@ export default async function NovoProdutoPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  await requireRole("produtor");
+  const { user } = await requireRole("produtor");
   const { error } = await searchParams;
 
   return (
@@ -25,7 +25,7 @@ export default async function NovoProdutoPage({
       )}
 
       <form action={createProduct} className="max-w-2xl rounded-2xl border border-campo-border glass p-6">
-        <ProductFormFields />
+        <ProductFormFields userId={user.id} />
         <div className="mt-6 flex gap-3">
           <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">
             Salvar produto

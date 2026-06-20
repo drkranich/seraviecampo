@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
+import { ImageUpload } from "@/components/ImageUpload";
 import { updateProducerProfile } from "./actions";
 
 const inputCls =
@@ -90,15 +91,9 @@ export default async function PerfilProdutorPage({
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className={labelCls}>URL do avatar</label>
-            <input name="avatar_url" defaultValue={p.avatar_url ?? ""} className={inputCls} placeholder="https://..." />
-          </div>
-          <div>
-            <label className={labelCls}>URL da capa</label>
-            <input name="cover_url" defaultValue={p.cover_url ?? ""} className={inputCls} placeholder="https://..." />
-          </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <ImageUpload name="avatar_url" label="Foto de perfil" userId={user.id} currentUrl={p.avatar_url} folder="avatar" shape="square" />
+          <ImageUpload name="cover_url" label="Imagem de capa" userId={user.id} currentUrl={p.cover_url} folder="cover" shape="wide" />
         </div>
 
         <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">

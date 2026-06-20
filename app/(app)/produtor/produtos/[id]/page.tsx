@@ -45,7 +45,7 @@ export default async function EditarProdutoPage({
       )}
 
       <form action={updateAction} className="max-w-2xl rounded-2xl border border-campo-border glass p-6">
-        <ProductFormFields product={product} />
+        <ProductFormFields product={product} userId={user.id} />
         <div className="mt-6 flex gap-3">
           <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">
             Salvar alterações
