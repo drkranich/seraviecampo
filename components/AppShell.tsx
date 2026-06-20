@@ -58,6 +58,9 @@ export const CLIENTE_NAV: NavItem[] = [
   { href: "/cliente/clube", label: "Clube Gourmet", icon: "crown" },
   { href: "/cliente/cesta", label: "Cesta", icon: "cart" },
   { href: "/cliente/pedidos", label: "Meus pedidos", icon: "orders" },
+  { href: "/cliente/proximos", label: "Perto de mim", icon: "map" },
+  { href: "/cliente/reservas", label: "Reservas", icon: "sprout" },
+  { href: "/cliente/feed", label: "Feed", icon: "megaphone" },
   { href: "/cliente/assinatura", label: "Assinatura", icon: "crown" },
   { href: "/cliente/conta", label: "Conta", icon: "profile" },
 ];
@@ -66,6 +69,8 @@ export const PRODUTOR_NAV: NavItem[] = [
   { href: "/produtor", label: "Visão Geral", icon: "home" },
   { href: "/produtor/pedidos", label: "Pedidos", icon: "orders" },
   { href: "/produtor/produtos", label: "Produtos", icon: "products" },
+  { href: "/produtor/reservas", label: "Reservas", icon: "sprout" },
+  { href: "/produtor/feed", label: "Feed", icon: "megaphone" },
   { href: "/produtor/clientes", label: "Clientes", icon: "users" },
   { href: "/produtor/entregas", label: "Entregas", icon: "routes" },
   { href: "/produtor/financeiro", label: "Financeiro", icon: "cash" },

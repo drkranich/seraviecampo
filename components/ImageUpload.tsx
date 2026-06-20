@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 export function ImageUpload({
   name,
@@ -26,20 +25,22 @@ export function ImageUpload({
   async function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { setErr("Imagem muito grande (máx. 5MB)."); return; }
+    if (file.size > 8 * 1024 * 1024) { setErr("Imagem muito grande (máx. 8MB)."); return; }
     setBusy(true); setErr("");
 
-    const supabase = createClient();
-    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-    const path = `${userId}/${folder}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("media").upload(path, file, {
-      upsert: true,
-      contentType: file.type || "image/jpeg",
-    });
-    if (error) { setErr(error.message); setBusy(false); return; }
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("bucket", "media");
+    fd.append("folder", folder);
 
-    const { data } = supabase.storage.from("media").getPublicUrl(path);
-    setUrl(data.publicUrl);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) { setErr(json.error || "Falha no upload."); setBusy(false); return; }
+      setUrl(json.url);
+    } catch {
+      setErr("Falha de conexão no upload.");
+    }
     setBusy(false);
   }
 

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { ImageUpload } from "@/components/ImageUpload";
 import { DocumentUpload } from "@/components/DocumentUpload";
+import { LocationCapture } from "@/components/LocationCapture";
 import { updateProducerProfile } from "./actions";
 
 const inputCls =
@@ -21,7 +22,7 @@ export default async function PerfilProdutorPage({
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, farm_name, city, state, bio, avatar_url, cover_url, document_url")
+    .select("id, full_name, farm_name, city, state, bio, avatar_url, cover_url, document_url, lat")
     .eq("id", user.id)
     .single();
 
@@ -34,6 +35,7 @@ export default async function PerfilProdutorPage({
     avatar_url: string | null;
     cover_url: string | null;
     document_url: string | null;
+    lat: number | null;
   };
   const p = (data ?? {}) as Partial<ProfileForm>;
 
@@ -103,6 +105,10 @@ export default async function PerfilProdutorPage({
           Salvar perfil
         </button>
       </form>
+
+      <div className="mt-6 max-w-2xl">
+        <LocationCapture redirectTo="/produtor/perfil" hasLocation={p.lat != null} />
+      </div>
     </AppShell>
   );
 }

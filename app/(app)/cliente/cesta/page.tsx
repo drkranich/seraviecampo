@@ -135,6 +135,9 @@ export default async function CestaPage({
                 A Seravie Campo conecta você ao produtor. O pagamento e a entrega são
                 combinados diretamente com ele.
               </p>
+              <p className="text-center text-[0.7rem] leading-relaxed text-stone-500">
+                Você poderá cancelar este pedido em até <strong className="text-stone-400">24 horas</strong> após a compra, em &ldquo;Meus pedidos&rdquo;.
+              </p>
             </form>
           </div>
         </div>

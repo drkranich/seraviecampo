@@ -30,3 +30,38 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 - [ ] Feed social ("José colheu os morangos")
 - [ ] IA Rural (sugestões de produção/demanda)
 - [ ] Economia Circular Local (impacto na comunidade) no Seravie Hub
+
+## Atualização
+- [x] Confirm email desligado (fase de teste) — **religar + SMTP próprio em produção**.
+- [x] Trava de documento (KYC) ativa; contas de teste atuais isentas (`kyc_exempt`).
+- [ ] Stripe: além dos planos do produtor, configurar price IDs de **cliente** e **entregador**:
+      `STRIPE_PRICE_CLI_SABOR`, `STRIPE_PRICE_CLI_GOURMET`, `STRIPE_PRICE_ENT_PRO`, `STRIPE_PRICE_ENT_PREMIUM`.
+- [~] Bug do upload de imagem: corrigido (upload via navegador). Confirmar em produção.
+
+## Backlog grande (solicitado em 20/06/2026) — priorizar por leva
+### Bugs críticos do fluxo de compra
+- [x] (8) RLS "new row violates row-level security policy" AINDA ocorre em: foto do usuário, capa do produtor, foto de produto, e entregador/cliente. Corrigir DEFINITIVAMENTE (investigar bucket/policy real).
+- [ ] (9) Etapa de PAGAMENTO final não existe: cliente faz pedido e escolhe forma de pagamento, mas não há a tela de pagar de fato. Criar a finalização de pagamento.
+- [x] (5) Upload de documento (RG/CNH) aceita foto de papel em branco. Adicionar validação de que é documento oficial.
+
+### Dinheiro / repasses
+- [ ] (1) Frete dinâmico por localização (estilo Uber), automático, incluso no valor final, sem prejuízo a produtor/cliente, beneficiando o entregador. REMOVER toda menção a "frete grátis".
+- [ ] (2) Super admin: aba PAGAMENTOS — ver valores de entregadores pagos à plataforma (% de entrega e/ou assinatura), valores do produtor (mensalidade), valores de cada cliente.
+- [ ] (6) Produtor escolhe receber: (a) acumulado mensal já com mensalidade+comissão descontadas, ou (b) no dia útil seguinte à compra. Criar COMISSÃO em todos os planos pagos do produtor. NENHUM plano do produtor é gratuito.
+
+### Super admin / dados
+- [ ] (4) Área Usuários: ver e-mail, cidade, IP, dados sensíveis (identidade), comprovantes e orofacial — inclusive dos CLIENTES (hoje não aparecem).
+- [ ] (terms) Termos de cancelamento assinados: aceite no cadastro com IP, dispositivo, país, hora; PDF; super admin vê aceites e edita os termos versionados.
+
+### Alcance / planos
+- [ ] (3) Internacionalizar: Europa, América Latina e EUA; GPS e moeda adequados a cada país (não limitar ao Brasil).
+- [ ] (10) Plano "Avulso Grátis" do cliente = degustação de 15 dias / 5 compras; depois exige plano pago.
+
+### Futuro (anotado)
+- [ ] (7) Apps nativos Android e iOS.
+- [ ] (11) Página pública de apresentação + CMS completo (público + os 3 painéis), configurável no super admin.
+- [ ] (12) Aba INBOX no super admin para mensagens de usuários, produtores, entregadores e leads (Google, redes sociais etc.).
+
+## Notas técnicas (20/06)
+- Upload corrigido: agora passa por `/api/upload` (rota de servidor autenticada via cookie). Opcional p/ robustez máxima: definir `SUPABASE_SERVICE_ROLE_KEY` como secret no Cloudflare (a rota usa automaticamente se existir; NUNCA commitar essa chave).
+- Validação de documento é heurística (rejeita imagem em branco/uniforme). Verificação oficial de identidade (KYC real) exige provedor de visão — anotado para o futuro.
