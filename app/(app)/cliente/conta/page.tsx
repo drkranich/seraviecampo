@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import { ImageUpload } from "@/components/ImageUpload";
+import { DocumentUpload } from "@/components/DocumentUpload";
 import { updateClienteProfile } from "./actions";
 
 const inputCls = "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold";
@@ -16,8 +17,8 @@ export default async function ContaPage({
   const { ok, error } = await searchParams;
   const supabase = await createClient();
 
-  const { data } = await supabase.from("profiles").select("full_name, phone, city, state, avatar_url").eq("id", user.id).single();
-  const p = (data ?? {}) as { full_name?: string | null; phone?: string | null; city?: string | null; state?: string | null; avatar_url?: string | null };
+  const { data } = await supabase.from("profiles").select("full_name, phone, city, state, avatar_url, document_url").eq("id", user.id).single();
+  const p = (data ?? {}) as { full_name?: string | null; phone?: string | null; city?: string | null; state?: string | null; avatar_url?: string | null; document_url?: string | null };
 
   return (
     <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title="Minha conta" subtitle="Seus dados para entregas mais rápidas.">
@@ -26,6 +27,7 @@ export default async function ContaPage({
 
       <form action={updateClienteProfile} className="max-w-xl space-y-4 rounded-2xl border border-campo-border glass p-6">
         <ImageUpload name="avatar_url" label="Foto de perfil" userId={user.id} currentUrl={p.avatar_url} folder="avatar" shape="square" />
+        <DocumentUpload userId={user.id} label="Carteira de identidade (RG)" docType="rg" currentPath={p.document_url} />
         <div>
           <label className={labelCls}>Nome completo</label>
           <input name="full_name" defaultValue={p.full_name ?? ""} className={inputCls} />

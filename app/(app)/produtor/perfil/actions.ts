@@ -17,6 +17,8 @@ export async function updateProducerProfile(formData: FormData) {
     bio: String(formData.get("bio") || "").trim() || null,
     avatar_url: String(formData.get("avatar_url") || "").trim() || null,
     cover_url: String(formData.get("cover_url") || "").trim() || null,
+    document_url: String(formData.get("document_url") || "").trim() || null,
+    document_type: String(formData.get("document_type") || "").trim() || null,
   };
 
   const { error } = await supabase.from("profiles").update(values).eq("id", user.id);

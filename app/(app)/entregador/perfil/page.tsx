@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ENTREGADOR_NAV } from "@/components/AppShell";
 import { ImageUpload } from "@/components/ImageUpload";
+import { DocumentUpload } from "@/components/DocumentUpload";
 import { updateCourierProfile } from "./actions";
 
 const inputCls = "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold";
@@ -17,7 +18,7 @@ export default async function PerfilEntregadorPage({
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("full_name, phone, city, state, vehicle_type, vehicle_plate, bio, avatar_url")
+    .select("full_name, phone, city, state, vehicle_type, vehicle_plate, bio, avatar_url, document_url")
     .eq("id", user.id).single();
   const p = (data ?? {}) as Record<string, string | null>;
 
@@ -28,6 +29,7 @@ export default async function PerfilEntregadorPage({
 
       <form action={updateCourierProfile} className="max-w-2xl space-y-4 rounded-2xl border border-campo-border glass p-6">
         <ImageUpload name="avatar_url" label="Foto de perfil" userId={user.id} currentUrl={p.avatar_url} folder="avatar" shape="square" />
+        <DocumentUpload userId={user.id} label="Carteira de Motorista (CNH)" docType="cnh" currentPath={p.document_url} />
         <div className="grid gap-4 sm:grid-cols-2">
           <div><label className={labelCls}>Nome completo</label><input name="full_name" defaultValue={p.full_name ?? ""} className={inputCls} /></div>
           <div><label className={labelCls}>Telefone / WhatsApp</label><input name="phone" defaultValue={p.phone ?? ""} className={inputCls} /></div>

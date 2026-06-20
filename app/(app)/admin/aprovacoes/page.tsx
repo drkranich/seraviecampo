@@ -4,9 +4,10 @@ import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { ROLE_LABEL, type UserRole } from "@/lib/roles";
 import { VERIFICATION_LABEL, VERIFICATION_STYLE, locationLabel } from "@/lib/profile";
 import { Avatar } from "@/components/Avatar";
+import { ViewDocumentButton } from "@/components/ViewDocumentButton";
 import { setVerification } from "../actions";
 
-type Row = { id: string; role: UserRole; full_name: string | null; farm_name: string | null; city: string | null; state: string | null; verification_status: string; face_verified: boolean; created_at: string; avatar_url: string | null };
+type Row = { id: string; role: UserRole; full_name: string | null; farm_name: string | null; city: string | null; state: string | null; verification_status: string; face_verified: boolean; created_at: string; avatar_url: string | null; document_url: string | null; document_type: string | null };
 
 export default async function AprovacoesPage() {
   const { profile } = await requireRole("super_admin");
@@ -14,7 +15,7 @@ export default async function AprovacoesPage() {
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, role, full_name, farm_name, city, state, verification_status, face_verified, created_at, avatar_url")
+    .select("id, role, full_name, farm_name, city, state, verification_status, face_verified, created_at, avatar_url, document_url, document_type")
     .in("role", ["produtor", "entregador"])
     .order("created_at", { ascending: false });
 
@@ -63,6 +64,11 @@ function Card({ p, decided }: { p: Row; decided?: boolean }) {
         </div>
       </div>
       <div className="flex items-center gap-3">
+        {p.document_url ? (
+          <ViewDocumentButton path={p.document_url} />
+        ) : (
+          <span className="text-xs text-stone-500">sem documento</span>
+        )}
         <span className={`rounded-full border px-3 py-1 text-xs ${VERIFICATION_STYLE[p.verification_status]}`}>
           {VERIFICATION_LABEL[p.verification_status]}
         </span>

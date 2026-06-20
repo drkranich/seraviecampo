@@ -15,6 +15,8 @@ export async function updateClienteProfile(formData: FormData) {
     city: String(formData.get("city") || "").trim() || null,
     state: String(formData.get("state") || "").trim() || null,
     avatar_url: String(formData.get("avatar_url") || "").trim() || null,
+    document_url: String(formData.get("document_url") || "").trim() || null,
+    document_type: String(formData.get("document_type") || "").trim() || null,
   };
 
   const { error } = await supabase.from("profiles").update(values).eq("id", user.id);

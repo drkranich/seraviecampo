@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { ImageUpload } from "@/components/ImageUpload";
+import { DocumentUpload } from "@/components/DocumentUpload";
 import { updateProducerProfile } from "./actions";
 
 const inputCls =
@@ -20,7 +21,7 @@ export default async function PerfilProdutorPage({
 
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, farm_name, city, state, bio, avatar_url, cover_url")
+    .select("id, full_name, farm_name, city, state, bio, avatar_url, cover_url, document_url")
     .eq("id", user.id)
     .single();
 
@@ -32,6 +33,7 @@ export default async function PerfilProdutorPage({
     bio: string | null;
     avatar_url: string | null;
     cover_url: string | null;
+    document_url: string | null;
   };
   const p = (data ?? {}) as Partial<ProfileForm>;
 
@@ -95,6 +97,7 @@ export default async function PerfilProdutorPage({
           <ImageUpload name="avatar_url" label="Foto de perfil" userId={user.id} currentUrl={p.avatar_url} folder="avatar" shape="square" />
           <ImageUpload name="cover_url" label="Imagem de capa" userId={user.id} currentUrl={p.cover_url} folder="cover" shape="wide" />
         </div>
+        <DocumentUpload userId={user.id} label="Carteira de identidade (RG) com foto" docType="rg" currentPath={p.document_url} />
 
         <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">
           Salvar perfil
