@@ -22,29 +22,32 @@ function parseForm(formData: FormData) {
   };
 }
 
-export async function createProduct(formData: FormData) {
+// Autentica e devolve { user, db } onde db carrega o token do usuário.
+async function authed() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  const { data: { session } } = await supabase.auth.getSession();
+  const db = session ? createAuthedClient(session.access_token) : supabase;
+  return { user, db };
+}
+
+export async function createProduct(formData: FormData) {
+  const { user, db } = await authed();
 
   const values = parseForm(formData);
   if (!values.name) {
     redirect("/produtor/produtos/novo?error=" + encodeURIComponent("Informe o nome do produto"));
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const storage = session ? createAuthedClient(session.access_token) : supabase;
   let image_url: string | null = null;
   try {
-    image_url = await resolveImageUrl(storage, user.id, formData, "image_url", "produto");
+    image_url = await resolveImageUrl(db, user.id, formData, "image_url", "produto");
   } catch (e) {
     redirect("/produtor/produtos/novo?error=" + encodeURIComponent(e instanceof Error ? e.message : "Falha na imagem"));
   }
 
-  const { error } = await supabase
-    .from("products")
-    .insert({ ...values, image_url, producer_id: user.id });
-
+  const { error } = await db.from("products").insert({ ...values, image_url, producer_id: user.id });
   if (error) {
     redirect("/produtor/produtos/novo?error=" + encodeURIComponent(error.message));
   }
@@ -55,30 +58,21 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(id: string, formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  const { user, db } = await authed();
 
   const values = parseForm(formData);
   if (!values.name) {
     redirect(`/produtor/produtos/${id}?error=` + encodeURIComponent("Informe o nome do produto"));
   }
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const storage = session ? createAuthedClient(session.access_token) : supabase;
   let image_url: string | null = null;
   try {
-    image_url = await resolveImageUrl(storage, user.id, formData, "image_url", "produto");
+    image_url = await resolveImageUrl(db, user.id, formData, "image_url", "produto");
   } catch (e) {
     redirect(`/produtor/produtos/${id}?error=` + encodeURIComponent(e instanceof Error ? e.message : "Falha na imagem"));
   }
 
-  const { error } = await supabase
-    .from("products")
-    .update({ ...values, image_url })
-    .eq("id", id)
-    .eq("producer_id", user.id);
-
+  const { error } = await db.from("products").update({ ...values, image_url }).eq("id", id).eq("producer_id", user.id);
   if (error) {
     redirect(`/produtor/produtos/${id}?error=` + encodeURIComponent(error.message));
   }
@@ -89,12 +83,8 @@ export async function updateProduct(id: string, formData: FormData) {
 }
 
 export async function deleteProduct(id: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  await supabase.from("products").delete().eq("id", id).eq("producer_id", user.id);
-
+  const { user, db } = await authed();
+  await db.from("products").delete().eq("id", id).eq("producer_id", user.id);
   revalidatePath("/produtor");
   revalidatePath("/produtor/produtos");
   redirect("/produtor/produtos");

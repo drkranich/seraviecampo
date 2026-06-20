@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createClient as createRawClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 
@@ -26,12 +27,11 @@ export async function createClient() {
   });
 }
 
-// Cliente com o token de acesso do usuário no header Authorization.
-// Garante que operações de Storage cheguem autenticadas (auth.uid() válido),
-// fazendo as políticas RLS reconhecerem o dono do arquivo.
+// Cliente que injeta o token de acesso do usuário via opção `accessToken`.
+// Assim TODAS as requisições (Postgres e Storage) chegam autenticadas e a RLS
+// reconhece auth.uid(). Use apenas para dados/storage — não tem .auth.
 export function createAuthedClient(accessToken: string) {
-  return createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    global: { headers: { Authorization: `Bearer ${accessToken}` } },
-    cookies: { getAll() { return []; }, setAll() {} },
+  return createRawClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    accessToken: async () => accessToken,
   });
 }
