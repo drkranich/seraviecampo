@@ -3,7 +3,8 @@ import { greeting } from "@/lib/greeting";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ENTREGADOR_NAV } from "@/components/AppShell";
 import { formatBRL } from "@/lib/catalog";
-import { acceptDelivery, completeDelivery } from "./actions";
+import { acceptDelivery } from "./actions";
+import { DeliveryProof } from "@/components/DeliveryProof";
 
 type ItemRow = { product_name: string; quantity: number };
 type DeliveryRow = {
@@ -63,7 +64,6 @@ export default async function EntregadorPage() {
 
 function Card({ o, mode }: { o: DeliveryRow; mode: "accept" | "complete" }) {
   const accept = acceptDelivery.bind(null, o.id);
-  const complete = completeDelivery.bind(null, o.id);
   const itemCount = o.items.reduce((s, it) => s + Number(it.quantity), 0);
   return (
     <article className="glass rounded-2xl border border-campo-border p-4">
@@ -88,9 +88,7 @@ function Card({ o, mode }: { o: DeliveryRow; mode: "accept" | "complete" }) {
             <button className="rounded-lg bg-gold px-5 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Aceitar entrega</button>
           </form>
         ) : (
-          <form action={complete}>
-            <button className="rounded-lg bg-leaf px-5 py-2 text-sm font-medium text-campo-bg transition hover:bg-leaf-light">Marcar como entregue</button>
-          </form>
+          <DeliveryProof orderId={o.id} back="/entregador" />
         )}
       </div>
     </article>

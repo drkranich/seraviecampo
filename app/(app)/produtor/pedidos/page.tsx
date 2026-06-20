@@ -12,11 +12,16 @@ import {
   type PaymentMethod,
 } from "@/lib/orders";
 import { advanceOrderStatus, dispatchOrder, selfDeliverOrder, cancelOrder } from "./actions";
+import { DeliveryProof } from "@/components/DeliveryProof";
+import { DispatchProof } from "@/components/DispatchProof";
 
 type OrderRow = Order & { items: OrderItem[] };
 
-export default async function PedidosProdutorPage() {
+export default async function PedidosProdutorPage({
+  searchParams,
+}: { searchParams: Promise<{ saida?: string; entregue?: string; error?: string }> }) {
   const { user } = await requireRole("produtor");
+  const sp = await searchParams;
   const supabase = await createClient();
 
   const { data } = await supabase
@@ -31,6 +36,9 @@ export default async function PedidosProdutorPage() {
 
   return (
     <AppShell badge="Produtor Rural" nav={PRODUTOR_NAV} title="Pedidos recebidos" subtitle={`${ativos.length} em andamento`}>
+      {sp.saida && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Saída registrada (foto, assinatura e horário).</div>}
+      {sp.entregue && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Entrega concluída com comprovante.</div>}
+      {sp.error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{decodeURIComponent(sp.error)}</div>}
       {orders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center text-stone-400">
           Nenhum pedido recebido ainda.
@@ -63,7 +71,6 @@ export default async function PedidosProdutorPage() {
 function OrderCard({ order: o }: { order: OrderRow }) {
   const cancel = cancelOrder.bind(null, o.id);
   const toPreparing = advanceOrderStatus.bind(null, o.id, "preparando");
-  const dispatch = dispatchOrder.bind(null, o.id);
   const selfDeliver = selfDeliverOrder.bind(null, o.id);
   const markDelivered = advanceOrderStatus.bind(null, o.id, "entregue");
 
@@ -112,19 +119,10 @@ function OrderCard({ order: o }: { order: OrderRow }) {
             </form>
           )}
           {o.status === "preparando" && (
-            <>
-              <form action={dispatch}>
-                <button className="rounded-lg border border-gold/50 px-4 py-2 text-sm text-gold transition hover:bg-gold/10">Despachar p/ entregador</button>
-              </form>
-              <form action={selfDeliver}>
-                <button className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Vou entregar eu mesmo</button>
-              </form>
-            </>
+            <DispatchProof orderId={o.id} back="/produtor/pedidos" />
           )}
           {o.status === "saiu_entrega" && o.self_delivery && (
-            <form action={markDelivered}>
-              <button className="rounded-lg bg-leaf px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-leaf-light">Marcar como entregue</button>
-            </form>
+            <DeliveryProof orderId={o.id} back="/produtor/pedidos" />
           )}
           {o.status === "saiu_entrega" && !o.self_delivery && !o.delivery_person_id && (
             <>

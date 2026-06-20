@@ -98,3 +98,10 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 - Botão "Cancelar assinatura" nas 3 áreas (cliente, produtor, entregador), visível quando há plano pago ativo.
 - Regra: cancela a renovação (cancel_at_period_end=true). O mês atual é cobrado integral (sem pró-rata/reembolso) e nada é cobrado no próximo ciclo; acesso segue até o fim do período.
 - Quando o Stripe for ativado: a ação deve também chamar a API do Stripe para cancelar no fim do período (hoje só marca no banco).
+
+## Comprovantes, chat e IA (20/06)
+- Registro de SAÍDA (produtor): ao despachar/assumir, captura foto + assinatura digital + data/hora (dispatch_*). Substitui os botões antigos.
+- Comprovante de ENTREGA (entregador e produtor auto-entrega): foto da assinatura do cliente + foto do produto + data/hora (delivery_*). Visível ao cliente em Meus Pedidos.
+- Chat de suporte: aba "Suporte" para cliente/produtor/entregador + "Inbox" no super admin. Atualiza a cada 4s (quase tempo real). Tabela support_messages com RLS.
+- IA Rural (produtor): aba /produtor/ia + rota /api/ia. Provedor compatível com OpenAI. ATIVAR com secrets no Cloudflare: AI_API_KEY (obrigatória), AI_BASE_URL e AI_MODEL (opcionais). Sem a chave, a interface avisa que está inativa.
+- Lembrete: uploads de comprovante usam a mesma rota /api/upload (recomendado ativar SUPABASE_SERVICE_ROLE_KEY como secret p/ 100% de garantia).

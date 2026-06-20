@@ -70,6 +70,12 @@ export type Order = {
   delivery_person_id: string | null;
   delivery_fee_cents: number;
   self_delivery: boolean;
+  dispatch_photo_url: string | null;
+  dispatch_signature_url: string | null;
+  dispatched_at: string | null;
+  delivery_signature_url: string | null;
+  delivery_photo_url: string | null;
+  delivered_at: string | null;
   payment_status: PaymentStatus;
   paid_at: string | null;
   created_at: string;

@@ -181,6 +181,24 @@ export default async function PedidosClientePage({
                     </li>
                   ))}
                 </ul>
+                {(o.dispatch_photo_url || o.dispatch_signature_url || o.delivery_photo_url || o.delivery_signature_url) && (
+                  <div className="mt-3 space-y-1 rounded-lg border border-forest-700/60 bg-forest-900/20 px-3 py-2 text-xs text-forest-200">
+                    {(o.dispatch_photo_url || o.dispatch_signature_url) && (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span>Saída do produtor{o.dispatched_at ? ` (${new Date(o.dispatched_at).toLocaleString("pt-BR")})` : ""}:</span>
+                        {o.dispatch_photo_url && <a href={o.dispatch_photo_url} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">foto</a>}
+                        {o.dispatch_signature_url && <a href={o.dispatch_signature_url} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">assinatura</a>}
+                      </div>
+                    )}
+                    {(o.delivery_photo_url || o.delivery_signature_url) && (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span>Entrega{o.delivered_at ? ` (${new Date(o.delivered_at).toLocaleString("pt-BR")})` : ""}:</span>
+                        {o.delivery_photo_url && <a href={o.delivery_photo_url} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">foto</a>}
+                        {o.delivery_signature_url && <a href={o.delivery_signature_url} target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">assinatura</a>}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-campo-border pt-3">
                   <span className="font-serif text-lg text-gold">{formatBRL(o.total_cents)}</span>
                   <div className="flex flex-wrap items-center gap-3">

@@ -63,6 +63,7 @@ export const CLIENTE_NAV: NavItem[] = [
   { href: "/cliente/reservas", label: "Reservas", icon: "sprout" },
   { href: "/cliente/feed", label: "Feed", icon: "megaphone" },
   { href: "/cliente/assinatura", label: "Assinatura", icon: "crown" },
+  { href: "/cliente/suporte", label: "Suporte", icon: "chat" },
   { href: "/cliente/conta", label: "Conta", icon: "profile" },
 ];
 
@@ -77,9 +78,11 @@ export const PRODUTOR_NAV: NavItem[] = [
   { href: "/produtor/financeiro", label: "Financeiro", icon: "cash" },
   { href: "/produtor/producao", label: "Produção", icon: "sprout" },
   { href: "/produtor/insights", label: "Insights", icon: "chart" },
+  { href: "/produtor/ia", label: "IA Rural", icon: "spark" },
   { href: "/produtor/marketing", label: "Marketing", icon: "megaphone" },
   { href: "/produtor/assinatura", label: "Meu Plano", icon: "crown" },
   { href: "/produtor/perfil", label: "Perfil", icon: "profile" },
+  { href: "/produtor/suporte", label: "Suporte", icon: "chat" },
   { href: "/produtor/configuracoes", label: "Configurações", icon: "gear" },
 ];
 
@@ -91,6 +94,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/cidades", label: "Cidades", icon: "map" },
   { href: "/admin/moderacao", label: "Moderação", icon: "shield" },
   { href: "/admin/disputas", label: "Disputas", icon: "approve" },
+  { href: "/admin/inbox", label: "Inbox", icon: "inbox" },
   { href: "/admin/termos", label: "Termos", icon: "shield" },
 ];
 
@@ -101,5 +105,6 @@ export const ENTREGADOR_NAV: NavItem[] = [
   { href: "/entregador/historico", label: "Histórico", icon: "history" },
   { href: "/entregador/assinatura", label: "Meu Plano", icon: "crown" },
   { href: "/entregador/perfil", label: "Perfil", icon: "profile" },
+  { href: "/entregador/suporte", label: "Suporte", icon: "chat" },
   { href: "/entregador/configuracoes", label: "Configurações", icon: "gear" },
 ];

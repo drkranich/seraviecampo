@@ -7,7 +7,7 @@ export type IconKey =
   | "home" | "products" | "orders" | "profile" | "cart"
   | "discover" | "routes" | "earnings" | "history" | "chart"
   | "approve" | "map" | "shield" | "users"
-  | "cash" | "sprout" | "megaphone" | "crown" | "gear" | "search";
+  | "cash" | "sprout" | "megaphone" | "crown" | "gear" | "search" | "chat" | "inbox" | "spark";
 
 export type NavItem = { href: string; label: string; icon: IconKey };
 
@@ -37,6 +37,9 @@ function Icon({ name }: { name: IconKey }) {
     megaphone: <><path d="M3 11l13-5v12L3 13z" /><path d="M16 8a3 3 0 010 6" /><path d="M6 13v4a2 2 0 003.8.9" /></>,
     crown: <><path d="M3 7l4.5 4L12 5l4.5 6L21 7l-1.5 11h-15z" /></>,
     search: <><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></>,
+    spark: <><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /></>,
+    chat: <><path d="M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2z" /></>,
+    inbox: <><path d="M3 13h4l2 3h6l2-3h4" /><path d="M5 5h14l2 8v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4z" /></>,
     gear: <><circle cx="12" cy="12" r="3" /><path d="M19.4 13.5a7.5 7.5 0 000-3l1.8-1.4-2-3.4-2.2.9a7.5 7.5 0 00-2.6-1.5L12 1.5h-4l-.4 2.6a7.5 7.5 0 00-2.6 1.5l-2.2-.9-2 3.4L2.6 10.5a7.5 7.5 0 000 3l-1.8 1.4 2 3.4 2.2-.9a7.5 7.5 0 002.6 1.5l.4 2.6h4l.4-2.6a7.5 7.5 0 002.6-1.5l2.2.9 2-3.4z" /></>,
   };
   return <svg {...common}>{paths[name]}</svg>;
