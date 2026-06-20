@@ -5,15 +5,13 @@ import { formatBRL, UNIT_LABEL } from "@/lib/catalog";
 import {
   ORDER_STATUS_LABEL,
   ORDER_STATUS_STYLE,
-  NEXT_STATUS,
-  NEXT_STATUS_LABEL,
   PAYMENT_LABEL,
   type Order,
   type OrderItem,
   type OrderStatus,
   type PaymentMethod,
 } from "@/lib/orders";
-import { advanceOrderStatus, cancelOrder } from "./actions";
+import { advanceOrderStatus, dispatchOrder, selfDeliverOrder, cancelOrder } from "./actions";
 
 type OrderRow = Order & { items: OrderItem[] };
 
@@ -63,10 +61,11 @@ export default async function PedidosProdutorPage() {
 }
 
 function OrderCard({ order: o }: { order: OrderRow }) {
-  const next = NEXT_STATUS[o.status as OrderStatus];
-  const nextLabel = NEXT_STATUS_LABEL[o.status as OrderStatus];
-  const advance = next ? advanceOrderStatus.bind(null, o.id, next) : null;
   const cancel = cancelOrder.bind(null, o.id);
+  const toPreparing = advanceOrderStatus.bind(null, o.id, "preparando");
+  const dispatch = dispatchOrder.bind(null, o.id);
+  const selfDeliver = selfDeliverOrder.bind(null, o.id);
+  const markDelivered = advanceOrderStatus.bind(null, o.id, "entregue");
 
   return (
     <article className="rounded-2xl border border-campo-border glass p-5">
@@ -99,20 +98,44 @@ function OrderCard({ order: o }: { order: OrderRow }) {
         </p>
       )}
 
-      <div className="mt-4 flex items-center justify-between border-t border-campo-border pt-3">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-campo-border pt-3">
         <span className="font-serif text-lg text-gold">{formatBRL(o.total_cents)}</span>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {o.status !== "entregue" && o.status !== "cancelado" && (
             <form action={cancel}>
               <button className="text-xs text-red-400 transition hover:text-red-300">Cancelar</button>
             </form>
           )}
-          {advance && nextLabel && (
-            <form action={advance}>
-              <button className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">
-                {nextLabel}
-              </button>
+          {o.status === "novo" && (
+            <form action={toPreparing}>
+              <button className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Aceitar e preparar</button>
             </form>
+          )}
+          {o.status === "preparando" && (
+            <>
+              <form action={dispatch}>
+                <button className="rounded-lg border border-gold/50 px-4 py-2 text-sm text-gold transition hover:bg-gold/10">Despachar p/ entregador</button>
+              </form>
+              <form action={selfDeliver}>
+                <button className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Vou entregar eu mesmo</button>
+              </form>
+            </>
+          )}
+          {o.status === "saiu_entrega" && o.self_delivery && (
+            <form action={markDelivered}>
+              <button className="rounded-lg bg-leaf px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-leaf-light">Marcar como entregue</button>
+            </form>
+          )}
+          {o.status === "saiu_entrega" && !o.self_delivery && !o.delivery_person_id && (
+            <>
+              <span className="text-xs text-stone-500">Aguardando um entregador aceitar…</span>
+              <form action={selfDeliver}>
+                <button className="rounded-lg border border-gold/50 px-4 py-2 text-sm text-gold transition hover:bg-gold/10">Assumir a entrega</button>
+              </form>
+            </>
+          )}
+          {o.status === "saiu_entrega" && !o.self_delivery && o.delivery_person_id && (
+            <span className="text-xs text-blue-300">Entregador a caminho</span>
           )}
         </div>
       </div>

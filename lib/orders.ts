@@ -69,6 +69,7 @@ export type Order = {
   delivery_notes: string | null;
   delivery_person_id: string | null;
   delivery_fee_cents: number;
+  self_delivery: boolean;
   payment_status: PaymentStatus;
   paid_at: string | null;
   created_at: string;

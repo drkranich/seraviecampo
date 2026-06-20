@@ -24,6 +24,18 @@ export async function advanceOrderStatus(orderId: string, next: OrderStatus) {
   revalidatePath("/produtor/pedidos");
 }
 
+export async function dispatchOrder(orderId: string) {
+  const { supabase, userId } = await getUser();
+  await supabase.from("orders").update({ status: "saiu_entrega", self_delivery: false }).eq("id", orderId).eq("producer_id", userId);
+  revalidatePath("/produtor/pedidos");
+}
+
+export async function selfDeliverOrder(orderId: string) {
+  const { supabase, userId } = await getUser();
+  await supabase.from("orders").update({ status: "saiu_entrega", self_delivery: true, delivery_person_id: null }).eq("id", orderId).eq("producer_id", userId);
+  revalidatePath("/produtor/pedidos");
+}
+
 export async function cancelOrder(orderId: string) {
   const { supabase, userId } = await getUser();
   await supabase

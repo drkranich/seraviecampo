@@ -19,7 +19,7 @@ export default async function EntregadorPage() {
   const supabase = await createClient();
 
   const [{ data: avail }, { data: mineData }] = await Promise.all([
-    supabase.from("orders").select(SELECT).eq("status", "saiu_entrega").is("delivery_person_id", null).order("created_at", { ascending: true }),
+    supabase.from("orders").select(SELECT).eq("status", "saiu_entrega").is("delivery_person_id", null).eq("self_delivery", false).order("created_at", { ascending: true }),
     supabase.from("orders").select(SELECT).eq("delivery_person_id", user.id).order("created_at", { ascending: false }),
   ]);
 

@@ -84,3 +84,12 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
 
 ## Ainda na fila (futuro)
 - (7) Apps nativos Android/iOS · (11) Página pública + CMS completo · (12) Inbox de mensagens/leads no super admin.
+
+## Correção definitiva do upload (20/06)
+- Causa raiz: o cliente cookie no worker não anexava o JWT ao Storage (caía como anon -> RLS bloqueava).
+- Solução: a rota /api/upload agora usa `createAuthedClient(token)` (opção `accessToken`), que anexa o JWT do usuário a TODAS as requisições, inclusive Storage. RLS reconhece `auth.uid()` e a policy `<uid>/...` passa. Vale para foto de usuário, capa, produto, feed e documentos. (Service-role continua opcional como camada extra.)
+
+## Conexão produtor ↔ entregador
+- Produtor (em "Pedidos"), no status "Em preparo": "Despachar p/ entregador" (entra no pool) OU "Vou entregar eu mesmo".
+- Se despachado e ninguém aceitar: botão "Assumir a entrega" no lado do produtor.
+- Entregador vê o pool de entregas disponíveis (exceto as próprias do produtor), aceita e marca como entregue. Frete (delivery_fee) é o ganho do entregador.
