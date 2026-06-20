@@ -7,7 +7,7 @@ export type IconKey =
   | "home" | "products" | "orders" | "profile" | "cart"
   | "discover" | "routes" | "earnings" | "history" | "chart"
   | "approve" | "map" | "shield" | "users"
-  | "cash" | "sprout" | "megaphone" | "crown" | "gear";
+  | "cash" | "sprout" | "megaphone" | "crown" | "gear" | "search";
 
 export type NavItem = { href: string; label: string; icon: IconKey };
 
@@ -36,6 +36,7 @@ function Icon({ name }: { name: IconKey }) {
     sprout: <><path d="M12 20v-7" /><path d="M12 13c0-3-2-5-5-5 0 3 2 5 5 5z" /><path d="M12 11c0-2.5 2-4.5 5-4.5 0 2.5-2 4.5-5 4.5z" /></>,
     megaphone: <><path d="M3 11l13-5v12L3 13z" /><path d="M16 8a3 3 0 010 6" /><path d="M6 13v4a2 2 0 003.8.9" /></>,
     crown: <><path d="M3 7l4.5 4L12 5l4.5 6L21 7l-1.5 11h-15z" /></>,
+    search: <><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></>,
     gear: <><circle cx="12" cy="12" r="3" /><path d="M19.4 13.5a7.5 7.5 0 000-3l1.8-1.4-2-3.4-2.2.9a7.5 7.5 0 00-2.6-1.5L12 1.5h-4l-.4 2.6a7.5 7.5 0 00-2.6 1.5l-2.2-.9-2 3.4L2.6 10.5a7.5 7.5 0 000 3l-1.8 1.4 2 3.4 2.2-.9a7.5 7.5 0 002.6 1.5l.4 2.6h4l.4-2.6a7.5 7.5 0 002.6-1.5l2.2.9 2-3.4z" /></>,
   };
   return <svg {...common}>{paths[name]}</svg>;

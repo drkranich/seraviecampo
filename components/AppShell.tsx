@@ -54,8 +54,11 @@ export function ModuleCard({ title, desc }: { title: string; desc: string }) {
 // Navegação por perfil (barra lateral)
 export const CLIENTE_NAV: NavItem[] = [
   { href: "/cliente", label: "Descobertas", icon: "discover" },
+  { href: "/cliente/explorar", label: "Explorar", icon: "search" },
+  { href: "/cliente/clube", label: "Clube Gourmet", icon: "crown" },
   { href: "/cliente/cesta", label: "Cesta", icon: "cart" },
   { href: "/cliente/pedidos", label: "Meus pedidos", icon: "orders" },
+  { href: "/cliente/conta", label: "Conta", icon: "profile" },
 ];
 
 export const PRODUTOR_NAV: NavItem[] = [
