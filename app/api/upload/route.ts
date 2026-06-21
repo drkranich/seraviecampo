@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   if (!BUCKETS.includes(bucket)) return NextResponse.json({ error: "Bucket inválido." }, { status: 400 });
   if (bucket === "proofs" && !orderId) return NextResponse.json({ error: "Pedido não informado." }, { status: 400 });
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!serviceKey && !token) return NextResponse.json({ error: "Sessão sem token. Saia e entre novamente." }, { status: 401 });
   const uploader = serviceKey
     ? createSb(SUPABASE_URL, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } })

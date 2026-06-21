@@ -7,13 +7,13 @@ export const runtime = "nodejs";
 
 // Cliente admin (service-role) — webhook não tem sessão de usuário.
 function admin() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!key) return null;
   return createSb(SUPABASE_URL, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
 export async function POST(request: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
   const payload = await request.text();
 
   if (secret) {

@@ -1,12 +1,12 @@
 export function aiEnabled(): boolean {
-  return !!process.env.AI_API_KEY;
+  return !!process.env.AI_API_KEY?.trim();
 }
 
 export async function generateAI(system: string, user: string): Promise<string> {
-  const key = process.env.AI_API_KEY;
+  const key = process.env.AI_API_KEY?.trim();
   if (!key) throw new Error("IA não configurada");
-  const base = process.env.AI_BASE_URL || "https://api.openai.com/v1";
-  const model = process.env.AI_MODEL || "gpt-4o-mini";
+  const base = process.env.AI_BASE_URL?.trim() || "https://api.openai.com/v1";
+  const model = process.env.AI_MODEL?.trim() || "gpt-4o-mini";
   const res = await fetch(`${base}/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },

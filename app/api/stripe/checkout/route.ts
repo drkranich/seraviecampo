@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   if (!plan || !plan.priceEnv) {
     return NextResponse.redirect(`${origin}${area}?error=plano_invalido`, { status: 303 });
   }
-  const priceId = process.env[plan.priceEnv];
+  const priceId = process.env[plan.priceEnv]?.trim();
   if (!priceId) {
     return NextResponse.redirect(`${origin}${area}?error=price_off`, { status: 303 });
   }

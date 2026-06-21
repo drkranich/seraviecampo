@@ -2,7 +2,7 @@
 // sem SDK e sem dependências. A chave secreta vem de STRIPE_SECRET_KEY
 // (secret no servidor — NUNCA NEXT_PUBLIC, NUNCA no repositório).
 
-const SECRET = process.env.STRIPE_SECRET_KEY;
+const SECRET = process.env.STRIPE_SECRET_KEY?.trim();
 
 export function stripeEnabled(): boolean {
   return !!SECRET;
@@ -62,6 +62,7 @@ export async function createSubscriptionCheckout(opts: {
 }): Promise<string> {
   const session = await stripeApi("checkout/sessions", {
     mode: "subscription",
+    "payment_method_types[0]": "card",
     "line_items[0][price]": opts.priceId,
     "line_items[0][quantity]": "1",
     customer_email: opts.customerEmail,
@@ -84,6 +85,7 @@ export async function createOrderCheckout(opts: {
 }): Promise<string> {
   const session = await stripeApi("checkout/sessions", {
     mode: "payment",
+    "payment_method_types[0]": "card",
     "line_items[0][price_data][currency]": opts.currency.toLowerCase(),
     "line_items[0][price_data][product_data][name]": opts.description,
     "line_items[0][price_data][unit_amount]": String(opts.amountCents),
