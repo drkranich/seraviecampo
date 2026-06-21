@@ -1,3 +1,5 @@
+export const AI_PER_USE_CENTS = 20; // R$0,20 por consulta
+
 export function aiEnabled(): boolean {
   return !!process.env.AI_API_KEY?.trim();
 }

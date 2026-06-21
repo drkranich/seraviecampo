@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, createAuthedClient } from "@/lib/supabase/server";
+import { payoutCourierForOrder, payoutProducerForOrder } from "@/lib/payouts";
 
 export async function completeDelivery(formData: FormData) {
   const orderId = String(formData.get("order_id") || "");
@@ -29,6 +30,10 @@ export async function completeDelivery(formData: FormData) {
     delivery_photo_url: photo,
     delivered_at: new Date().toISOString(),
   }).eq("id", orderId);
+
+  // Repasses (best-effort): frete para quem entregou + catch-up do produtor
+  await payoutCourierForOrder(db, orderId);
+  await payoutProducerForOrder(db, orderId);
 
   revalidatePath(back);
   revalidatePath("/entregador");

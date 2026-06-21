@@ -116,6 +116,31 @@ export async function createTransfer(opts: {
   return t.id as string;
 }
 
+// ---------- Cliente Stripe + cartão salvo (IA Rural, cobrança por uso) ----------
+export async function ensureCustomer(opts: { email: string; name?: string }): Promise<string> {
+  const form: Form = { email: opts.email };
+  if (opts.name) form.name = opts.name;
+  const c = await stripeApi("customers", form);
+  return c.id as string;
+}
+
+export async function createSetupCheckout(opts: {
+  customerId: string;
+  clientReferenceId: string;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<string> {
+  const s = await stripeApi("checkout/sessions", {
+    mode: "setup",
+    customer: opts.customerId,
+    client_reference_id: opts.clientReferenceId,
+    "payment_method_types[0]": "card",
+    success_url: opts.successUrl,
+    cancel_url: opts.cancelUrl,
+  });
+  return s.url as string;
+}
+
 // ---------- Verificação de webhook (Web Crypto, compatível com Workers) ----------
 export async function verifyStripeSignature(payload: string, sigHeader: string | null, secret: string): Promise<boolean> {
   if (!sigHeader) return false;

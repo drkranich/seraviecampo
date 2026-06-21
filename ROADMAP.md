@@ -24,7 +24,7 @@
 
 ## 2) BACKEND
 - [x] Onboarding Stripe Connect também para o ENTREGADOR (em Configurações) + rota /api/stripe/connect generalizada por papel + status (charges_enabled). FEITO.
-- [~] Stripe: checkout REAL do pedido FEITO (/api/stripe/pay-order), webhook confirma pagamento e ativa/cancela assinatura, roteamento por papel. FALTA (fase 2): split/transfer p/ produtor+entregador (helper createTransfer já pronto) — disparar no pagamento (produtor, se payout imediato) e na entrega concluída (entregador, frete), gated em conta conectada; repasse mensal por job; reembolso real na disputa.
+- [~] Stripe: checkout REAL do pedido FEITO (/api/stripe/pay-order), webhook confirma pagamento e ativa/cancela assinatura, roteamento por papel. [x] split/transfer FEITO: produtor (produtos−comissão) no pagamento se payout imediato; entregador/auto-entrega (frete−taxa) na entrega concluída; flags producer_paid_out/courier_paid_out evitam duplicidade. FALTA: repasse MENSAL por job agendado (produtores em modo 'mensal'); reembolso real (transfer reversal) na disputa.
 - [ ] Notificações: e-mail/push/WhatsApp (novo pedido, mudança de status, nova mensagem de suporte).
 - [ ] Realtime de verdade (Supabase Realtime) p/ chat e status do pedido (hoje é polling 4s).
 - [ ] Geocoding de endereço (endereço → lat/lng) p/ frete mais preciso (hoje usa GPS do perfil).
@@ -70,6 +70,16 @@
 - [ ] Limpeza das contas/dados de teste e seed de demonstração.
 - [ ] Plano de suporte/SLA e canais de contato.
 
-## IA Rural — cobrança por uso (à parte do plano) — anotado 21/06
+## IA Rural — cobrança por uso (à parte do plano) — PARCIALMENTE FEITO 21/06
 - A IA Rural é um add-on PAGO POR USO, independente do plano da plataforma. Já está deixado claro na aba IA Rural.
 - A construir: cadastro de cartão do produtor específico para a IA (Stripe), medição de uso (tokens/consultas), cobrança por consumo (usage-based / metered billing no Stripe), e limite/trava quando sem cartão ou sem saldo. Registrar consumo por produtor numa tabela (ex.: ai_usage).
+
+## Pagamentos — pendências (após split)
+- [ ] Job mensal: cobrar o acumulado de ai_usage no cartão da IA (off_session PaymentIntent) e repassar o acumulado dos produtores em modo 'mensal'.
+- [ ] Reembolso real na disputa (transfer reversal + refund) quando o super admin marcar reembolso.
+- [x] IA Rural: cartão próprio (setup) + medição de uso por mês + gate (sem cartão, bloqueia). Falta só o débito mensal do acumulado.
+
+## Receita da plataforma (mensalidade + comissão) — referência
+- Mensalidade (plano do produtor/entregador): cobrada pela Stripe Billing (assinatura recorrente) no cartão do usuário → cai direto no saldo da plataforma. 100% seu, automático.
+- Comissão sobre vendas: retida automaticamente no split — a plataforma recebe o total do pedido e transfere ao produtor (vendas − comissão). A comissão nunca sai da conta da plataforma.
+- Modo "imediato": comissão retida no ato do pagamento. Modo "mensal": acumula e o JOB MENSAL transfere o líquido (vendas − comissão − mensalidade) ao produtor. (Job a construir.)
