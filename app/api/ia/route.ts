@@ -28,6 +28,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ text });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Falha ao consultar a IA.";
+    if (msg.includes("429")) {
+      return NextResponse.json({ error: "A IA atingiu o limite de uso do momento (cota do plano). Tente novamente em instantes ou aumente a cota no Google." }, { status: 429 });
+    }
     return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
