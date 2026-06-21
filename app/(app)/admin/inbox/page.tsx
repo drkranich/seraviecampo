@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { SupportChat } from "@/components/SupportChat";
 import { ROLE_LABEL, type UserRole } from "@/lib/roles";
+import { countryOf } from "@/lib/countries";
 
 type Msg = { user_id: string; sender: string; body: string; created_at: string };
 
@@ -28,6 +29,20 @@ export default async function InboxPage({
   const pmap = new Map((profs ?? []).map((p) => [p.id as string, p as { id: string; full_name: string | null; display_name: string | null; role: UserRole }]));
   const list = [...threads.entries()].sort((a, b) => new Date(b[1].last.created_at).getTime() - new Date(a[1].last.created_at).getTime());
 
+  type Ficha = { full_name: string | null; role: UserRole; phone: string | null; city: string | null; state: string | null; country: string | null };
+  let ficha: Ficha | null = null;
+  let fichaEmail = "—";
+  let fichaEndereco: string | null = null;
+  if (sp.u) {
+    const [{ data: pf }, { data: emails }, { data: lastOrder }] = await Promise.all([
+      supabase.from("profiles").select("full_name, role, phone, city, state, country").eq("id", sp.u).single(),
+      supabase.rpc("admin_emails"),
+      supabase.from("orders").select("delivery_address, delivery_phone").eq("customer_id", sp.u).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    ]);
+    ficha = (pf ?? null) as Ficha | null;
+    fichaEmail = ((emails ?? []) as { id: string; email: string }[]).find((e) => e.id === sp.u)?.email ?? "—";
+    fichaEndereco = (lastOrder?.delivery_address as string | null) ?? null;
+  }
   const selected = sp.u && pmap.get(sp.u);
 
   return (
@@ -56,7 +71,18 @@ export default async function InboxPage({
         <section className="lg:col-span-2">
           {selected ? (
             <>
-              <p className="mb-2 font-serif text-lg text-forest-100">{selected.full_name || selected.display_name || "Usuário"} <span className="text-sm text-stone-500">· {ROLE_LABEL[selected.role]}</span></p>
+              {ficha && (
+                <div className="glass mb-3 rounded-2xl border border-campo-border p-4 text-sm">
+                  <p className="font-serif text-lg text-forest-100">{ficha.full_name || "Usuário"} <span className="text-xs text-stone-500">· {ROLE_LABEL[ficha.role]}</span></p>
+                  <div className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+                    <p className="text-stone-400">E-mail: <span className="text-stone-200">{fichaEmail}</span></p>
+                    <p className="text-stone-400">Telefone: <span className="text-stone-200">{ficha.phone || "—"}</span></p>
+                    <p className="text-stone-400">Local: <span className="text-stone-200">{[ficha.city, ficha.state, countryOf(ficha.country).name].filter(Boolean).join(", ") || "—"}</span></p>
+                    <p className="text-stone-400">Endereço: <span className="text-stone-200">{fichaEndereco || "—"}</span></p>
+                  </div>
+                  <a href={`/admin/usuarios/${sp.u}`} className="mt-2 inline-block text-xs text-gold hover:underline">Ver ficha completa →</a>
+                </div>
+              )}
               <SupportChat threadUserId={sp.u as string} asSupport />
             </>
           ) : (

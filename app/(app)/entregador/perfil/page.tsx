@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell, ENTREGADOR_NAV } from "@/components/AppShell";
 import { FancySelect } from "@/components/FancySelect";
 import { ImageUpload } from "@/components/ImageUpload";
+import { CountrySelect } from "@/components/CountrySelect";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { updateCourierProfile } from "./actions";
 
@@ -19,7 +20,7 @@ export default async function PerfilEntregadorPage({
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("full_name, phone, city, state, vehicle_type, vehicle_plate, bio, avatar_url, document_url")
+    .select("full_name, phone, city, state, country, vehicle_type, vehicle_plate, bio, avatar_url, document_url")
     .eq("id", user.id).single();
   const p = (data ?? {}) as Record<string, string | null>;
 
@@ -37,8 +38,9 @@ export default async function PerfilEntregadorPage({
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div><label className={labelCls}>Cidade</label><input name="city" defaultValue={p.city ?? ""} className={inputCls} /></div>
-          <div><label className={labelCls}>Estado (UF)</label><input name="state" defaultValue={p.state ?? ""} maxLength={2} className={inputCls} /></div>
+          <div><label className={labelCls}>Estado / Região</label><input name="state" defaultValue={p.state ?? ""} className={inputCls} /></div>
         </div>
+        <CountrySelect defaultValue={p.country} />
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Tipo de veículo</label>

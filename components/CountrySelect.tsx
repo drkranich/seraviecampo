@@ -44,7 +44,7 @@ export function CountrySelect({ defaultValue, className }: { defaultValue?: stri
         </button>
 
         {open && (
-          <div className="country-pop glass absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-xl border border-campo-border shadow-2xl">
+          <div className="country-pop absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-xl border border-campo-border bg-campo-bg/95 backdrop-blur-xl shadow-2xl">
             <div className="sticky top-0 border-b border-campo-border bg-campo-surface2/80 p-2 backdrop-blur">
               <input
                 autoFocus

@@ -3,13 +3,17 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { countryOf } from "@/lib/countries";
 
 export async function updateCourierProfile(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const country = String(formData.get("country") || "BR");
   const values = {
+    country,
+    currency: countryOf(country).currency,
     full_name: String(formData.get("full_name") || "").trim() || null,
     phone: String(formData.get("phone") || "").trim() || null,
     city: String(formData.get("city") || "").trim() || null,

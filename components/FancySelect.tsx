@@ -55,7 +55,7 @@ export function FancySelect({
           <span className={`text-stone-500 transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
         </button>
         {open && (
-          <div className="fancy-pop glass absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-xl border border-campo-border shadow-2xl">
+          <div className="fancy-pop absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-xl border border-campo-border bg-campo-bg/95 backdrop-blur-xl shadow-2xl">
             {searchable && (
               <div className="sticky top-0 border-b border-campo-border bg-campo-surface2/80 p-2 backdrop-blur">
                 <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar…"
