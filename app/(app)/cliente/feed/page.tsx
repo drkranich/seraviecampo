@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import { Avatar } from "@/components/Avatar";
+import { Carousel } from "@/components/Carousel";
 import { type Post } from "@/lib/feed";
 import { producerName } from "@/lib/profile";
 
@@ -36,7 +37,9 @@ export default async function FeedClientePage() {
                   </div>
                 </div>
                 <p className="mt-3 whitespace-pre-wrap text-stone-200">{post.body}</p>
-                {post.image_url && <img src={post.image_url} alt="" className="mt-3 max-h-96 w-full rounded-xl object-cover" />}
+                {(post.images?.length ? post.images : post.image_url ? [post.image_url] : []).length > 0 && (
+                  <div className="mt-3"><Carousel images={post.images?.length ? post.images : [post.image_url as string]} className="max-h-96" /></div>
+                )}
               </article>
             );
           })}

@@ -11,6 +11,7 @@ import {
   type Product,
 } from "@/lib/catalog";
 import { producerName, locationLabel, type PublicProfile } from "@/lib/profile";
+import { Carousel } from "@/components/Carousel";
 import { addToCart } from "../../cesta/actions";
 
 type ProductDetail = Product & { producer: Partial<PublicProfile> | null };
@@ -35,6 +36,7 @@ export default async function ProdutoDetalhePage({
 
   if (!data) notFound();
   const product = data as unknown as ProductDetail;
+  const imgs = product.images?.length ? product.images : product.image_url ? [product.image_url] : [];
 
   return (
     <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} title={product.name} subtitle={CATEGORY_LABEL[product.category]}>
@@ -44,9 +46,8 @@ export default async function ProdutoDetalhePage({
 
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="overflow-hidden rounded-2xl border border-campo-border bg-campo-surface2">
-          {product.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={product.image_url} alt={product.name} className="aspect-square w-full object-cover" />
+          {imgs.length > 0 ? (
+            <Carousel images={imgs} alt={product.name} className="aspect-square w-full" />
           ) : (
             <div className="flex aspect-square w-full items-center justify-center text-6xl opacity-40">🧺</div>
           )}
@@ -85,7 +86,6 @@ export default async function ProdutoDetalhePage({
             </div>
           )}
 
-          {/* Produtor */}
           {product.producer && (
             <Link
               href={`/cliente/produtor/${product.producer.id}`}

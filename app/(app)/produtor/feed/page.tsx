@@ -1,7 +1,8 @@
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
-import { ImageUpload } from "@/components/ImageUpload";
+import { MultiImageUpload } from "@/components/MultiImageUpload";
+import { Carousel } from "@/components/Carousel";
 import { type Post } from "@/lib/feed";
 import { createPost, deletePost } from "./actions";
 
@@ -23,7 +24,7 @@ export default async function FeedProdutorPage({
 
       <form action={createPost} className="mb-8 max-w-2xl space-y-3 rounded-2xl border border-campo-border glass p-5">
         <textarea name="body" rows={3} required placeholder="O que está acontecendo na sua produção hoje?" className="w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold" />
-        <ImageUpload name="image_url" label="Foto (opcional)" userId={user.id} folder="post" shape="wide" />
+        <MultiImageUpload name="images" label="Fotos (opcional)" folder="post" />
         <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">Publicar</button>
       </form>
 
@@ -41,7 +42,9 @@ export default async function FeedProdutorPage({
                   <form action={del}><button className="text-xs text-red-300 hover:underline">Excluir</button></form>
                 </div>
                 <p className="mt-2 whitespace-pre-wrap text-stone-200">{post.body}</p>
-                {post.image_url && <img src={post.image_url} alt="" className="mt-3 max-h-80 w-full rounded-xl object-cover" />}
+                {(post.images?.length ? post.images : post.image_url ? [post.image_url] : []).length > 0 && (
+                  <div className="mt-3"><Carousel images={post.images?.length ? post.images : [post.image_url as string]} className="max-h-80" /></div>
+                )}
               </article>
             );
           })}

@@ -91,5 +91,6 @@ export type Product = {
   available: boolean;
   available_from: string | null;
   image_url: string | null;
+  images: string[];
   created_at: string;
 };

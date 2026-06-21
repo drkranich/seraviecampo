@@ -1,4 +1,4 @@
-import { ImageUpload } from "@/components/ImageUpload";
+import { MultiImageUpload } from "@/components/MultiImageUpload";
 import { FancySelect } from "@/components/FancySelect";
 import {
   CATEGORIES,
@@ -80,13 +80,11 @@ export function ProductFormFields({ product, userId }: { product?: Product; user
         />
       </div>
 
-      <ImageUpload
-        name="image_url"
-        label="Foto do produto"
-        userId={userId}
-        currentUrl={product?.image_url}
+      <MultiImageUpload
+        name="images"
+        label="Fotos do produto"
         folder="produto"
-        shape="wide"
+        currentImages={product?.images && product.images.length ? product.images : (product?.image_url ? [product.image_url] : [])}
       />
 
       <div className="flex flex-wrap gap-6 pt-1">

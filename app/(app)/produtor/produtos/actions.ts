@@ -7,6 +7,8 @@ import { parseToCents } from "@/lib/catalog";
 
 function parseForm(formData: FormData) {
   const available_from = String(formData.get("available_from") || "");
+  let images: string[] = [];
+  try { const r = JSON.parse(String(formData.get("images") || "[]")); if (Array.isArray(r)) images = r.filter((x) => typeof x === "string"); } catch { images = []; }
   return {
     name: String(formData.get("name") || "").trim(),
     description: String(formData.get("description") || "").trim() || null,
@@ -18,7 +20,8 @@ function parseForm(formData: FormData) {
     is_organic: formData.get("is_organic") === "on",
     available: formData.get("available") === "on",
     available_from: available_from || null,
-    image_url: String(formData.get("image_url") || "").trim() || null,
+    images,
+    image_url: images[0] ?? null,
   };
 }
 

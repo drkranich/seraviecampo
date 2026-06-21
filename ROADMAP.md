@@ -5,13 +5,13 @@
 > Estado atual: app funcional ponta a ponta (4 perfis, pedidos, frete dinâmico, comprovantes de saída/entrega, disputas, chat de suporte, IA estruturada, termos assinados, multi-país). Type-check limpo. Falta ativar chaves e endurecer para produção.
 
 ## 0) Ativação imediata (chaves — combinado p/ amanhã)
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` (uploads 100%).
-- [ ] `AI_API_KEY` (+ `AI_BASE_URL`, `AI_MODEL`) — IA Rural.
-- [ ] Stripe: `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` + 7 price IDs (produtor/cliente/entregador).
+- [x] `SUPABASE_SERVICE_ROLE_KEY` (uploads 100%).
+- [x] `AI_API_KEY` (+ `AI_BASE_URL`, `AI_MODEL`) — IA Rural (Gemini). Ativa; só limitada pela cota do plano Google.
+- [x] Stripe: chaves + 7 price IDs + webhook configurados no Cloudflare.
 
 ## 1) SEGURANÇA
-- [ ] Reativar "Confirm email" + SMTP próprio em produção (hoje desligado p/ teste).
-- [ ] Ligar proteção de senha vazada (Supabase Auth) e revisar advisors restantes (security + performance).
+- [x] "Confirm email" + SMTP (Resend) configurados.
+- [x] Proteção de senha vazada ligada. (Falta: revisar advisors de performance ao final.)
 - [x] Comprovantes/assinaturas em bucket PRIVADO `proofs` (acesso por participante do pedido + admin, via signed URL). FEITO.
 - [ ] KYC real de documento (provedor de visão/OCR) — hoje é heurística anti-papel-branco.
 - [ ] Verificação orofacial com liveness real (hoje é captura simples).
@@ -33,7 +33,7 @@
 - [ ] Tratamento de erros consistente nas server actions.
 
 ## 3) INFRA / DEVOPS
-- [ ] Secrets no Cloudflare (item 0).
+- [x] Secrets no Cloudflare (item 0).
 - [ ] Domínio próprio + DNS + SSL; ajustar URLs de redirect de auth e o RP ID do passkey p/ o domínio.
 - [ ] Ambientes separados (staging x produção) + previews por branch.
 - [ ] CI no PR: type-check + lint + build (resolver o aviso de build do GitHub).
@@ -49,10 +49,10 @@
 - [ ] i18n real: traduzir a interface conforme o idioma do país (hoje tudo em pt-BR).
 - [ ] Mostrar preços na moeda do usuário em TODAS as telas (`formatMoney`) — base já pronta.
 - [ ] Máscaras de formulário (telefone, placa, preço) e validação no cliente.
-- [ ] Carrossel de várias fotos por postagem do feed E por produto (hoje é só 1 foto). Migrar de coluna única para múltiplas imagens (tabela/coluna de array) + UI de upload múltiplo + visualizador carrossel.
+- [x] Carrossel de várias fotos no feed E nos produtos: coluna images[] + upload múltiplo + visualizador carrossel (detalhe do produto e feed dos dois lados). FEITO.
 
 ## 5) FUNCIONALIDADES / NEGÓCIO (backlog)
-- [ ] Apps nativos Android e iOS.
+- [ ] Apps nativos Android e iOS. (PROJETO À PARTE — outro dia.)
 - [ ] Página pública de apresentação + CMS completo (público + os 3 painéis) configurável no super admin — INCLUI editar valores/detalhes dos planos pela tela (planos saem de lib/plans.ts para o banco; ao mudar preço, gerar novo price no Stripe e atualizar o stripe_price_id).
 - [ ] GPS fases 2/3: rastreamento da entrega em tempo real no mapa + ETA.
 - [ ] Avaliações/notas (cliente avalia produtor e entregador).
@@ -69,3 +69,7 @@
 - [ ] Revisão jurídica dos termos e políticas (cancelamento, intermediação, privacidade).
 - [ ] Limpeza das contas/dados de teste e seed de demonstração.
 - [ ] Plano de suporte/SLA e canais de contato.
+
+## IA Rural — cobrança por uso (à parte do plano) — anotado 21/06
+- A IA Rural é um add-on PAGO POR USO, independente do plano da plataforma. Já está deixado claro na aba IA Rural.
+- A construir: cadastro de cartão do produtor específico para a IA (Stripe), medição de uso (tokens/consultas), cobrança por consumo (usage-based / metered billing no Stripe), e limite/trava quando sem cartão ou sem saldo. Registrar consumo por produtor numa tabela (ex.: ai_usage).
