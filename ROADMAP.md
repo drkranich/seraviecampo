@@ -23,8 +23,8 @@
 - [x] RLS revisada: 13 tabelas com RLS + políticas; admin_emails sem acesso anônimo. (Falta: testes de isolamento automatizados.)
 
 ## 2) BACKEND
-- [ ] Onboarding Stripe Connect (conta bancária p/ receber) também para o ENTREGADOR — hoje só produtor; generalizar /api/stripe/connect por papel; bloquear repasse se conta incompleta.
-- [~] Stripe: checkout REAL do pedido FEITO (/api/stripe/pay-order), webhook confirma pagamento e ativa/cancela assinatura, roteamento por papel. FALTA (fase 2): split/transfer p/ produtor+entregador (Connect), onboarding Connect do entregador, repasse conforme payout_mode, reembolso real na disputa.
+- [x] Onboarding Stripe Connect também para o ENTREGADOR (em Configurações) + rota /api/stripe/connect generalizada por papel + status (charges_enabled). FEITO.
+- [~] Stripe: checkout REAL do pedido FEITO (/api/stripe/pay-order), webhook confirma pagamento e ativa/cancela assinatura, roteamento por papel. FALTA (fase 2): split/transfer p/ produtor+entregador (helper createTransfer já pronto) — disparar no pagamento (produtor, se payout imediato) e na entrega concluída (entregador, frete), gated em conta conectada; repasse mensal por job; reembolso real na disputa.
 - [ ] Notificações: e-mail/push/WhatsApp (novo pedido, mudança de status, nova mensagem de suporte).
 - [ ] Realtime de verdade (Supabase Realtime) p/ chat e status do pedido (hoje é polling 4s).
 - [ ] Geocoding de endereço (endereço → lat/lng) p/ frete mais preciso (hoje usa GPS do perfil).

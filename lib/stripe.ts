@@ -99,6 +99,23 @@ export async function createOrderCheckout(opts: {
   return session.url as string;
 }
 
+// ---------- Repasse (Transfer) para conta conectada do produtor/entregador ----------
+export async function createTransfer(opts: {
+  amountCents: number;
+  currency: string;
+  destinationAccountId: string;
+  metadata?: Record<string, string>;
+}): Promise<string> {
+  const form: Form = {
+    amount: String(opts.amountCents),
+    currency: opts.currency.toLowerCase(),
+    destination: opts.destinationAccountId,
+  };
+  for (const [k, v] of Object.entries(opts.metadata ?? {})) form[`metadata[${k}]`] = v;
+  const t = await stripeApi("transfers", form);
+  return t.id as string;
+}
+
 // ---------- Verificação de webhook (Web Crypto, compatível com Workers) ----------
 export async function verifyStripeSignature(payload: string, sigHeader: string | null, secret: string): Promise<boolean> {
   if (!sigHeader) return false;
