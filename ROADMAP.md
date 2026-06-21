@@ -23,6 +23,7 @@
 - [x] RLS revisada: 13 tabelas com RLS + políticas; admin_emails sem acesso anônimo. (Falta: testes de isolamento automatizados.)
 
 ## 2) BACKEND
+- [ ] Onboarding Stripe Connect (conta bancária p/ receber) também para o ENTREGADOR — hoje só produtor; generalizar /api/stripe/connect por papel; bloquear repasse se conta incompleta.
 - [~] Stripe: checkout REAL do pedido FEITO (/api/stripe/pay-order), webhook confirma pagamento e ativa/cancela assinatura, roteamento por papel. FALTA (fase 2): split/transfer p/ produtor+entregador (Connect), onboarding Connect do entregador, repasse conforme payout_mode, reembolso real na disputa.
 - [ ] Notificações: e-mail/push/WhatsApp (novo pedido, mudança de status, nova mensagem de suporte).
 - [ ] Realtime de verdade (Supabase Realtime) p/ chat e status do pedido (hoje é polling 4s).
@@ -52,7 +53,7 @@
 
 ## 5) FUNCIONALIDADES / NEGÓCIO (backlog)
 - [ ] Apps nativos Android e iOS.
-- [ ] Página pública de apresentação + CMS completo (público + os 3 painéis) configurável no super admin.
+- [ ] Página pública de apresentação + CMS completo (público + os 3 painéis) configurável no super admin — INCLUI editar valores/detalhes dos planos pela tela (planos saem de lib/plans.ts para o banco; ao mudar preço, gerar novo price no Stripe e atualizar o stripe_price_id).
 - [ ] GPS fases 2/3: rastreamento da entrega em tempo real no mapa + ETA.
 - [ ] Avaliações/notas (cliente avalia produtor e entregador).
 - [ ] Cupons/promoções, cesta recorrente (assinatura de cesta), reserva de colheita avançada.

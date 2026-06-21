@@ -158,3 +158,17 @@ Objetivo: cliente paga; produtor e entregador recebem; plataforma fica com mensa
 - [ ] FASE 2 (precisa Connect + chaves p/ testar): split/transfer do valor para produtor e entregador; onboarding Connect do entregador; repasse conforme payout_mode; reembolso real ao resolver disputa.
 - Chaves p/ ativar: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PUBLISHABLE_KEY, os 7 price IDs, e SUPABASE_SERVICE_ROLE_KEY (p/ o webhook escrever).
 - Webhook no painel Stripe → endpoint: https://SEU-DOMINIO/api/stripe/webhook (eventos: checkout.session.completed, payment_intent.succeeded, customer.subscription.updated, customer.subscription.deleted).
+
+## CMS interno — planos editáveis pelo super admin (anotado 21/06)
+- No painel do super admin, eu (admin) poderei EDITAR os valores e detalhes de cada plano (produtor, cliente, entregador) pela tela, e a mudança é renderizada para todos os usuários — sem mexer no código.
+- Implementação prevista: mover os planos de `lib/plans.ts` (hardcoded) para uma tabela no banco (ex.: `plans`: id, role, nome, tagline, price_cents, commission_pct, features[], stripe_price_id, ativo). O app passa a ler do banco; o super admin edita via CMS.
+- Integração Stripe: ao alterar o preço, criar um NOVO price no Stripe (preços são imutáveis) e atualizar o `stripe_price_id` do plano — idealmente via API direto pela tela (com a chave já configurada), para não depender de env/redeploy.
+- Faz parte do CMS interno geral (que também edita: página pública + textos/imagens dos 3 painéis). Config dos dois CMSs fica no super admin.
+
+## Conta bancária para receber (Stripe Connect) — anotado 21/06
+- Produtor E entregador devem cadastrar a conta bancária via onboarding do Stripe Connect para receberem os repasses.
+- Estado: o produtor já tem o fluxo (/api/stripe/connect → Financeiro). FALTA:
+  - Replicar o onboarding Connect para o ENTREGADOR (rota + botão na área dele, ex.: Configurações/Ganhos).
+  - A rota /api/stripe/connect hoje é fixa no produtor (URLs /produtor/financeiro); generalizar por papel.
+  - Bloquear repasse/saque enquanto charges_enabled/payouts_enabled = false (conta incompleta).
+  - Fase 2 dos pagamentos: usar essas contas para o split/transfer (frete → entregador; venda menos comissão → produtor).
