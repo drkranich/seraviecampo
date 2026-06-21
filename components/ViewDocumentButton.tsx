@@ -11,7 +11,7 @@ export function ViewDocumentButton({
   label,
 }: {
   path: string;
-  bucket?: "documents" | "selfies";
+  bucket?: "documents" | "selfies" | "proofs";
   label?: string;
 }) {
   const [busy, setBusy] = useState(false);

@@ -113,3 +113,11 @@ export function formatPlanPrice(cents: number): string {
   if (cents === 0) return "Grátis";
   return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
+
+// Área de assinatura conforme o tipo do plano
+export function planArea(planId?: string | null): string {
+  const id = planId || "";
+  if (id.startsWith("cli_")) return "/cliente/assinatura";
+  if (id.startsWith("ent_")) return "/entregador/assinatura";
+  return "/produtor/assinatura";
+}

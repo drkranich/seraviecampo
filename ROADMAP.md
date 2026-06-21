@@ -12,7 +12,7 @@
 ## 1) SEGURANÇA
 - [ ] Reativar "Confirm email" + SMTP próprio em produção (hoje desligado p/ teste).
 - [ ] Ligar proteção de senha vazada (Supabase Auth) e revisar advisors restantes (security + performance).
-- [ ] Tornar PRIVADOS os buckets de comprovante/assinatura (hoje vão para `media` público); servir via signed URL.
+- [x] Comprovantes/assinaturas em bucket PRIVADO `proofs` (acesso por participante do pedido + admin, via signed URL). FEITO.
 - [ ] KYC real de documento (provedor de visão/OCR) — hoje é heurística anti-papel-branco.
 - [ ] Verificação orofacial com liveness real (hoje é captura simples).
 - [ ] Rate limiting e limites de tamanho/quantidade nas rotas `/api/upload` e `/api/ia` (anti-abuso).
@@ -20,10 +20,10 @@
 - [ ] LGPD/GDPR: consentimento, exportação e exclusão de conta, política de retenção de dados.
 - [ ] Auditoria/logs de ações sensíveis (admin, reembolsos, mudança de papel).
 - [ ] Headers de segurança/CSP no Cloudflare; rotação de secrets; backups (Supabase PITR).
-- [ ] Revisar RLS de TODAS as tabelas novas (disputes, posts, reservas, termos, suporte) com testes de isolamento.
+- [x] RLS revisada: 13 tabelas com RLS + políticas; admin_emails sem acesso anônimo. (Falta: testes de isolamento automatizados.)
 
 ## 2) BACKEND
-- [ ] Stripe completo: checkout real do pedido (hoje só confirma), split/transfer p/ produtor e entregador, repasse conforme `payout_mode`, reembolso real na disputa, cancelar assinatura no Stripe, webhook idempotente.
+- [~] Stripe: checkout REAL do pedido FEITO (/api/stripe/pay-order), webhook confirma pagamento e ativa/cancela assinatura, roteamento por papel. FALTA (fase 2): split/transfer p/ produtor+entregador (Connect), onboarding Connect do entregador, repasse conforme payout_mode, reembolso real na disputa.
 - [ ] Notificações: e-mail/push/WhatsApp (novo pedido, mudança de status, nova mensagem de suporte).
 - [ ] Realtime de verdade (Supabase Realtime) p/ chat e status do pedido (hoje é polling 4s).
 - [ ] Geocoding de endereço (endereço → lat/lng) p/ frete mais preciso (hoje usa GPS do perfil).

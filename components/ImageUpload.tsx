@@ -9,6 +9,8 @@ export function ImageUpload({
   currentUrl,
   folder,
   shape = "square",
+  bucket = "media",
+  orderId,
 }: {
   name: string;
   label: string;
@@ -16,8 +18,11 @@ export function ImageUpload({
   currentUrl?: string | null;
   folder: string;
   shape?: "square" | "wide";
+  bucket?: "media" | "proofs";
+  orderId?: string;
 }) {
-  const [url, setUrl] = useState(currentUrl ?? "");
+  const [value, setValue] = useState(currentUrl ?? "");   // salvo no form (url p/ media, path p/ proofs)
+  const [preview, setPreview] = useState(currentUrl ?? ""); // src da imagem
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -30,14 +35,16 @@ export function ImageUpload({
 
     const fd = new FormData();
     fd.append("file", file);
-    fd.append("bucket", "media");
+    fd.append("bucket", bucket);
     fd.append("folder", folder);
+    if (bucket === "proofs" && orderId) fd.append("order_id", orderId);
 
     try {
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const json = await res.json();
       if (!res.ok) { setErr(json.error || "Falha no upload."); setBusy(false); return; }
-      setUrl(json.url);
+      setValue(bucket === "proofs" ? (json.path ?? "") : (json.url ?? ""));
+      setPreview(json.url ?? "");
     } catch {
       setErr("Falha de conexão no upload.");
     }
@@ -45,7 +52,7 @@ export function ImageUpload({
   }
 
   function remove() {
-    setUrl("");
+    setValue(""); setPreview("");
     if (fileRef.current) fileRef.current.value = "";
   }
 
@@ -54,26 +61,24 @@ export function ImageUpload({
   return (
     <div>
       <label className="mb-1 block text-sm text-stone-300">{label}</label>
-      <input type="hidden" name={name} value={url} />
-
+      <input type="hidden" name={name} value={value} />
       <div className="flex items-center gap-4">
         <div className={`${previewCls} overflow-hidden border border-campo-border bg-campo-surface2`}>
-          {url ? (
+          {preview ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={url} alt="" className="h-full w-full object-cover" />
+            <img src={preview} alt="" className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xl text-stone-600">
               {shape === "wide" ? "🌄" : "🌾"}
             </div>
           )}
         </div>
-
         <div className="flex flex-col gap-1">
           <label className="cursor-pointer rounded-lg border border-campo-border px-4 py-2 text-sm text-stone-200 transition hover:border-gold/50">
-            {busy ? "Enviando…" : url ? "Trocar imagem" : "Escolher imagem"}
+            {busy ? "Enviando…" : value ? "Trocar imagem" : "Escolher imagem"}
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onChange} disabled={busy} />
           </label>
-          {url && !busy && (
+          {value && !busy && (
             <button type="button" onClick={remove} className="text-left text-xs text-stone-500 hover:text-red-300">Remover</button>
           )}
         </div>

@@ -18,8 +18,8 @@ export function DispatchProof({ orderId, back }: { orderId: string; back: string
       <input type="hidden" name="order_id" value={orderId} />
       <input type="hidden" name="back" value={back} />
       <p className="text-sm text-stone-300">Registro de saída (foto, assinatura e data/hora automáticas)</p>
-      <ImageUpload name="photo_url" label="Foto do pedido na saída" userId="" folder="saida" shape="wide" />
-      <ImageUpload name="signature_url" label="Assinatura digital (sua)" userId="" folder="saida-assinatura" shape="wide" />
+      <ImageUpload name="photo_url" label="Foto do pedido na saída" userId="" folder="saida" shape="wide" bucket="proofs" orderId={orderId} />
+      <ImageUpload name="signature_url" label="Assinatura digital (sua)" userId="" folder="saida-assinatura" shape="wide" bucket="proofs" orderId={orderId} />
       <div className="flex flex-wrap gap-2">
         <button name="mode" value="dispatch" className="rounded-lg border border-gold/50 px-4 py-1.5 text-sm text-gold transition hover:bg-gold/10">Despachar p/ entregador</button>
         <button name="mode" value="self" className="rounded-lg bg-gold px-4 py-1.5 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Vou entregar eu mesmo</button>

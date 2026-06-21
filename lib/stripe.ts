@@ -72,6 +72,31 @@ export async function createSubscriptionCheckout(opts: {
   return session.url as string;
 }
 
+// ---------- Pagamento de PEDIDO (cliente paga a cesta) ----------
+export async function createOrderCheckout(opts: {
+  amountCents: number;
+  currency: string;
+  orderId: string;
+  description: string;
+  customerEmail: string;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<string> {
+  const session = await stripeApi("checkout/sessions", {
+    mode: "payment",
+    "line_items[0][price_data][currency]": opts.currency.toLowerCase(),
+    "line_items[0][price_data][product_data][name]": opts.description,
+    "line_items[0][price_data][unit_amount]": String(opts.amountCents),
+    "line_items[0][quantity]": "1",
+    "metadata[order_id]": opts.orderId,
+    "payment_intent_data[metadata][order_id]": opts.orderId,
+    customer_email: opts.customerEmail,
+    success_url: opts.successUrl,
+    cancel_url: opts.cancelUrl,
+  });
+  return session.url as string;
+}
+
 // ---------- Verificação de webhook (Web Crypto, compatível com Workers) ----------
 export async function verifyStripeSignature(payload: string, sigHeader: string | null, secret: string): Promise<boolean> {
   if (!sigHeader) return false;

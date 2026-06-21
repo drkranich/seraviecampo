@@ -139,3 +139,22 @@ Objetivo: cliente paga; produtor e entregador recebem; plataforma fica com mensa
 - [ ] CMS completo de edição: da página pública E dos 3 painéis (cliente, produtor, entregador); as configurações dos dois CMSs ficam no super admin.
 - [ ] Versão mobile nativa iOS e Android (futuro).
 - [ ] Múltiplas fotos (carrossel) por postagem do feed e por produto — hoje só 1 foto. Exige guardar várias URLs (array/tabela), upload múltiplo e visualizador carrossel.
+
+## Segurança (hoje, 21/06) — feito
+- [x] Comprovantes (assinatura/foto de saída e entrega) movidos para bucket PRIVADO `proofs` com RLS por participante do pedido; exibição via URL assinada.
+- [x] `admin_emails()` sem execução anônima (revoke anon/public; só authenticated, e ainda filtra por super_admin).
+- [x] RLS conferida em todas as 13 tabelas (todas com políticas).
+### Falta (toggles no painel — sua ação)
+- [ ] Supabase Auth → ativar "Leaked password protection".
+- [ ] Supabase Auth → reativar "Confirm email" + configurar SMTP próprio (p/ produção).
+### Tabelas/edge p/ futuro
+- [ ] Novas tabelas conforme features: product_images/post_images (carrossel), reviews, coupons, cms_pages/blocks, notifications, payouts (Stripe).
+- [ ] Edge Functions / cron só quando: webhook Stripe e jobs agendados (expirar degustação/reservas, repasses).
+
+## Stripe (hoje, 21/06) — feito (falta só as chaves)
+- [x] Pagamento do pedido via Stripe Checkout (/api/stripe/pay-order); cliente paga cartão/Pix. Sem chave, segue confirmação local.
+- [x] Webhook real (/api/stripe/webhook): confirma pagamento do pedido (payment/payment_intent) e ativa/cancela assinatura. Usa SUPABASE_SERVICE_ROLE_KEY.
+- [x] Assinaturas roteadas por papel (cliente/produtor/entregador).
+- [ ] FASE 2 (precisa Connect + chaves p/ testar): split/transfer do valor para produtor e entregador; onboarding Connect do entregador; repasse conforme payout_mode; reembolso real ao resolver disputa.
+- Chaves p/ ativar: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PUBLISHABLE_KEY, os 7 price IDs, e SUPABASE_SERVICE_ROLE_KEY (p/ o webhook escrever).
+- Webhook no painel Stripe → endpoint: https://SEU-DOMINIO/api/stripe/webhook (eventos: checkout.session.completed, payment_intent.succeeded, customer.subscription.updated, customer.subscription.deleted).

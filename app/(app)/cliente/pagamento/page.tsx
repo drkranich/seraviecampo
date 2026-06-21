@@ -6,6 +6,7 @@ import { formatBRL } from "@/lib/catalog";
 import { PAYMENT_LABEL, type Order, type OrderItem, type PaymentMethod } from "@/lib/orders";
 import { producerName, type PublicProfile } from "@/lib/profile";
 import { confirmPayment } from "./actions";
+import { stripeEnabled } from "@/lib/stripe";
 
 type Row = Order & { producer: Partial<PublicProfile> | null; items: OrderItem[] };
 
@@ -15,6 +16,7 @@ export default async function PagamentoPage({
   const { profile } = await requireRole("cliente");
   const sp = await searchParams;
   const supabase = await createClient();
+  const enabled = stripeEnabled();
 
   const { data } = await supabase
     .from("orders")
@@ -63,11 +65,20 @@ export default async function PagamentoPage({
                   {method === "dinheiro" && (
                     <p className="mt-2 text-xs text-stone-400">Você pagará em dinheiro no momento da entrega.</p>
                   )}
-                  <form action={pay} className="mt-3">
-                    <button className="rounded-lg bg-gold px-5 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">
-                      {method === "dinheiro" ? "Confirmar (pagar na entrega)" : "Confirmar pagamento"}
-                    </button>
-                  </form>
+                  {enabled && method !== "dinheiro" ? (
+                    <form action="/api/stripe/pay-order" method="post" className="mt-3">
+                      <input type="hidden" name="order_id" value={o.id} />
+                      <button className="rounded-lg bg-gold px-5 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">
+                        Pagar com {method === "cartao" ? "cartão" : "Pix"} (Stripe)
+                      </button>
+                    </form>
+                  ) : (
+                    <form action={pay} className="mt-3">
+                      <button className="rounded-lg bg-gold px-5 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">
+                        {method === "dinheiro" ? "Confirmar (pagar na entrega)" : "Confirmar pagamento"}
+                      </button>
+                    </form>
+                  )}
                 </div>
               </article>
             );

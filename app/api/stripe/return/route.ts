@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getPlan } from "@/lib/plans";
+import { getPlan, planArea } from "@/lib/plans";
 
 // Retorno do Checkout. O webhook é a fonte de verdade em produção;
 // aqui marcamos a assinatura como ativa para o fluxo de teste.
@@ -19,5 +19,5 @@ export async function GET(request: Request) {
     { onConflict: "account_id" }
   );
 
-  return NextResponse.redirect(`${origin}/produtor/assinatura?ok=1`, { status: 303 });
+  return NextResponse.redirect(`${origin}${planArea(plan?.id)}?ok=1`, { status: 303 });
 }

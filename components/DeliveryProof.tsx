@@ -19,8 +19,8 @@ export function DeliveryProof({ orderId, back }: { orderId: string; back: string
       <input type="hidden" name="order_id" value={orderId} />
       <input type="hidden" name="back" value={back} />
       <p className="text-sm text-stone-300">Comprovante de entrega</p>
-      <ImageUpload name="signature_url" label="Assinatura do cliente" userId="" folder="assinatura" shape="wide" />
-      <ImageUpload name="photo_url" label="Foto do produto entregue" userId="" folder="entrega" shape="wide" />
+      <ImageUpload name="signature_url" label="Assinatura do cliente" userId="" folder="assinatura" shape="wide" bucket="proofs" orderId={orderId} />
+      <ImageUpload name="photo_url" label="Foto do produto entregue" userId="" folder="entrega" shape="wide" bucket="proofs" orderId={orderId} />
       <div className="flex gap-2">
         <button className="rounded-lg bg-leaf px-4 py-1.5 text-sm font-medium text-campo-bg transition hover:bg-leaf-light">Confirmar entrega</button>
         <button type="button" onClick={() => setOpen(false)} className="px-3 py-1.5 text-sm text-stone-400 hover:text-stone-200">Cancelar</button>
