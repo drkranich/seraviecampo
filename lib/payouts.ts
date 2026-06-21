@@ -1,4 +1,4 @@
-import { createTransfer, stripeEnabled } from "@/lib/stripe";
+import { createTransfer, chargeOffSession, stripeEnabled } from "@/lib/stripe";
 import { producerCommissionPct } from "@/lib/plans";
 import { courierShareCents } from "@/lib/shipping";
 
@@ -12,7 +12,7 @@ async function currencyOfCustomer(db: any, customerId: string): Promise<string> 
 }
 
 // Repasse do PRODUTOR (valor dos produtos − comissão), só se repasse "imediato".
-export async function payoutProducerForOrder(db: any, orderId: string): Promise<void> {
+export async function payoutProducerForOrder(db: any, orderId: string, force = false): Promise<void> {
   if (!stripeEnabled()) return;
   const { data: o } = await db.from("orders")
     .select("producer_id, customer_id, total_cents, delivery_fee_cents, payment_status, producer_paid_out")
@@ -22,7 +22,7 @@ export async function payoutProducerForOrder(db: any, orderId: string): Promise<
   const { data: prod } = await db.from("profiles")
     .select("stripe_account_id, stripe_charges_enabled, payout_mode").eq("id", o.producer_id).single();
   if (!prod?.stripe_account_id || !prod.stripe_charges_enabled) return;
-  if (prod.payout_mode !== "imediato") return; // mensal acumula (job futuro)
+  if (!force && prod.payout_mode !== "imediato") return; // mensal acumula -> job mensal usa force=true
 
   const { data: sub } = await db.from("subscriptions").select("plan, status").eq("account_id", o.producer_id).maybeSingle();
   const planId = sub && sub.status && ACTIVE.includes(sub.status) ? (sub.plan as string) : "campo";
@@ -60,4 +60,38 @@ export async function payoutCourierForOrder(db: any, orderId: string): Promise<v
     await createTransfer({ amountCents: net, currency, destinationAccountId: rec.stripe_account_id, metadata: { order_id: orderId, kind: o.self_delivery ? "producer_delivery" : "courier" } });
     await db.from("orders").update({ courier_paid_out: true }).eq("id", orderId);
   } catch { /* re-tenta na conclusão */ }
+}
+
+
+// Job mensal: repassa o acumulado dos produtores "mensal" e cobra o uso da IA.
+export async function runMonthlyJob(db: any): Promise<{ producerTransfers: number; iaCharges: number }> {
+  let producerTransfers = 0;
+  let iaCharges = 0;
+
+  // A) Repasse de pedidos pagos ainda não repassados (cobre o modo "mensal").
+  const { data: pend } = await db.from("orders").select("id").eq("payment_status", "pago").eq("producer_paid_out", false);
+  for (const o of (pend ?? [])) {
+    try { await payoutProducerForOrder(db, o.id as string, true); producerTransfers++; } catch { /* segue */ }
+  }
+
+  // B) Cobrança da IA dos meses já fechados (period < mês atual), ainda não cobrados.
+  const cur = new Date().toISOString().slice(0, 7);
+  const { data: usage } = await db.from("ai_usage").select("producer_id, period, cost_cents").eq("charged", false).gt("cost_cents", 0).lt("period", cur);
+  for (const u of (usage ?? [])) {
+    const { data: prof } = await db.from("profiles").select("stripe_customer_id, currency").eq("id", u.producer_id).single();
+    if (!prof?.stripe_customer_id) continue;
+    try {
+      await chargeOffSession({
+        customerId: prof.stripe_customer_id as string,
+        amountCents: u.cost_cents as number,
+        currency: (prof.currency as string) || "BRL",
+        description: `IA Rural ${u.period}`,
+        metadata: { producer_id: u.producer_id as string, period: u.period as string },
+      });
+      await db.from("ai_usage").update({ charged: true }).eq("producer_id", u.producer_id).eq("period", u.period);
+      iaCharges++;
+    } catch { /* tenta no próximo ciclo */ }
+  }
+
+  return { producerTransfers, iaCharges };
 }

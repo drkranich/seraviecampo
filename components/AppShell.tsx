@@ -95,6 +95,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/moderacao", label: "Moderação", icon: "shield" },
   { href: "/admin/disputas", label: "Disputas", icon: "approve" },
   { href: "/admin/inbox", label: "Inbox", icon: "inbox" },
+  { href: "/admin/site", label: "Site / CMS", icon: "discover" },
   { href: "/admin/termos", label: "Termos", icon: "shield" },
 ];
 

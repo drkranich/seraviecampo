@@ -53,7 +53,7 @@
 
 ## 5) FUNCIONALIDADES / NEGÓCIO (backlog)
 - [ ] Apps nativos Android e iOS. (PROJETO À PARTE — outro dia.)
-- [ ] Página pública de apresentação + CMS completo (público + os 3 painéis) configurável no super admin — INCLUI editar valores/detalhes dos planos pela tela (planos saem de lib/plans.ts para o banco; ao mudar preço, gerar novo price no Stripe e atualizar o stripe_price_id).
+- [~] Página pública editável FEITA (landing em '/' lendo de site_content) + CMS no super admin (/admin/site) para editar hero, perfis, passos, CTA e rodapé. FALTA (fase 2 do CMS): editar conteúdo/banner dos 3 painéis internos e editar VALORES dos planos pela tela (planos -> banco + gerar novo price no Stripe).
 - [ ] GPS fases 2/3: rastreamento da entrega em tempo real no mapa + ETA.
 - [ ] Avaliações/notas (cliente avalia produtor e entregador).
 - [ ] Cupons/promoções, cesta recorrente (assinatura de cesta), reserva de colheita avançada.
@@ -75,7 +75,7 @@
 - A construir: cadastro de cartão do produtor específico para a IA (Stripe), medição de uso (tokens/consultas), cobrança por consumo (usage-based / metered billing no Stripe), e limite/trava quando sem cartão ou sem saldo. Registrar consumo por produtor numa tabela (ex.: ai_usage).
 
 ## Pagamentos — pendências (após split)
-- [ ] Job mensal: cobrar o acumulado de ai_usage no cartão da IA (off_session PaymentIntent) e repassar o acumulado dos produtores em modo 'mensal'.
+- [x] Job mensal: rota protegida /api/cron/monthly — repassa pedidos pagos não repassados (modo 'mensal') e cobra o uso da IA (off_session) dos meses fechados. FALTA: agendar o gatilho mensal (Cron Trigger/agendador externo) + reembolso real na disputa.
 - [ ] Reembolso real na disputa (transfer reversal + refund) quando o super admin marcar reembolso.
 - [x] IA Rural: cartão próprio (setup) + medição de uso por mês + gate (sem cartão, bloqueia). Falta só o débito mensal do acumulado.
 

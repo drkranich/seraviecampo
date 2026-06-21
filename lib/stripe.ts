@@ -141,6 +141,29 @@ export async function createSetupCheckout(opts: {
   return s.url as string;
 }
 
+// ---------- Cobrança off-session (IA Rural por uso) ----------
+export async function chargeOffSession(opts: {
+  customerId: string;
+  amountCents: number;
+  currency: string;
+  description?: string;
+  metadata?: Record<string, string>;
+}): Promise<string> {
+  const form: Form = {
+    customer: opts.customerId,
+    amount: String(opts.amountCents),
+    currency: opts.currency.toLowerCase(),
+    confirm: "true",
+    off_session: "true",
+    "automatic_payment_methods[enabled]": "true",
+    "automatic_payment_methods[allow_redirects]": "never",
+  };
+  if (opts.description) form.description = opts.description;
+  for (const [k, v] of Object.entries(opts.metadata ?? {})) form[`metadata[${k}]`] = v;
+  const pi = await stripeApi("payment_intents", form);
+  return pi.id as string;
+}
+
 // ---------- Verificação de webhook (Web Crypto, compatível com Workers) ----------
 export async function verifyStripeSignature(payload: string, sigHeader: string | null, secret: string): Promise<boolean> {
   if (!sigHeader) return false;
