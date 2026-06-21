@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/guard";
 import { greeting } from "@/lib/greeting";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
+import { PanelNotice } from "@/components/PanelNotice";
 import { Sparkline, AreaChart, Donut, type DonutSegment } from "@/components/charts";
 import { formatBRL, CATEGORY_LABEL, type ProductCategory } from "@/lib/catalog";
 import { ORDER_STATUS_LABEL, ORDER_STATUS_STYLE, type OrderStatus } from "@/lib/orders";
@@ -106,6 +107,7 @@ export default async function ProdutorPage() {
       title={greeting(profile?.full_name)}
       subtitle="Aqui está o resumo da sua operação gourmet de hoje."
     >
+      <PanelNotice role="produtor" />
       {/* Métricas */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Metric icon="cash" label="Faturamento (mês)" value={formatBRL(fatThis)} delta={delta(fatThis, fatPrev)} series={fatSeries} />

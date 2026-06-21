@@ -1,29 +1,25 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripeEnabled, createSubscriptionCheckout } from "@/lib/stripe";
-import { getPlan, planArea } from "@/lib/plans";
+import { planArea } from "@/lib/plans";
+import { getPlanById, effectivePriceId } from "@/lib/plans-db";
 
 export async function POST(request: Request) {
   const origin = new URL(request.url).origin;
   const form = await request.formData();
   const planId = String(form.get("plan") || "");
-  const plan = getPlan(planId);
   const area = planArea(planId);
 
-  if (!stripeEnabled()) {
-    return NextResponse.redirect(`${origin}${area}?error=stripe_off`, { status: 303 });
-  }
-  if (!plan || !plan.priceEnv) {
-    return NextResponse.redirect(`${origin}${area}?error=plano_invalido`, { status: 303 });
-  }
-  const priceId = process.env[plan.priceEnv]?.trim();
-  if (!priceId) {
-    return NextResponse.redirect(`${origin}${area}?error=price_off`, { status: 303 });
-  }
+  if (!stripeEnabled()) return NextResponse.redirect(`${origin}${area}?error=stripe_off`, { status: 303 });
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(`${origin}/login`, { status: 303 });
+
+  const plan = await getPlanById(supabase, planId);
+  if (!plan) return NextResponse.redirect(`${origin}${area}?error=plano_invalido`, { status: 303 });
+  const priceId = effectivePriceId(plan);
+  if (!priceId) return NextResponse.redirect(`${origin}${area}?error=price_off`, { status: 303 });
 
   try {
     const url = await createSubscriptionCheckout({

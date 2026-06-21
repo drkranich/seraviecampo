@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
 import { stripeEnabled, getAccount } from "@/lib/stripe";
 import { formatBRL } from "@/lib/catalog";
-import { getPlan, producerCommissionPct, DEFAULT_PRODUCER_PLAN } from "@/lib/plans";
+import { DEFAULT_PRODUCER_PLAN } from "@/lib/plans";
+import { getPlanById, producerCommissionPctDb } from "@/lib/plans-db";
 import { setPayoutMode } from "./actions";
 
 export default async function FinanceiroPage({
@@ -42,8 +43,8 @@ export default async function FinanceiroPage({
     .from("subscriptions").select("plan, status").eq("account_id", user.id)
     .order("created_at", { ascending: false }).limit(1).maybeSingle();
   const planId = ((sub?.plan as string) || DEFAULT_PRODUCER_PLAN);
-  const plan = getPlan(planId);
-  const pct = producerCommissionPct(planId);
+  const plan = await getPlanById(supabase, planId);
+  const pct = await producerCommissionPctDb(supabase, planId);
 
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
   const { data: paidOrders } = await supabase

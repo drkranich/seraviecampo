@@ -2,8 +2,8 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ENTREGADOR_NAV } from "@/components/AppShell";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
+import { getPlansByRole } from "@/lib/plans-db";
 import { SubscriptionStatus } from "@/components/SubscriptionStatus";
-import { ENTREGADOR_PLANS } from "@/lib/plans";
 import { stripeEnabled } from "@/lib/stripe";
 
 export default async function AssinaturaEntregadorPage({
@@ -14,6 +14,7 @@ export default async function AssinaturaEntregadorPage({
   const { user, profile } = await requireRole("entregador");
   const { ok, canceled, error, cancelado } = await searchParams;
   const supabase = await createClient();
+  const plans = await getPlansByRole(supabase, "entregador");
   const { data: sub } = await supabase.from("subscriptions").select("plan, status, current_period_end, cancel_at_period_end").eq("account_id", user.id).maybeSingle();
   const currentPlan = (sub?.status === "ativa" ? sub?.plan : "ent_base") as string;
 
@@ -34,7 +35,7 @@ export default async function AssinaturaEntregadorPage({
       )}
       {cancelado && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Assinatura cancelada. Ativa até o fim do ciclo; sem cobrança no próximo mês.</div>}
       <SubscriptionStatus sub={sub} back="/entregador/assinatura" />
-      <SubscriptionPlans plans={ENTREGADOR_PLANS} currentPlan={currentPlan} enabled={stripeEnabled()} highlightId="ent_pro" />
+      <SubscriptionPlans plans={plans} currentPlan={currentPlan} enabled={stripeEnabled()} highlightId="ent_pro" />
     </AppShell>
   );
 }

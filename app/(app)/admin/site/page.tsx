@@ -47,6 +47,14 @@ export default async function SiteCmsPage({
           <div><label className={labelCls}>CTA — título</label><input name="cta_title" defaultValue={site.cta_title} className={inputCls} /></div>
           <div><label className={labelCls}>CTA — texto</label><input name="cta_text" defaultValue={site.cta_text} className={inputCls} /></div>
         </div>
+        <div className="rounded-xl border border-campo-border bg-campo-surface2/40 p-4">
+          <p className="mb-2 text-sm font-medium text-forest-100">Avisos no topo de cada painel (deixe vazio para não exibir)</p>
+          <div className="space-y-3">
+            <div><label className={labelCls}>Aviso — Cliente</label><input name="aviso_cliente" defaultValue={site.avisos.cliente} className={inputCls} /></div>
+            <div><label className={labelCls}>Aviso — Produtor</label><input name="aviso_produtor" defaultValue={site.avisos.produtor} className={inputCls} /></div>
+            <div><label className={labelCls}>Aviso — Entregador</label><input name="aviso_entregador" defaultValue={site.avisos.entregador} className={inputCls} /></div>
+          </div>
+        </div>
         <div><label className={labelCls}>Rodapé</label><textarea name="footer" defaultValue={site.footer} rows={2} className={inputCls} /></div>
 
         <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">Salvar página</button>

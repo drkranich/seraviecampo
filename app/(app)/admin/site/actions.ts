@@ -24,6 +24,7 @@ export async function updateSite(formData: FormData) {
     cta_title: str("cta_title"),
     cta_text: str("cta_text"),
     footer: str("footer"),
+    avisos: { cliente: str("aviso_cliente"), produtor: str("aviso_produtor"), entregador: str("aviso_entregador") },
     perfis,
     steps,
   };

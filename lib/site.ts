@@ -15,6 +15,7 @@ export type SiteContent = {
   cta_title: string;
   cta_text: string;
   footer: string;
+  avisos: { cliente: string; produtor: string; entregador: string };
 };
 
 export const DEFAULT_SITE: SiteContent = {
@@ -37,6 +38,7 @@ export const DEFAULT_SITE: SiteContent = {
   ],
   cta_title: "Faça parte do ecossistema",
   cta_text: "Produtores, clientes e entregadores em uma só plataforma. Comece agora, é rápido.",
+  avisos: { cliente: "", produtor: "", entregador: "" },
   footer: "© Seravie Campo — Sistema Operacional da Economia Local. A plataforma conecta usuários e não se responsabiliza por produção, transporte ou pagamento entre as partes.",
 };
 
@@ -46,6 +48,7 @@ export async function getSite(supabase: SupabaseClient): Promise<SiteContent> {
   return {
     ...DEFAULT_SITE,
     ...d,
+    avisos: { ...DEFAULT_SITE.avisos, ...(d.avisos ?? {}) },
     perfis: Array.isArray(d.perfis) && d.perfis.length ? d.perfis : DEFAULT_SITE.perfis,
     steps: Array.isArray(d.steps) && d.steps.length ? d.steps : DEFAULT_SITE.steps,
   };

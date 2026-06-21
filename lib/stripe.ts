@@ -164,6 +164,27 @@ export async function chargeOffSession(opts: {
   return pi.id as string;
 }
 
+// ---------- Preço recorrente (CMS de planos: gerar novo price ao alterar valor) ----------
+export async function createRecurringPrice(opts: {
+  productId?: string | null;
+  productName: string;
+  amountCents: number;
+  currency: string;
+}): Promise<{ priceId: string; productId: string }> {
+  let productId = opts.productId || null;
+  if (!productId) {
+    const prod = await stripeApi("products", { name: opts.productName });
+    productId = prod.id as string;
+  }
+  const price = await stripeApi("prices", {
+    product: productId,
+    unit_amount: String(opts.amountCents),
+    currency: opts.currency.toLowerCase(),
+    "recurring[interval]": "month",
+  });
+  return { priceId: price.id as string, productId };
+}
+
 // ---------- Verificação de webhook (Web Crypto, compatível com Workers) ----------
 export async function verifyStripeSignature(payload: string, sigHeader: string | null, secret: string): Promise<boolean> {
   if (!sigHeader) return false;

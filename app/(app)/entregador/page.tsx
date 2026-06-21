@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/guard";
 import { greeting } from "@/lib/greeting";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ENTREGADOR_NAV } from "@/components/AppShell";
+import { PanelNotice } from "@/components/PanelNotice";
 import { formatBRL } from "@/lib/catalog";
 import { acceptDelivery } from "./actions";
 import { DeliveryProof } from "@/components/DeliveryProof";
@@ -34,6 +35,7 @@ export default async function EntregadorPage() {
 
   return (
     <AppShell badge="Entregador" nav={ENTREGADOR_NAV} userName={profile?.full_name ?? "Entregador"} title={greeting(profile?.full_name)} subtitle="Suas entregas e ganhos.">
+      <PanelNotice role="entregador" />
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label="Disponíveis" value={String(available.length)} accent={available.length > 0} />
         <Stat label="Em rota" value={String(active.length)} />

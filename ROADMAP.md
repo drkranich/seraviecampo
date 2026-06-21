@@ -53,7 +53,7 @@
 
 ## 5) FUNCIONALIDADES / NEGÓCIO (backlog)
 - [ ] Apps nativos Android e iOS. (PROJETO À PARTE — outro dia.)
-- [~] Página pública editável FEITA (landing em '/' lendo de site_content) + CMS no super admin (/admin/site) para editar hero, perfis, passos, CTA e rodapé. FALTA (fase 2 do CMS): editar conteúdo/banner dos 3 painéis internos e editar VALORES dos planos pela tela (planos -> banco + gerar novo price no Stripe).
+- [x] CMS completo: (1) página pública editável (/admin/site); (2) PLANOS editáveis no banco (/admin/planos) com geração de novo price no Stripe ao alterar o valor — todas as telas/cálculos (assinatura, comissão, checkout) leem do banco; (3) AVISOS editáveis por painel (cliente/produtor/entregador). FEITO.
 - [ ] GPS fases 2/3: rastreamento da entrega em tempo real no mapa + ETA.
 - [ ] Avaliações/notas (cliente avalia produtor e entregador).
 - [ ] Cupons/promoções, cesta recorrente (assinatura de cesta), reserva de colheita avançada.
@@ -83,3 +83,14 @@
 - Mensalidade (plano do produtor/entregador): cobrada pela Stripe Billing (assinatura recorrente) no cartão do usuário → cai direto no saldo da plataforma. 100% seu, automático.
 - Comissão sobre vendas: retida automaticamente no split — a plataforma recebe o total do pedido e transfere ao produtor (vendas − comissão). A comissão nunca sai da conta da plataforma.
 - Modo "imediato": comissão retida no ato do pagamento. Modo "mensal": acumula e o JOB MENSAL transfere o líquido (vendas − comissão − mensalidade) ao produtor. (Job a construir.)
+
+## ✅ CHECKLIST — Migração para domínio próprio (quando tiver)
+Ao apontar o domínio definitivo (ex.: seusite.com.br) para o Worker, trocar SÓ o domínio nestes lugares (chaves/secrets continuam iguais):
+- [ ] cron-job.org → editar a URL do cronjob: https://SEUSITE/api/cron/monthly?key=CRON_SECRET (ou header Authorization).
+- [ ] Stripe → Developers → Webhooks → editar endpoint para https://SEUSITE/api/stripe/webhook.
+- [ ] Stripe → Connect/branding e URLs de retorno usam o origin da requisição (automático) — conferir após migrar.
+- [ ] Supabase → Auth → URL Configuration → Site URL = https://SEUSITE e Redirect URLs (ex.: https://SEUSITE/auth/callback).
+- [ ] Passkey/WebAuthn → RP ID = domínio final (quando ativarmos passkeys em produção).
+- [ ] Cloudflare → adicionar o domínio (Custom domain) ao Worker/Pages e validar SSL.
+- [ ] Depois de validar: desativar o uso do *.workers.dev (deixar só o domínio oficial).
+- Não muda: CRON_SECRET, STRIPE_*, SUPABASE_SERVICE_ROLE_KEY, AI_*, RESEND_API_KEY.

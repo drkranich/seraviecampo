@@ -2,8 +2,8 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, CLIENTE_NAV } from "@/components/AppShell";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
+import { getPlansByRole } from "@/lib/plans-db";
 import { SubscriptionStatus } from "@/components/SubscriptionStatus";
-import { CLIENTE_PLANS } from "@/lib/plans";
 import { stripeEnabled } from "@/lib/stripe";
 import { trialStatus, PAID_CLIENT_PLANS, ACTIVE_SUB_STATUS } from "@/lib/trial";
 
@@ -15,6 +15,7 @@ export default async function AssinaturaClientePage({
   const { user, profile } = await requireRole("cliente");
   const { ok, canceled, error, trial, cancelado } = await searchParams;
   const supabase = await createClient();
+  const plans = await getPlansByRole(supabase, "cliente");
   const { data: sub } = await supabase.from("subscriptions").select("plan, status, current_period_end, cancel_at_period_end").eq("account_id", user.id).maybeSingle();
   const currentPlan = (sub?.status === "ativa" ? sub?.plan : "cli_livre") as string;
 
@@ -47,7 +48,7 @@ export default async function AssinaturaClientePage({
       )}
       {cancelado && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Assinatura cancelada. Ativa até o fim do ciclo; sem cobrança no próximo mês.</div>}
       <SubscriptionStatus sub={sub} back="/cliente/assinatura" />
-      <SubscriptionPlans plans={CLIENTE_PLANS} currentPlan={currentPlan} enabled={stripeEnabled()} highlightId="cli_sabor" />
+      <SubscriptionPlans plans={plans} currentPlan={currentPlan} enabled={stripeEnabled()} highlightId="cli_sabor" />
     </AppShell>
   );
 }

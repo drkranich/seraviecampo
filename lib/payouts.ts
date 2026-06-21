@@ -1,5 +1,5 @@
 import { createTransfer, chargeOffSession, stripeEnabled } from "@/lib/stripe";
-import { producerCommissionPct } from "@/lib/plans";
+import { producerCommissionPctDb } from "@/lib/plans-db";
 import { courierShareCents } from "@/lib/shipping";
 
 // db = qualquer cliente supabase (admin no webhook, autenticado na action)
@@ -26,7 +26,7 @@ export async function payoutProducerForOrder(db: any, orderId: string, force = f
 
   const { data: sub } = await db.from("subscriptions").select("plan, status").eq("account_id", o.producer_id).maybeSingle();
   const planId = sub && sub.status && ACTIVE.includes(sub.status) ? (sub.plan as string) : "campo";
-  const pct = producerCommissionPct(planId);
+  const pct = await producerCommissionPctDb(db, planId);
   const productRevenue = (o.total_cents as number) - ((o.delivery_fee_cents as number) || 0);
   const net = Math.max(0, productRevenue - Math.round((productRevenue * pct) / 100));
   if (net <= 0) return;

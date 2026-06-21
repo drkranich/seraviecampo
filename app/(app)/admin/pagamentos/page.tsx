@@ -2,7 +2,8 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { formatBRL } from "@/lib/catalog";
-import { getPlan, producerCommissionPct, DEFAULT_PRODUCER_PLAN } from "@/lib/plans";
+import { DEFAULT_PRODUCER_PLAN } from "@/lib/plans";
+import { getPlans } from "@/lib/plans-db";
 import { platformShareCents, courierShareCents } from "@/lib/shipping";
 import { producerName } from "@/lib/profile";
 
@@ -15,6 +16,8 @@ const ACTIVE = ["active", "ativa", "ativo", "trialing"];
 export default async function AdminPagamentosPage() {
   await requireRole("super_admin");
   const supabase = await createClient();
+  const planList = await getPlans(supabase);
+  const planMap = new Map(planList.map((p) => [p.id, p]));
 
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
 
@@ -34,7 +37,7 @@ export default async function AdminPagamentosPage() {
   let subProd = 0, subCli = 0, subEnt = 0;
   for (const s of subs) {
     if (!s.plan || !(s.status && ACTIVE.includes(s.status))) continue;
-    const price = getPlan(s.plan)?.price_cents ?? 0;
+    const price = planMap.get(s.plan)?.price_cents ?? 0;
     const role = profMap.get(s.account_id)?.role;
     if (role === "produtor") subProd += price;
     else if (role === "cliente") subCli += price;
@@ -57,7 +60,7 @@ export default async function AdminPagamentosPage() {
   for (const o of orders) {
     const fee = o.delivery_fee_cents || 0;
     const productRev = o.total_cents - fee;
-    const pct = producerCommissionPct(prodPlan.get(o.producer_id) ?? DEFAULT_PRODUCER_PLAN);
+    const pct = planMap.get(prodPlan.get(o.producer_id) ?? DEFAULT_PRODUCER_PLAN)?.commission_pct ?? 12;
     const comm = Math.round((productRev * pct) / 100);
     commissionTotal += comm;
     deliveryPlatform += platformShareCents(fee);
