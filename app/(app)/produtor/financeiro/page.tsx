@@ -59,6 +59,7 @@ export default async function FinanceiroPage({
 
   const errMsg: Record<string, string> = {
     stripe_off: "A plataforma ainda não ativou o Stripe. Volte em breve.",
+    connect_setup: "Os recebimentos via Stripe estão sendo ativados pela plataforma. Tente novamente em breve.",
   };
 
   return (

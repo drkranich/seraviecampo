@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(link, { status: 303 });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "erro";
-    return NextResponse.redirect(`${origin}/produtor/financeiro?error=${encodeURIComponent(msg)}`, { status: 303 });
+    const code = /connect/i.test(msg) ? "connect_setup" : encodeURIComponent(msg);
+    return NextResponse.redirect(`${origin}/produtor/financeiro?error=${code}`, { status: 303 });
   }
 }
