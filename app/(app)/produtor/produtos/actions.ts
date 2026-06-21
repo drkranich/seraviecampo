@@ -55,6 +55,24 @@ export async function updateProduct(id: string, formData: FormData) {
   redirect("/produtor/produtos");
 }
 
+export async function archiveProduct(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  await supabase.from("products").update({ archived: true, available: false }).eq("id", id).eq("producer_id", user.id);
+  revalidatePath("/produtor/produtos");
+  redirect("/produtor/produtos");
+}
+
+export async function restoreProduct(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  await supabase.from("products").update({ archived: false, available: true }).eq("id", id).eq("producer_id", user.id);
+  revalidatePath("/produtor/produtos");
+  redirect("/produtor/produtos");
+}
+
 export async function deleteProduct(id: string) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

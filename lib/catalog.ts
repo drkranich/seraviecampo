@@ -92,5 +92,6 @@ export type Product = {
   available_from: string | null;
   image_url: string | null;
   images: string[];
+  archived: boolean;
   created_at: string;
 };

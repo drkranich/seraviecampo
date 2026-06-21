@@ -48,3 +48,53 @@ export async function updatePlan(formData: FormData) {
   revalidatePath("/admin/planos");
   redirect("/admin/planos?ok=1");
 }
+
+
+export async function createPlan(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const id = String(formData.get("id") || "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "_");
+  const role = String(formData.get("role") || "produtor");
+  const name = String(formData.get("name") || "").trim();
+  if (!id || !name) redirect("/admin/planos?error=" + encodeURIComponent("Informe identificador e nome."));
+  if (!["produtor", "cliente", "entregador"].includes(role)) redirect("/admin/planos?error=" + encodeURIComponent("Papel inválido."));
+
+  const { data: exists } = await supabase.from("plans").select("id").eq("id", id).maybeSingle();
+  if (exists) redirect("/admin/planos?error=" + encodeURIComponent("Já existe um plano com esse identificador."));
+
+  const tagline = String(formData.get("tagline") || "").trim();
+  const price_cents = parseToCents(String(formData.get("price") || "0"));
+  const commRaw = String(formData.get("commission_pct") || "").trim();
+  const commission_pct = commRaw === "" ? null : Math.max(0, Math.min(100, Number(commRaw) || 0));
+  const features = String(formData.get("features") || "").split("\n").map((l) => l.trim()).filter(Boolean);
+
+  const { data: maxRow } = await supabase.from("plans").select("sort").eq("role", role).order("sort", { ascending: false }).limit(1).maybeSingle();
+  const sort = ((maxRow?.sort as number) ?? 0) + 1;
+
+  const row: Record<string, unknown> = { id, role, name, tagline, price_cents, commission_pct, features, active: true, sort };
+
+  if (stripeEnabled() && price_cents > 0) {
+    try {
+      const { priceId, productId } = await createRecurringPrice({ productName: `Seravie Campo — ${name}`, amountCents: price_cents, currency: "BRL" });
+      row.stripe_price_id = priceId;
+      row.stripe_product_id = productId;
+    } catch { /* salva sem price; admin pode reeditar */ }
+  }
+
+  const { error } = await supabase.from("plans").insert(row);
+  if (error) redirect("/admin/planos?error=" + encodeURIComponent(error.message));
+  revalidatePath("/admin/planos");
+  redirect("/admin/planos?ok=1");
+}
+
+export async function deletePlan(formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const id = String(formData.get("id") || "");
+  await supabase.from("plans").delete().eq("id", id);
+  revalidatePath("/admin/planos");
+  redirect("/admin/planos?ok=1");
+}
