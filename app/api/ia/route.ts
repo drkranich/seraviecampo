@@ -26,7 +26,8 @@ export async function POST(req: Request) {
   try {
     const text = await generateAI(SYSTEM, userMsg);
     return NextResponse.json({ text });
-  } catch {
-    return NextResponse.json({ error: "Falha ao consultar a IA. Tente novamente." }, { status: 500 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Falha ao consultar a IA.";
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }
