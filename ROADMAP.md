@@ -95,6 +95,9 @@ Ao apontar o domínio definitivo (ex.: seusite.com.br) para o Worker, trocar SÓ
 - [ ] Depois de validar: desativar o uso do *.workers.dev (deixar só o domínio oficial).
 - Não muda: CRON_SECRET, STRIPE_*, SUPABASE_SERVICE_ROLE_KEY, AI_*, RESEND_API_KEY.
 
+## 🌿 Módulo EXPERIÊNCIAS (projeto grande — outro dia)
+- [ ] Vender vivências/turismo rural além de produtos (reservas, calendário Airbnb-like, check-in QR, CRM, avaliações, automações, IA, analytics, módulo público premium). PRD completo em **EXPERIENCIAS.md**.
+
 ## 📌 Para a semana que vem
 - [ ] Banir usuário (cliente, produtor, entregador) no super admin → dentro de Usuários (e/ou na ficha do usuário). Ainda não existe.
       Implementação prevista: coluna profiles.banned (boolean) + banned_at + banned_reason; botão "Banir"/"Desbanir" na lista e na ficha (/admin/usuarios/[id]); o guard (requireRole) bloqueia o acesso de quem está banido (redirect para uma página "conta suspensa"); opcional: desativar produtos/assinatura do banido.
