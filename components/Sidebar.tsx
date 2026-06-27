@@ -89,7 +89,7 @@ export function Sidebar({
     <>
       {/* Sidebar desktop */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-campo-border bg-campo-surface/40 px-4 py-6 md:flex">
-        <Link href="/" className="mb-8 px-2">
+        <Link href="/" className="mb-6 shrink-0 px-2">
           <span className="block font-serif text-2xl font-semibold text-forest-100">
             Seravie <span className="text-gold">Campo</span>
           </span>
@@ -98,9 +98,11 @@ export function Sidebar({
           </span>
         </Link>
 
-        <NavLinks />
+        <div className="sidebar-scroll -mr-2 min-h-0 flex-1 overflow-y-auto pr-2">
+          <NavLinks />
+        </div>
 
-        <div className="mt-auto space-y-4 pt-6">
+        <div className="shrink-0 space-y-3 border-t border-campo-border pt-4">
           <div className="rounded-xl border border-campo-border glass p-3">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-campo-surface2 text-sm text-gold">
@@ -122,9 +124,6 @@ export function Sidebar({
               </form>
             </div>
           </div>
-          <p className="px-2 text-[0.7rem] leading-relaxed text-stone-600">
-            Conectando campo e cidade com produtos extraordinários.
-          </p>
         </div>
       </aside>
 
