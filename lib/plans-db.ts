@@ -49,3 +49,25 @@ export async function producerCommissionPctDb(db: any, planId?: string | null): 
   const p = await getPlanById(db, planId || "campo");
   return p?.commission_pct ?? 12;
 }
+
+// ---------- Experiências: planos e comissão (separados dos produtos) ----------
+const EXP_ACTIVE = ["active", "ativa", "ativo", "trialing"];
+export const DEFAULT_EXPERIENCE_PLAN = "exp_inicial";
+export const DEFAULT_EXPERIENCE_COMMISSION = 15;
+
+export async function getExperiencePlans(db: any): Promise<DbPlan[]> {
+  return getPlansByRole(db, "experiencias");
+}
+
+// Plano de experiências do anfitrião (produtor ou parceiro). Default: exp_inicial.
+export async function experiencePlanIdOf(db: any, accountId: string): Promise<string> {
+  const { data: sub } = await db.from("experience_subscriptions").select("plan, status").eq("account_id", accountId).maybeSingle();
+  if (sub && sub.status && EXP_ACTIVE.includes(sub.status)) return (sub.plan as string) || DEFAULT_EXPERIENCE_PLAN;
+  return DEFAULT_EXPERIENCE_PLAN;
+}
+
+export async function experienceCommissionPct(db: any, accountId: string): Promise<number> {
+  const planId = await experiencePlanIdOf(db, accountId);
+  const p = await getPlanById(db, planId);
+  return p?.commission_pct ?? DEFAULT_EXPERIENCE_COMMISSION;
+}

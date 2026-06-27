@@ -1,5 +1,5 @@
 import { createTransfer, chargeOffSession, stripeEnabled } from "@/lib/stripe";
-import { producerCommissionPctDb } from "@/lib/plans-db";
+import { producerCommissionPctDb, experienceCommissionPct } from "@/lib/plans-db";
 import { courierShareCents } from "@/lib/shipping";
 
 // db = qualquer cliente supabase (admin no webhook, autenticado na action)
@@ -63,7 +63,7 @@ export async function payoutCourierForOrder(db: any, orderId: string): Promise<v
 }
 
 
-// Repasse de uma RESERVA DE EXPERIÊNCIA paga (valor − comissão da plataforma).
+// Repasse de uma RESERVA DE EXPERIÊNCIA paga (valor − comissão de experiências do anfitrião).
 export async function payoutExperienceBooking(db: any, bookingId: string, force = false): Promise<void> {
   if (!stripeEnabled()) return;
   const { data: b } = await db.from("experience_bookings")
@@ -76,9 +76,7 @@ export async function payoutExperienceBooking(db: any, bookingId: string, force 
   if (!prod?.stripe_account_id || !prod.stripe_charges_enabled) return;
   if (!force && prod.payout_mode !== "imediato") return; // mensal acumula -> job mensal usa force=true
 
-  const { data: sub } = await db.from("subscriptions").select("plan, status").eq("account_id", b.producer_id).maybeSingle();
-  const planId = sub && sub.status && ACTIVE.includes(sub.status) ? (sub.plan as string) : "campo";
-  const pct = await producerCommissionPctDb(db, planId);
+  const pct = await experienceCommissionPct(db, b.producer_id as string);
   const gross = (b.total_cents as number) || 0;
   const net = Math.max(0, gross - Math.round((gross * pct) / 100));
   if (net <= 0) return;

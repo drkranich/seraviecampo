@@ -7,7 +7,7 @@ import { getPlans, type DbPlan } from "@/lib/plans-db";
 import { updatePlan, createPlan, deletePlan } from "./actions";
 
 const inputCls = "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-sm text-stone-100 outline-none focus:border-gold";
-const ROLE_LABEL: Record<string, string> = { produtor: "Produtor", cliente: "Cliente", entregador: "Entregador" };
+const ROLE_LABEL: Record<string, string> = { produtor: "Produtor", cliente: "Cliente", entregador: "Entregador", experiencias: "Experiências" };
 function reais(cents: number) { return (cents / 100).toFixed(2).replace(".", ","); }
 
 export default async function PlanosCmsPage({
@@ -17,7 +17,7 @@ export default async function PlanosCmsPage({
   const sp = await searchParams;
   const supabase = await createClient();
   const plans = await getPlans(supabase);
-  const roles = ["produtor", "cliente", "entregador"];
+  const roles = ["produtor", "cliente", "entregador", "experiencias"];
 
   return (
     <AppShell badge="Seravie Hub" nav={ADMIN_NAV} userName={profile?.full_name ?? "Administrador"} title="Planos" subtitle="Criar, editar e excluir planos. Ao mudar o preço, um novo price é criado no Stripe.">

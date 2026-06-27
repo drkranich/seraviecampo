@@ -53,10 +53,17 @@ export async function POST(request: Request) {
         await db.from("profiles").update({ ai_card_added: true }).eq("id", obj.client_reference_id as string);
       }
       if (obj.mode === "subscription" && obj.client_reference_id) {
-        await db.from("subscriptions").upsert(
-          { account_id: obj.client_reference_id as string, status: "ativa", stripe_subscription_id: (obj.subscription as string) ?? null, cancel_at_period_end: false },
-          { onConflict: "account_id" }
-        );
+        if (meta.kind === "experience") {
+          await db.from("experience_subscriptions").upsert(
+            { account_id: obj.client_reference_id as string, plan: meta.plan || "exp_inicial", status: "ativa", stripe_subscription_id: (obj.subscription as string) ?? null, cancel_at_period_end: false, updated_at: new Date().toISOString() },
+            { onConflict: "account_id" }
+          );
+        } else {
+          await db.from("subscriptions").upsert(
+            { account_id: obj.client_reference_id as string, status: "ativa", stripe_subscription_id: (obj.subscription as string) ?? null, cancel_at_period_end: false },
+            { onConflict: "account_id" }
+          );
+        }
       }
     } else if (event.type === "payment_intent.succeeded" && meta.order_id) {
       await db.from("orders").update({ payment_status: "pago", paid_at: new Date().toISOString() }).eq("id", meta.order_id);
@@ -65,8 +72,10 @@ export async function POST(request: Request) {
       await markExperiencePaid(db, meta.booking_id);
     } else if (event.type === "customer.subscription.deleted" && obj.id) {
       await db.from("subscriptions").update({ status: "cancelada" }).eq("stripe_subscription_id", obj.id as string);
+      await db.from("experience_subscriptions").update({ status: "cancelada" }).eq("stripe_subscription_id", obj.id as string);
     } else if (event.type === "customer.subscription.updated" && obj.id) {
       await db.from("subscriptions").update({ cancel_at_period_end: !!obj.cancel_at_period_end }).eq("stripe_subscription_id", obj.id as string);
+      await db.from("experience_subscriptions").update({ cancel_at_period_end: !!obj.cancel_at_period_end }).eq("stripe_subscription_id", obj.id as string);
     }
   } catch {
     /* não falhar o webhook por erro de escrita; Stripe re-tenta */

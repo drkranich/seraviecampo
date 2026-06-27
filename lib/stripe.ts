@@ -59,8 +59,9 @@ export async function createSubscriptionCheckout(opts: {
   clientReferenceId: string;
   successUrl: string;
   cancelUrl: string;
+  metadata?: Record<string, string>;
 }): Promise<string> {
-  const session = await stripeApi("checkout/sessions", {
+  const form: Form = {
     mode: "subscription",
     "payment_method_types[0]": "card",
     "line_items[0][price]": opts.priceId,
@@ -69,7 +70,12 @@ export async function createSubscriptionCheckout(opts: {
     client_reference_id: opts.clientReferenceId,
     success_url: opts.successUrl,
     cancel_url: opts.cancelUrl,
-  });
+  };
+  for (const [k, v] of Object.entries(opts.metadata ?? {})) {
+    form[`metadata[${k}]`] = v;
+    form[`subscription_data[metadata][${k}]`] = v;
+  }
+  const session = await stripeApi("checkout/sessions", form);
   return session.url as string;
 }
 

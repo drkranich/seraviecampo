@@ -34,6 +34,10 @@ export default async function ExperienciasPublicPage() {
         <p className="font-serif text-sm uppercase tracking-[0.3em] text-gold">Seravie Campo</p>
         <h1 className="mt-3 font-serif text-4xl font-semibold text-forest-100 sm:text-5xl">{site.experiencias_title}</h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-stone-400">{site.experiencias_subtitle}</p>
+        <p className="mt-5 text-sm text-stone-500">
+          Quer ofertar a sua?{" "}
+          <Link href="/signup?role=parceiro" className="text-gold hover:underline">Torne-se um anfitrião de experiências</Link>
+        </p>
       </header>
 
       <section className="mx-auto max-w-6xl px-6 pb-16">

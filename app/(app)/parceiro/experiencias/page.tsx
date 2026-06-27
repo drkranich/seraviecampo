@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
-import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
+import { AppShell, PARCEIRO_NAV } from "@/components/AppShell";
 import { ConfirmButton } from "@/components/ConfirmButton";
 import {
   EXP_CATEGORY_LABEL,
@@ -17,12 +17,12 @@ import { getExperiencePlans, experiencePlanIdOf } from "@/lib/plans-db";
 import { ExperiencePlanPicker } from "@/components/ExperiencePlanPicker";
 import { archiveExperience, restoreExperience, deleteExperience, setBookingStatus } from "./actions";
 
-export default async function ExperienciasProdutorPage({
+export default async function ExperienciasParceiroPage({
   searchParams,
 }: {
   searchParams: Promise<{ ok?: string; canceled?: string; error?: string }>;
 }) {
-  const { user, profile } = await requireRole("produtor");
+  const { user, profile } = await requireRole("parceiro");
   const sp = await searchParams;
   const supabase = await createClient();
 
@@ -59,8 +59,8 @@ export default async function ExperienciasProdutorPage({
   );
 
   return (
-    <AppShell badge="Produtor Rural" nav={PRODUTOR_NAV} userName={profile?.full_name ?? "Produtor"} profileHref="/produtor/perfil"
-      title="Experiências" subtitle="Venda vivências, turismo rural e gastronomia além dos produtos.">
+    <AppShell badge="Parceiro de Experiências" nav={PARCEIRO_NAV} userName={profile?.full_name ?? "Parceiro"} profileHref="/parceiro/perfil"
+      title="Experiências" subtitle="Crie e gerencie as vivências que você oferta.">
       {sp.ok === "plano" && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Plano de experiências atualizado.</div>}
       {sp.ok && sp.ok !== "plano" && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Reserva atualizada.</div>}
       {sp.canceled && <div className="mb-4 rounded-lg border border-campo-border bg-campo-surface2 px-3 py-2 text-sm text-stone-400">Assinatura não concluída.</div>}
@@ -78,7 +78,7 @@ export default async function ExperienciasProdutorPage({
 
       <div className="mb-6 flex items-center justify-between">
         <h2 className="font-serif text-lg text-forest-100">Minhas experiências</h2>
-        <Link href="/produtor/experiencias/nova" className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">+ Nova experiência</Link>
+        <Link href="/parceiro/experiencias/nova" className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">+ Nova experiência</Link>
       </div>
 
       {ativos.length === 0 ? (
@@ -109,7 +109,7 @@ export default async function ExperienciasProdutorPage({
                   </div>
                 </div>
                 <div className="flex items-center gap-2 border-t border-campo-border p-2">
-                  <Link href={`/produtor/experiencias/${e.id}`} className="rounded-lg border border-campo-border px-3 py-1.5 text-xs text-stone-200 transition hover:border-gold/50">Editar</Link>
+                  <Link href={`/parceiro/experiencias/${e.id}`} className="rounded-lg border border-campo-border px-3 py-1.5 text-xs text-stone-200 transition hover:border-gold/50">Editar</Link>
                   <Link href={`/experiencias/${e.id}`} className="rounded-lg border border-campo-border px-3 py-1.5 text-xs text-stone-300 transition hover:border-gold/50">Ver página</Link>
                   <form action={archive}><button className="rounded-lg border border-campo-border px-3 py-1.5 text-xs text-stone-300 transition hover:border-gold/50">Arquivar</button></form>
                   <form action={del} className="ml-auto"><ConfirmButton message={`Excluir "${e.title}"?`} className="rounded-lg border border-red-900/50 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-950/40">Excluir</ConfirmButton></form>

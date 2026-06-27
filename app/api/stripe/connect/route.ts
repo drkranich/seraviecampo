@@ -11,7 +11,10 @@ export async function POST(request: Request) {
   const { data: profile } = await supabase
     .from("profiles").select("stripe_account_id, role").eq("id", user.id).single();
 
-  const area = profile?.role === "entregador" ? "/entregador/configuracoes" : "/produtor/financeiro";
+  const area =
+    profile?.role === "entregador" ? "/entregador/configuracoes"
+    : profile?.role === "parceiro" ? "/parceiro/financeiro"
+    : "/produtor/financeiro";
   if (!stripeEnabled()) return NextResponse.redirect(`${origin}${area}?error=stripe_off`, { status: 303 });
 
   let accountId = profile?.stripe_account_id as string | null;

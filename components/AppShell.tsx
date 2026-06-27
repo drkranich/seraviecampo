@@ -88,6 +88,14 @@ export const PRODUTOR_NAV: NavItem[] = [
   { href: "/produtor/configuracoes", label: "Configurações", icon: "gear" },
 ];
 
+export const PARCEIRO_NAV: NavItem[] = [
+  { href: "/parceiro", label: "Visão Geral", icon: "home" },
+  { href: "/parceiro/experiencias", label: "Experiências", icon: "discover" },
+  { href: "/parceiro/financeiro", label: "Financeiro", icon: "cash" },
+  { href: "/parceiro/perfil", label: "Perfil", icon: "profile" },
+  { href: "/parceiro/suporte", label: "Suporte", icon: "chat" },
+];
+
 export const ADMIN_NAV: NavItem[] = [
   { href: "/admin", label: "Visão Geral", icon: "chart" },
   { href: "/admin/pagamentos", label: "Pagamentos", icon: "cash" },
