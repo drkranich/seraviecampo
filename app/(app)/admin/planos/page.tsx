@@ -35,6 +35,7 @@ export default async function PlanosCmsPage({
           <div><label className="mb-1 block text-xs text-stone-400">Preço (R$/mês)</label><input name="price" inputMode="decimal" className={inputCls} placeholder="0,00" /></div>
           <div><label className="mb-1 block text-xs text-stone-400">Comissão (%)</label><input name="commission_pct" inputMode="numeric" className={inputCls} placeholder="—" /></div>
           <div className="sm:col-span-2"><label className="mb-1 block text-xs text-stone-400">Benefícios (1 por linha)</label><textarea name="features" rows={4} className={`${inputCls} text-xs`} /></div>
+          <div className="sm:col-span-2"><label className="mb-1 block text-xs text-stone-400">Stripe price ID (opcional — cole se já tiver criado no Stripe)</label><input name="stripe_price_id" placeholder="price_…" className={`${inputCls} font-mono text-xs`} /></div>
           <button className="w-fit rounded-lg bg-gold px-6 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light sm:col-span-2">Criar plano</button>
         </form>
       </details>
@@ -55,6 +56,7 @@ export default async function PlanosCmsPage({
                     <div><label className="mb-1 block text-xs text-stone-400">Comissão (%)</label><input name="commission_pct" defaultValue={p.commission_pct ?? ""} inputMode="numeric" placeholder="—" className={inputCls} /></div>
                   </div>
                   <div><label className="mb-1 block text-xs text-stone-400">Benefícios (1 por linha)</label><textarea name="features" defaultValue={(p.features ?? []).join("\n")} rows={5} className={`${inputCls} text-xs`} /></div>
+                  <div><label className="mb-1 block text-xs text-stone-400">Stripe price ID (price_…)</label><input name="stripe_price_id" defaultValue={p.stripe_price_id ?? ""} placeholder="deixe vazio p/ gerar automático ao mudar o valor" className={`${inputCls} font-mono text-xs`} /></div>
                   <label className="flex items-center gap-2 text-sm text-stone-300"><input type="checkbox" name="active" defaultChecked={p.active} className="accent-gold" /> Ativo</label>
                   <button className="w-full rounded-lg bg-gold py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Salvar</button>
                 </form>

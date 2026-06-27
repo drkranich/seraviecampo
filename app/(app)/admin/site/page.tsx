@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { getSite } from "@/lib/site";
+import { ImageUpload } from "@/components/ImageUpload";
 import { updateSite } from "./actions";
 
 const inputCls = "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold";
@@ -25,6 +26,10 @@ export default async function SiteCmsPage({
       {sp.error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{decodeURIComponent(sp.error)}</div>}
 
       <form action={updateSite} className="glass max-w-3xl space-y-4 rounded-2xl border border-campo-border p-6">
+        <div className="rounded-xl border border-campo-border bg-campo-surface2/40 p-4">
+          <ImageUpload name="favicon_url" label="Favicon (ícone da aba do navegador)" userId="" currentUrl={site.favicon_url || null} folder="favicon" shape="square" />
+          <p className="mt-1 text-xs text-stone-500">Use uma imagem quadrada (PNG/ICO/SVG). Aparece na aba do navegador.</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div><label className={labelCls}>Marca</label><input name="brand" defaultValue={site.brand} className={inputCls} /></div>
           <div><label className={labelCls}>Texto do botão (CTA)</label><input name="hero_cta" defaultValue={site.hero_cta} className={inputCls} /></div>

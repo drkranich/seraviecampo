@@ -16,6 +16,7 @@ export async function updateSite(formData: FormData) {
 
   const data = {
     brand: str("brand"),
+    favicon_url: str("favicon_url"),
     hero_kicker: str("hero_kicker"),
     hero_title: str("hero_title"),
     hero_subtitle: str("hero_subtitle"),

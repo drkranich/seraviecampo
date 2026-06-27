@@ -24,10 +24,13 @@ export async function updatePlan(formData: FormData) {
   const features = String(formData.get("features") || "").split("\n").map((l) => l.trim()).filter(Boolean);
   const active = formData.get("active") === "on";
 
+  const manualPriceId = String(formData.get("stripe_price_id") || "").trim();
   const values: Record<string, unknown> = { name, tagline, price_cents, commission_pct, features, active, updated_at: new Date().toISOString() };
 
-  // Se o valor mudou e há Stripe, gera um NOVO price (preços são imutáveis).
-  if (stripeEnabled() && price_cents > 0 && price_cents !== (cur.price_cents as number)) {
+  if (manualPriceId) {
+    // Price ID colado manualmente pelo admin — usa direto (conecta o plano ao Stripe).
+    values.stripe_price_id = manualPriceId;
+  } else if (stripeEnabled() && price_cents > 0 && price_cents !== (cur.price_cents as number)) {
     try {
       const { priceId, productId } = await createRecurringPrice({
         productId: (cur.stripe_product_id as string | null) ?? null,
@@ -73,9 +76,12 @@ export async function createPlan(formData: FormData) {
   const { data: maxRow } = await supabase.from("plans").select("sort").eq("role", role).order("sort", { ascending: false }).limit(1).maybeSingle();
   const sort = ((maxRow?.sort as number) ?? 0) + 1;
 
+  const manualPriceId = String(formData.get("stripe_price_id") || "").trim();
   const row: Record<string, unknown> = { id, role, name, tagline, price_cents, commission_pct, features, active: true, sort };
 
-  if (stripeEnabled() && price_cents > 0) {
+  if (manualPriceId) {
+    row.stripe_price_id = manualPriceId;
+  } else if (stripeEnabled() && price_cents > 0) {
     try {
       const { priceId, productId } = await createRecurringPrice({ productName: `Seravie Campo — ${name}`, amountCents: price_cents, currency: "BRL" });
       row.stripe_price_id = priceId;

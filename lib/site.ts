@@ -5,6 +5,7 @@ export type Step = { title: string; desc: string };
 
 export type SiteContent = {
   brand: string;
+  favicon_url: string;
   hero_kicker: string;
   hero_title: string;
   hero_subtitle: string;
@@ -20,6 +21,7 @@ export type SiteContent = {
 
 export const DEFAULT_SITE: SiteContent = {
   brand: "Seravie Campo",
+  favicon_url: "",
   hero_kicker: "Agro Gourmet",
   hero_title: "Seravie Campo",
   hero_subtitle: "O Sistema Operacional da Economia Local — conectando o campo e a cidade com produtos extraordinários, com logística justa e pagamentos transparentes.",
