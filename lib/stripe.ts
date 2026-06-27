@@ -99,6 +99,32 @@ export async function createOrderCheckout(opts: {
   return session.url as string;
 }
 
+// ---------- Pagamento de EXPERIÊNCIA (cliente reserva uma vivência) ----------
+export async function createExperienceCheckout(opts: {
+  amountCents: number;
+  currency: string;
+  bookingId: string;
+  description: string;
+  customerEmail: string;
+  successUrl: string;
+  cancelUrl: string;
+}): Promise<string> {
+  const session = await stripeApi("checkout/sessions", {
+    mode: "payment",
+    "payment_method_types[0]": "card",
+    "line_items[0][price_data][currency]": opts.currency.toLowerCase(),
+    "line_items[0][price_data][product_data][name]": opts.description,
+    "line_items[0][price_data][unit_amount]": String(opts.amountCents),
+    "line_items[0][quantity]": "1",
+    "metadata[booking_id]": opts.bookingId,
+    "payment_intent_data[metadata][booking_id]": opts.bookingId,
+    customer_email: opts.customerEmail,
+    success_url: opts.successUrl,
+    cancel_url: opts.cancelUrl,
+  });
+  return session.url as string;
+}
+
 // ---------- Repasse (Transfer) para conta conectada do produtor/entregador ----------
 export async function createTransfer(opts: {
   amountCents: number;

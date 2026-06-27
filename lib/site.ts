@@ -17,6 +17,9 @@ export type SiteContent = {
   cta_text: string;
   footer: string;
   avisos: { cliente: string; produtor: string; entregador: string };
+  experiencias_enabled: boolean;
+  experiencias_title: string;
+  experiencias_subtitle: string;
 };
 
 export const DEFAULT_SITE: SiteContent = {
@@ -41,6 +44,9 @@ export const DEFAULT_SITE: SiteContent = {
   cta_title: "Faça parte do ecossistema",
   cta_text: "Produtores, clientes e entregadores em uma só plataforma. Comece agora, é rápido.",
   avisos: { cliente: "", produtor: "", entregador: "" },
+  experiencias_enabled: true,
+  experiencias_title: "Experiências no campo",
+  experiencias_subtitle: "Vivências, gastronomia rural e turismo gourmet — reserve momentos extraordinários com quem produz.",
   footer: "© Seravie Campo — Sistema Operacional da Economia Local. A plataforma conecta usuários e não se responsabiliza por produção, transporte ou pagamento entre as partes.",
 };
 

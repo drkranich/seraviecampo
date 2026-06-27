@@ -12,6 +12,7 @@ export default async function Home() {
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
         <span className="font-serif text-xl text-forest-100">{site.brand}</span>
         <div className="flex items-center gap-2">
+          {site.experiencias_enabled && <Link href="/experiencias" className="rounded-lg px-4 py-2 text-sm text-stone-200 transition hover:text-gold">Experiências</Link>}
           <Link href="/login" className="rounded-lg border border-campo-border px-4 py-2 text-sm text-stone-200 transition hover:border-gold/50">Entrar</Link>
           <Link href="/signup" className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Criar conta</Link>
         </div>
@@ -53,6 +54,18 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* Experiências */}
+      {site.experiencias_enabled && (
+        <section className="mx-auto max-w-6xl px-6 py-10">
+          <div className="glass overflow-hidden rounded-3xl border border-gold/30 bg-gradient-to-br from-forest-900/40 to-campo-surface2/20 p-10 text-center">
+            <p className="font-serif text-sm uppercase tracking-[0.3em] text-gold">Novidade</p>
+            <h2 className="mt-3 font-serif text-3xl text-forest-100">{site.experiencias_title}</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-stone-400">{site.experiencias_subtitle}</p>
+            <Link href="/experiencias" className="mt-6 inline-block rounded-lg bg-gold px-8 py-3 font-medium text-campo-bg transition hover:bg-gold-light">Explorar experiências</Link>
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="mx-auto my-10 max-w-4xl px-6">

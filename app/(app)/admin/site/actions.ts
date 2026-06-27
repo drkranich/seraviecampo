@@ -26,6 +26,9 @@ export async function updateSite(formData: FormData) {
     cta_text: str("cta_text"),
     footer: str("footer"),
     avisos: { cliente: str("aviso_cliente"), produtor: str("aviso_produtor"), entregador: str("aviso_entregador") },
+    experiencias_enabled: formData.get("experiencias_enabled") === "on",
+    experiencias_title: str("experiencias_title"),
+    experiencias_subtitle: str("experiencias_subtitle"),
     perfis,
     steps,
   };

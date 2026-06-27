@@ -63,6 +63,33 @@ export async function payoutCourierForOrder(db: any, orderId: string): Promise<v
 }
 
 
+// Repasse de uma RESERVA DE EXPERIÊNCIA paga (valor − comissão da plataforma).
+export async function payoutExperienceBooking(db: any, bookingId: string, force = false): Promise<void> {
+  if (!stripeEnabled()) return;
+  const { data: b } = await db.from("experience_bookings")
+    .select("producer_id, customer_id, total_cents, currency, payment_status, producer_paid_out")
+    .eq("id", bookingId).single();
+  if (!b || b.payment_status !== "pago" || b.producer_paid_out) return;
+
+  const { data: prod } = await db.from("profiles")
+    .select("stripe_account_id, stripe_charges_enabled, payout_mode").eq("id", b.producer_id).single();
+  if (!prod?.stripe_account_id || !prod.stripe_charges_enabled) return;
+  if (!force && prod.payout_mode !== "imediato") return; // mensal acumula -> job mensal usa force=true
+
+  const { data: sub } = await db.from("subscriptions").select("plan, status").eq("account_id", b.producer_id).maybeSingle();
+  const planId = sub && sub.status && ACTIVE.includes(sub.status) ? (sub.plan as string) : "campo";
+  const pct = await producerCommissionPctDb(db, planId);
+  const gross = (b.total_cents as number) || 0;
+  const net = Math.max(0, gross - Math.round((gross * pct) / 100));
+  if (net <= 0) return;
+
+  const currency = (b.currency as string) || "BRL";
+  try {
+    await createTransfer({ amountCents: net, currency, destinationAccountId: prod.stripe_account_id, metadata: { booking_id: bookingId, kind: "experience" } });
+    await db.from("experience_bookings").update({ producer_paid_out: true }).eq("id", bookingId);
+  } catch { /* re-tenta em outro evento/ciclo */ }
+}
+
 // Job mensal: repassa o acumulado dos produtores "mensal" e cobra o uso da IA.
 export async function runMonthlyJob(db: any): Promise<{ producerTransfers: number; iaCharges: number }> {
   let producerTransfers = 0;
@@ -72,6 +99,12 @@ export async function runMonthlyJob(db: any): Promise<{ producerTransfers: numbe
   const { data: pend } = await db.from("orders").select("id").eq("payment_status", "pago").eq("producer_paid_out", false);
   for (const o of (pend ?? [])) {
     try { await payoutProducerForOrder(db, o.id as string, true); producerTransfers++; } catch { /* segue */ }
+  }
+
+  // A2) Repasse de reservas de experiência pagas ainda não repassadas (modo "mensal").
+  const { data: pendExp } = await db.from("experience_bookings").select("id").eq("payment_status", "pago").eq("producer_paid_out", false);
+  for (const b of (pendExp ?? [])) {
+    try { await payoutExperienceBooking(db, b.id as string, true); producerTransfers++; } catch { /* segue */ }
   }
 
   // B) Cobrança da IA dos meses já fechados (period < mês atual), ainda não cobrados.

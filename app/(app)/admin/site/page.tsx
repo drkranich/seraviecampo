@@ -60,6 +60,16 @@ export default async function SiteCmsPage({
             <div><label className={labelCls}>Aviso — Entregador</label><input name="aviso_entregador" defaultValue={site.avisos.entregador} className={inputCls} /></div>
           </div>
         </div>
+        <div className="rounded-xl border border-campo-border bg-campo-surface2/40 p-4">
+          <label className="flex items-center gap-2 text-sm font-medium text-forest-100">
+            <input type="checkbox" name="experiencias_enabled" defaultChecked={site.experiencias_enabled} className="accent-gold" />
+            Ativar módulo “Experiências” na página pública
+          </label>
+          <div className="mt-3 space-y-3">
+            <div><label className={labelCls}>Experiências — título</label><input name="experiencias_title" defaultValue={site.experiencias_title} className={inputCls} /></div>
+            <div><label className={labelCls}>Experiências — subtítulo</label><textarea name="experiencias_subtitle" defaultValue={site.experiencias_subtitle} rows={2} className={inputCls} /></div>
+          </div>
+        </div>
         <div><label className={labelCls}>Rodapé</label><textarea name="footer" defaultValue={site.footer} rows={2} className={inputCls} /></div>
 
         <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">Salvar página</button>
