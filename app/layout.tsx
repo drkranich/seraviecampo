@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { createClient } from "@/lib/supabase/server";
+import { createClient as createRaw } from "@supabase/supabase-js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import { getSite } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const supabase = await createClient();
+    // Cliente público (sem cookies) — evita tornar o layout raiz dinâmico no build.
+    const supabase = createRaw(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
     const site = await getSite(supabase);
     return {
       title: `${site.brand} — Agro Gourmet`,
