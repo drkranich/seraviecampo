@@ -222,7 +222,7 @@ export const DEFAULT_SITE: SiteContent = {
 };
 
 function withArray<T>(value: T[] | undefined, fallback: T[]) {
-  return Array.isArray(value) && value.length ? value : fallback;
+  return Array.isArray(value) ? value : fallback;
 }
 
 export async function getSite(supabase: SupabaseClient): Promise<SiteContent> {

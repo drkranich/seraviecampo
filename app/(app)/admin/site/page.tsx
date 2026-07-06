@@ -3,12 +3,62 @@ import type { ReactNode } from "react";
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ADMIN_NAV } from "@/components/AppShell";
+import { CmsObjectListEditor, CmsStringListEditor, type CmsListField } from "@/components/CmsListEditor";
 import { getSite } from "@/lib/site";
 import { ImageUpload } from "@/components/ImageUpload";
 import { updateSite } from "./actions";
 
 const inputCls = "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold";
 const labelCls = "mb-1 block text-sm text-stone-300";
+
+const ecosystemFields: CmsListField[] = [
+  { key: "label", label: "Selo", placeholder: "Hospede-se" },
+  { key: "title", label: "Título", placeholder: "Estadas com identidade local" },
+  { key: "text", label: "Texto", kind: "textarea", rows: 3, placeholder: "Explique o valor deste bloco." },
+];
+
+const destinationFields: CmsListField[] = [
+  { key: "name", label: "Destino", placeholder: "Lavras Novas" },
+  { key: "region", label: "Resumo", placeholder: "Serra, gastronomia e casarios" },
+  { key: "image", label: "Imagem", kind: "image", placeholder: "https://..." },
+  { key: "href", label: "Link", kind: "url", placeholder: "/experiencias" },
+];
+
+const accentOptions = [
+  { label: "Dourado", value: "border-[#C2A878] text-[#D4BD8C]" },
+  { label: "Verde", value: "border-[#7CA049] text-[#A9C875]" },
+  { label: "Terracota", value: "border-[#B66E4B] text-[#E0A077]" },
+  { label: "Azul suave", value: "border-[#6D8EA0] text-[#A8C7D3]" },
+  { label: "Oliva", value: "border-[#9A9A66] text-[#D3D19B]" },
+];
+
+const experienceTrackFields: CmsListField[] = [
+  { key: "title", label: "Categoria", placeholder: "Gastronomia" },
+  { key: "accent", label: "Cor", kind: "select", options: accentOptions },
+  { key: "text", label: "Texto", kind: "textarea", rows: 3, placeholder: "Descreva o tipo de experiência." },
+  { key: "href", label: "Link", kind: "url", placeholder: "/experiencias" },
+];
+
+const guideFields: CmsListField[] = [
+  { key: "label", label: "Título do guia", placeholder: "Melhor época para viajar" },
+  { key: "href", label: "Link", kind: "url", placeholder: "/signup" },
+];
+
+const trustFields: CmsListField[] = [
+  { key: "label", label: "Chamada", placeholder: "Pagamentos e cancelamentos:" },
+  { key: "text", label: "Texto", kind: "textarea", rows: 2, placeholder: "Explique o compromisso de confiança." },
+];
+
+const stepFields: CmsListField[] = [
+  { key: "title", label: "Título", placeholder: "Planeje" },
+  { key: "desc", label: "Descrição", kind: "textarea", rows: 2, placeholder: "Explique esta etapa." },
+];
+
+const profileFields: CmsListField[] = [
+  { key: "tag", label: "Selo", placeholder: "Viajante" },
+  { key: "nome", label: "Nome", placeholder: "Para quem visita" },
+  { key: "desc", label: "Descrição", kind: "textarea", rows: 2, placeholder: "Explique este perfil." },
+];
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -33,15 +83,6 @@ function TextAreaField({ name, label, value, rows = 3 }: { name: string; label: 
     <div>
       <label className={labelCls}>{label}</label>
       <textarea name={name} defaultValue={value} rows={rows} className={inputCls} />
-    </div>
-  );
-}
-
-function JsonField({ name, label, value, rows = 8 }: { name: string; label: string; value: unknown; rows?: number }) {
-  return (
-    <div>
-      <label className={labelCls}>{label}</label>
-      <textarea name={name} defaultValue={JSON.stringify(value, null, 2)} rows={rows} className={`${inputCls} font-mono text-xs leading-relaxed`} />
     </div>
   );
 }
@@ -80,11 +121,11 @@ export default async function SiteCmsPage({
           <TextField name="hero_kicker" label="Hero - linha pequena" value={site.hero_kicker} />
           <TextField name="hero_title" label="Hero - título" value={site.hero_title} />
           <TextAreaField name="hero_subtitle" label="Hero - subtítulo" value={site.hero_subtitle} />
-          <JsonField name="hero_teasers" label="Chamadas curtas abaixo da busca" value={site.hero_teasers} rows={5} />
+          <CmsStringListEditor name="hero_teasers" label="Chamadas curtas abaixo da busca" items={site.hero_teasers} itemLabel="Chamada" placeholder="Hospedagens rurais, pousadas, cabanas e fazendas." addLabel="Adicionar chamada" />
         </Section>
 
         <Section title="Faixa de ecossistema">
-          <JsonField name="ecosystem" label="Cards da faixa superior" value={site.ecosystem} rows={12} />
+          <CmsObjectListEditor name="ecosystem" label="Cards da faixa superior" items={site.ecosystem} fields={ecosystemFields} emptyItem={{ label: "", title: "", text: "" }} itemLabel="Card" addLabel="Adicionar card" titleKey="title" />
         </Section>
 
         <Section title="Destinos">
@@ -95,7 +136,7 @@ export default async function SiteCmsPage({
             </div>
           </div>
           <TextAreaField name="destinations_text" label="Texto de apoio" value={site.destinations_text} />
-          <JsonField name="destinations" label="Cards de destinos" value={site.destinations} rows={16} />
+          <CmsObjectListEditor name="destinations" label="Cards de destinos" items={site.destinations} fields={destinationFields} emptyItem={{ name: "", region: "", image: "", href: "/experiencias" }} itemLabel="Destino" addLabel="Adicionar destino" titleKey="name" />
         </Section>
 
         <Section title="Hospedagens e categorias">
@@ -106,7 +147,7 @@ export default async function SiteCmsPage({
             </div>
           </div>
           <TextAreaField name="stay_text" label="Texto de apoio" value={site.stay_text} />
-          <JsonField name="stay_types" label="Tipos de hospedagem" value={site.stay_types} rows={8} />
+          <CmsStringListEditor name="stay_types" label="Tipos de hospedagem" items={site.stay_types} itemLabel="Tipo" placeholder="Chalés" addLabel="Adicionar tipo" />
         </Section>
 
         <Section title="Experiências públicas">
@@ -117,7 +158,7 @@ export default async function SiteCmsPage({
             </div>
           </div>
           <TextAreaField name="home_experiences_text" label="Texto da vitrine na home" value={site.home_experiences_text} />
-          <JsonField name="experience_tracks" label="Categorias/linhas de experiência na home" value={site.experience_tracks} rows={14} />
+          <CmsObjectListEditor name="experience_tracks" label="Categorias/linhas de experiência na home" items={site.experience_tracks} fields={experienceTrackFields} emptyItem={{ title: "", text: "", accent: accentOptions[0].value, href: "/experiencias" }} itemLabel="Categoria" addLabel="Adicionar categoria" titleKey="title" />
           <label className="flex items-center gap-2 text-sm font-medium text-forest-100">
             <input type="checkbox" name="experiencias_enabled" defaultChecked={site.experiencias_enabled} className="accent-gold" />
             Mostrar chamada para experiências na página pública
@@ -136,9 +177,9 @@ export default async function SiteCmsPage({
             </div>
           </div>
           <TextAreaField name="products_text" label="Texto de produtos" value={site.products_text} />
-          <JsonField name="product_tags" label="Tags de produtos/rotas" value={site.product_tags} rows={6} />
+          <CmsStringListEditor name="product_tags" label="Tags de produtos/rotas" items={site.product_tags} itemLabel="Tag" placeholder="Cestas frescas" addLabel="Adicionar tag" />
           <TextField name="guides_label" label="Selo dos guias" value={site.guides_label} />
-          <JsonField name="guide_links" label="Links de guias públicos" value={site.guide_links} rows={10} />
+          <CmsObjectListEditor name="guide_links" label="Links de guias públicos" items={site.guide_links} fields={guideFields} emptyItem={{ label: "", href: "/signup" }} itemLabel="Guia" addLabel="Adicionar guia" titleKey="label" />
         </Section>
 
         <Section title="Área do anfitrião">
@@ -149,9 +190,9 @@ export default async function SiteCmsPage({
             </div>
           </div>
           <TextAreaField name="host_text" label="Texto da seção" value={site.host_text} />
-          <JsonField name="host_tools" label="Ferramentas/benefícios do anfitrião" value={site.host_tools} rows={6} />
+          <CmsStringListEditor name="host_tools" label="Ferramentas/benefícios do anfitrião" items={site.host_tools} itemLabel="Benefício" placeholder="Como anunciar" addLabel="Adicionar benefício" />
           <TextField name="trust_title" label="Título do bloco de confiança" value={site.trust_title} />
-          <JsonField name="trust_items" label="Itens do bloco de confiança" value={site.trust_items} rows={8} />
+          <CmsObjectListEditor name="trust_items" label="Itens do bloco de confiança" items={site.trust_items} fields={trustFields} emptyItem={{ label: "", text: "" }} itemLabel="Item" addLabel="Adicionar item" titleKey="label" />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField name="host_cta_label" label="CTA do anfitrião" value={site.host_cta_label} />
             <TextField name="host_cta_href" label="Link do CTA" value={site.host_cta_href} />
@@ -168,8 +209,8 @@ export default async function SiteCmsPage({
 
         <Section title="Blocos legados">
           <TextField name="steps_title" label="Título dos passos" value={site.steps_title} />
-          <JsonField name="steps" label="Passos" value={site.steps} rows={8} />
-          <JsonField name="perfis" label="Cartões de perfil" value={site.perfis} rows={10} />
+          <CmsObjectListEditor name="steps" label="Passos" items={site.steps} fields={stepFields} emptyItem={{ title: "", desc: "" }} itemLabel="Passo" addLabel="Adicionar passo" titleKey="title" />
+          <CmsObjectListEditor name="perfis" label="Cartões de perfil" items={site.perfis} fields={profileFields} emptyItem={{ tag: "", nome: "", desc: "" }} itemLabel="Perfil" addLabel="Adicionar perfil" titleKey="nome" />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField name="cta_title" label="CTA - título" value={site.cta_title} />
             <TextField name="cta_text" label="CTA - texto" value={site.cta_text} />
