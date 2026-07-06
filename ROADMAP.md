@@ -84,15 +84,15 @@
 - Comissão sobre vendas: retida automaticamente no split — a plataforma recebe o total do pedido e transfere ao produtor (vendas − comissão). A comissão nunca sai da conta da plataforma.
 - Modo "imediato": comissão retida no ato do pagamento. Modo "mensal": acumula e o JOB MENSAL transfere o líquido (vendas − comissão − mensalidade) ao produtor. (Job a construir.)
 
-## ✅ CHECKLIST — Migração para domínio próprio (quando tiver)
-Ao apontar o domínio definitivo (ex.: seusite.com.br) para o Worker, trocar SÓ o domínio nestes lugares (chaves/secrets continuam iguais):
-- [ ] cron-job.org → editar a URL do cronjob: https://SEUSITE/api/cron/monthly?key=CRON_SECRET (ou header Authorization).
-- [ ] Stripe → Developers → Webhooks → editar endpoint para https://SEUSITE/api/stripe/webhook.
+## ✅ CHECKLIST — Migração para domínio próprio
+Domínio definitivo: `https://seraviecampo.com`. Trocar SÓ o domínio nestes lugares (chaves/secrets continuam iguais):
+- [ ] cron-job.org → editar a URL do cronjob: https://seraviecampo.com/api/cron/monthly?key=CRON_SECRET (ou header Authorization).
+- [ ] Stripe → Developers → Webhooks → editar endpoint para https://seraviecampo.com/api/stripe/webhook.
 - [ ] Stripe → Connect/branding e URLs de retorno usam o origin da requisição (automático) — conferir após migrar.
-- [ ] Supabase → Auth → URL Configuration → Site URL = https://SEUSITE e Redirect URLs (ex.: https://SEUSITE/auth/callback).
-- [ ] Passkey/WebAuthn → RP ID = domínio final (quando ativarmos passkeys em produção).
-- [ ] Cloudflare → adicionar o domínio (Custom domain) ao Worker/Pages e validar SSL.
-- [ ] Depois de validar: desativar o uso do *.workers.dev (deixar só o domínio oficial).
+- [ ] Supabase → Auth → URL Configuration → Site URL = https://seraviecampo.com e Redirect URLs (`https://seraviecampo.com/**` e `https://www.seraviecampo.com/**`, incluindo callbacks e painéis).
+- [ ] Passkey/WebAuthn → RP ID = seraviecampo.com (quando ativarmos passkeys em produção).
+- [ ] Cloudflare → adicionar `seraviecampo.com` e `www.seraviecampo.com` como Custom Domains do Worker e validar SSL.
+- [ ] Depois de validar: manter `workers_dev=false` no `wrangler.jsonc` para deixar só o domínio oficial.
 - Não muda: CRON_SECRET, STRIPE_*, SUPABASE_SERVICE_ROLE_KEY, AI_*, RESEND_API_KEY.
 
 ## 🌿 Módulo EXPERIÊNCIAS (projeto grande — outro dia)

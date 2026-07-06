@@ -25,7 +25,7 @@ A Seravie Campo nasce como **plataforma de intermediação tecnológica** (model
 
 - **Frontend:** Next.js 15 (App Router) + TypeScript + Tailwind CSS
 - **Backend:** Supabase (Postgres + Auth + Storage + RLS)
-- **Deploy:** Vercel (recomendado)
+- **Deploy:** Cloudflare Workers (OpenNext)
 
 ## Rodando localmente
 
@@ -72,7 +72,9 @@ Cada perfil tem seu dashboard guardado por papel (`lib/guard.ts`). O papel `supe
 Em **Authentication > URL Configuration**, adicione as Redirect URLs:
 
 - `http://localhost:3000/auth/callback` (dev)
-- `https://SEU-DOMINIO.workers.dev/auth/callback` (produção)
+- `https://seraviecampo.com/auth/callback` (produção)
+- `https://www.seraviecampo.com/auth/callback` (alias)
+- `https://seraviecampo.com/**` e `https://www.seraviecampo.com/**` (painéis e rotas do app)
 
 Para promover alguém a admin, no SQL Editor:
 
@@ -83,6 +85,8 @@ update public.profiles set role = 'super_admin' where id = 'UUID-DO-USUARIO';
 ## Deploy na Cloudflare (OpenNext)
 
 O projeto usa o adaptador **`@opennextjs/cloudflare`** (Cloudflare Workers, runtime Node.js).
+
+Domínio oficial de produção: `https://seraviecampo.com`.
 
 ```bash
 # preview local no runtime do Workers

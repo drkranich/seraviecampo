@@ -12,8 +12,8 @@ Itens deixados conscientemente para a reta final (não bloqueiam o desenvolvimen
       Plano B: usar a service_role key no upload do servidor.
 - [ ] **Stripe**: plugar as chaves reais (Connect + assinaturas) como secrets na
       Cloudflare e criar os price IDs no painel do Stripe.
-- [ ] **Passkey/WebAuthn**: atualizar RP ID e Origins para o domínio definitivo
-      quando houver (hoje aponta para localhost).
+- [ ] **Passkey/WebAuthn**: atualizar RP ID para `seraviecampo.com` e Origins para
+      `https://seraviecampo.com` / `https://www.seraviecampo.com`.
 - [ ] Reverter a conta de teste para o papel desejado quando necessário
       (hoje `helvokhelvok@gmail.com` está como super_admin).
 
@@ -157,7 +157,7 @@ Objetivo: cliente paga; produtor e entregador recebem; plataforma fica com mensa
 - [x] Assinaturas roteadas por papel (cliente/produtor/entregador).
 - [ ] FASE 2 (precisa Connect + chaves p/ testar): split/transfer do valor para produtor e entregador; onboarding Connect do entregador; repasse conforme payout_mode; reembolso real ao resolver disputa.
 - Chaves p/ ativar: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PUBLISHABLE_KEY, os 7 price IDs, e SUPABASE_SERVICE_ROLE_KEY (p/ o webhook escrever).
-- Webhook no painel Stripe → endpoint: https://SEU-DOMINIO/api/stripe/webhook (eventos: checkout.session.completed, payment_intent.succeeded, customer.subscription.updated, customer.subscription.deleted).
+- Webhook no painel Stripe → endpoint: https://seraviecampo.com/api/stripe/webhook (eventos: checkout.session.completed, payment_intent.succeeded, customer.subscription.updated, customer.subscription.deleted).
 
 ## CMS interno — planos editáveis pelo super admin (anotado 21/06)
 - No painel do super admin, eu (admin) poderei EDITAR os valores e detalhes de cada plano (produtor, cliente, entregador) pela tela, e a mudança é renderizada para todos os usuários — sem mexer no código.

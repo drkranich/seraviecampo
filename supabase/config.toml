@@ -19,8 +19,21 @@ port = 54323
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["https://localhost:3000"]
+site_url = "https://seraviecampo.com"
+additional_redirect_urls = [
+  "http://localhost:3000",
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3000/**",
+  "https://localhost:3000",
+  "https://localhost:3000/auth/callback",
+  "https://localhost:3000/**",
+  "https://seraviecampo.com",
+  "https://seraviecampo.com/auth/callback",
+  "https://seraviecampo.com/**",
+  "https://www.seraviecampo.com",
+  "https://www.seraviecampo.com/auth/callback",
+  "https://www.seraviecampo.com/**"
+]
 jwt_expiry = 3600
 enable_signup = true
 
