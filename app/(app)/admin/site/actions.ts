@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { slugify, type SiteContent, type SiteContentEnvelope } from "@/lib/site";
 
 function parseJsonArray(raw: string, label: string) {
   try {
@@ -13,11 +14,26 @@ function parseJsonArray(raw: string, label: string) {
   }
 }
 
-export async function updateSite(formData: FormData) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
 
+function isEnvelope(data: Record<string, unknown>) {
+  return isRecord(data.published) || isRecord(data.draft);
+}
+
+function envelopeFrom(raw: unknown): SiteContentEnvelope {
+  if (!isRecord(raw)) return {};
+  if (isEnvelope(raw)) return raw as SiteContentEnvelope;
+  return {
+    published: raw as Partial<SiteContent>,
+    draft: raw as Partial<SiteContent>,
+    published_at: null,
+    draft_updated_at: null,
+  };
+}
+
+function collectSiteData(formData: FormData): Partial<SiteContent> {
   const str = (k: string) => String(formData.get(k) || "").trim();
 
   const arrays = {
@@ -37,7 +53,7 @@ export async function updateSite(formData: FormData) {
     faq_items: parseJsonArray(str("faq_items"), "Perguntas frequentes"),
   };
 
-  const data = {
+  return {
     brand: str("brand"),
     favicon_url: str("favicon_url"),
     seo_title: str("seo_title"),
@@ -88,13 +104,82 @@ export async function updateSite(formData: FormData) {
     cta_secondary_href: str("cta_secondary_href"),
     ...arrays,
   };
+}
 
-  const { data: current } = await supabase.from("site_content").select("data").eq("id", 1).maybeSingle();
-  const merged = { ...((current?.data as Record<string, unknown> | null) ?? {}), ...data };
-  const { error } = await supabase.from("site_content").upsert({ id: 1, data: merged, updated_at: new Date().toISOString() }, { onConflict: "id" });
-  if (error) redirect("/admin/site?error=" + encodeURIComponent(error.message));
+function revalidatePublic(site: Partial<SiteContent> | undefined) {
   revalidatePath("/");
   revalidatePath("/experiencias");
   revalidatePath("/admin/site");
-  redirect("/admin/site?ok=1");
+  revalidatePath("/admin/site/preview");
+  for (const destination of site?.destinations ?? []) {
+    const slug = destination.slug || slugify(destination.name || "");
+    if (slug) revalidatePath(`/destinos/${slug}`);
+  }
+}
+
+async function requireUser() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  return supabase;
+}
+
+export async function updateSite(formData: FormData) {
+  const supabase = await requireUser();
+  const draft = collectSiteData(formData);
+
+  const { data: current } = await supabase.from("site_content").select("data").eq("id", 1).maybeSingle();
+  const envelope = envelopeFrom(current?.data);
+  const now = new Date().toISOString();
+  const next: SiteContentEnvelope = {
+    ...envelope,
+    published: envelope.published ?? envelope.draft ?? {},
+    draft,
+    draft_updated_at: now,
+  };
+  const { error } = await supabase.from("site_content").upsert({ id: 1, data: next, updated_at: now }, { onConflict: "id" });
+  if (error) redirect("/admin/site?error=" + encodeURIComponent(error.message));
+  revalidatePath("/admin/site");
+  revalidatePath("/admin/site/preview");
+  redirect("/admin/site?draft=1");
+}
+
+export async function publishSite() {
+  const supabase = await requireUser();
+  const { data: current } = await supabase.from("site_content").select("data").eq("id", 1).maybeSingle();
+  const envelope = envelopeFrom(current?.data);
+  const published = envelope.draft ?? envelope.published ?? {};
+  const now = new Date().toISOString();
+  const next: SiteContentEnvelope = {
+    ...envelope,
+    published,
+    draft: published,
+    published_at: now,
+    draft_updated_at: now,
+  };
+
+  const { error } = await supabase.from("site_content").upsert({ id: 1, data: next, updated_at: now }, { onConflict: "id" });
+  if (error) redirect("/admin/site?error=" + encodeURIComponent(error.message));
+  revalidatePublic(published);
+  redirect("/admin/site?published=1");
+}
+
+export async function discardSiteDraft() {
+  const supabase = await requireUser();
+  const { data: current } = await supabase.from("site_content").select("data").eq("id", 1).maybeSingle();
+  const envelope = envelopeFrom(current?.data);
+  const published = envelope.published ?? envelope.draft ?? {};
+  const now = new Date().toISOString();
+  const next: SiteContentEnvelope = {
+    ...envelope,
+    published,
+    draft: published,
+    draft_updated_at: now,
+  };
+
+  const { error } = await supabase.from("site_content").upsert({ id: 1, data: next, updated_at: now }, { onConflict: "id" });
+  if (error) redirect("/admin/site?error=" + encodeURIComponent(error.message));
+  revalidatePath("/admin/site");
+  revalidatePath("/admin/site/preview");
+  redirect("/admin/site?discarded=1");
 }

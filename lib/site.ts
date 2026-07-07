@@ -3,7 +3,20 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export type Perfil = { tag: string; nome: string; desc: string };
 export type Step = { title: string; desc: string };
 export type EcosystemItem = { label: string; title: string; text: string };
-export type DestinationItem = { name: string; region: string; image: string; href?: string };
+export type DestinationItem = {
+  name: string;
+  region: string;
+  image: string;
+  href?: string;
+  slug?: string;
+  intro?: string;
+  description?: string;
+  best_time?: string;
+  travel_time?: string;
+  highlights?: string;
+  cta_label?: string;
+  cta_href?: string;
+};
 export type ExperienceTrack = { title: string; text: string; accent: string; href?: string };
 export type GuideLink = { label: string; href: string };
 export type TrustItem = { label: string; text: string };
@@ -76,6 +89,21 @@ export type SiteContent = {
   experiencias_subtitle: string;
 };
 
+export type SiteCmsState = {
+  draft: SiteContent;
+  published: SiteContent;
+  hasDraftChanges: boolean;
+  publishedAt: string | null;
+  draftUpdatedAt: string | null;
+};
+
+export type SiteContentEnvelope = {
+  published?: Partial<SiteContent>;
+  draft?: Partial<SiteContent>;
+  published_at?: string | null;
+  draft_updated_at?: string | null;
+};
+
 const heroImage =
   "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2200&q=85";
 
@@ -125,25 +153,57 @@ export const DEFAULT_SITE: SiteContent = {
       name: "Lavras Novas",
       region: "Serra, gastronomia e casarios",
       image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=900&q=80",
-      href: "/experiencias",
+      href: "/destinos/lavras-novas",
+      slug: "lavras-novas",
+      intro: "Um distrito de serra para caminhar sem pressa, comer bem e dormir perto da natureza.",
+      description: "Lavras Novas entra na Seravie Campo como um destino de fim de semana para pousadas, chalés, trilhas, gastronomia mineira e experiências com anfitriões locais.",
+      best_time: "Outono, inverno e feriados prolongados",
+      travel_time: "Roteiros de 2 a 4 dias",
+      highlights: "Chalés com lareira\nTrilhas e mirantes\nGastronomia mineira\nExperiências guiadas",
+      cta_label: "Ver experiências em Lavras Novas",
+      cta_href: "/experiencias",
     },
     {
       name: "Ouro Preto",
       region: "História, igrejas e cultura viva",
       image: "https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=900&q=80",
-      href: "/experiencias",
+      href: "/destinos/ouro-preto",
+      slug: "ouro-preto",
+      intro: "Patrimônio, arte, comida regional e rotas rurais em volta de uma cidade histórica.",
+      description: "Ouro Preto combina hospedagem histórica, restaurantes, visitas culturais, distritos rurais e experiências que conectam memória, território e produção local.",
+      best_time: "Ano todo, com destaque para inverno e festivais",
+      travel_time: "Roteiros de 2 a 5 dias",
+      highlights: "Centro histórico\nDistritos e ateliês\nCafés e cozinha mineira\nGuias culturais",
+      cta_label: "Planejar roteiro em Ouro Preto",
+      cta_href: "/experiencias",
     },
     {
       name: "Capitólio",
       region: "Lagos, cachoeiras e passeios",
       image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80",
-      href: "/experiencias",
+      href: "/destinos/capitolio",
+      slug: "capitolio",
+      intro: "Água, cânions, mirantes e hospedagens para quem busca natureza com estrutura.",
+      description: "Capitólio aparece como destino de aventura leve, passeios de barco, cachoeiras, mirantes e produtos regionais para continuar a viagem depois da volta.",
+      best_time: "Primavera, verão e meses de céu aberto",
+      travel_time: "Roteiros de 3 a 5 dias",
+      highlights: "Passeios de barco\nCachoeiras\nMirantes\nProdutos regionais",
+      cta_label: "Explorar Capitólio",
+      cta_href: "/experiencias",
     },
     {
       name: "Monte Verde",
       region: "Chalés, lareira e montanha",
       image: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=900&q=80",
-      href: "/experiencias",
+      href: "/destinos/monte-verde",
+      slug: "monte-verde",
+      intro: "Montanha, frio, boa mesa e experiências para casais, famílias e pequenos grupos.",
+      description: "Monte Verde reforça a vocação da Seravie Campo para estadias com curadoria, experiências de bem-estar, gastronomia, trilhas e pequenos produtores.",
+      best_time: "Inverno, outono e escapadas românticas",
+      travel_time: "Roteiros de 2 a 4 dias",
+      highlights: "Chalés e pousadas\nCozinha de montanha\nTrilhas leves\nBem-estar rural",
+      cta_label: "Descobrir Monte Verde",
+      cta_href: "/experiencias",
     },
   ],
   stay_label: "Hospedagens e categorias",
@@ -292,9 +352,61 @@ function withArray<T>(value: T[] | undefined, fallback: T[]) {
   return Array.isArray(value) ? value : fallback;
 }
 
-export async function getSite(supabase: SupabaseClient): Promise<SiteContent> {
-  const { data } = await supabase.from("site_content").select("data").eq("id", 1).maybeSingle();
-  const d = (data?.data ?? {}) as Partial<SiteContent>;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+export function slugify(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function normalizeDestinations(value: DestinationItem[] | undefined) {
+  return withArray(value, DEFAULT_SITE.destinations).map((destination) => {
+    const fallback = DEFAULT_SITE.destinations.find((item) => item.name === destination.name);
+    const slug = destination.slug || fallback?.slug || slugify(destination.name);
+
+    return {
+      ...fallback,
+      ...destination,
+      slug,
+    };
+  });
+}
+
+export function destinationHref(destination: DestinationItem) {
+  if (destination.href && destination.href !== "/experiencias") return destination.href;
+  return `/destinos/${destination.slug || slugify(destination.name)}`;
+}
+
+export function destinationHighlights(destination: DestinationItem) {
+  return String(destination.highlights || "")
+    .split(/\r?\n|;/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function isEnvelope(data: Record<string, unknown>) {
+  return isRecord(data.published) || isRecord(data.draft);
+}
+
+function envelopeFrom(raw: unknown): SiteContentEnvelope {
+  if (!isRecord(raw)) return {};
+  if (isEnvelope(raw)) return raw as SiteContentEnvelope;
+  return {
+    published: raw as Partial<SiteContent>,
+    draft: raw as Partial<SiteContent>,
+    published_at: null,
+    draft_updated_at: null,
+  };
+}
+
+function normalizeSiteContent(value: Partial<SiteContent> | undefined): SiteContent {
+  const d = value ?? {};
 
   return {
     ...DEFAULT_SITE,
@@ -304,7 +416,7 @@ export async function getSite(supabase: SupabaseClient): Promise<SiteContent> {
     steps: withArray(d.steps, DEFAULT_SITE.steps),
     hero_teasers: withArray(d.hero_teasers, DEFAULT_SITE.hero_teasers),
     ecosystem: withArray(d.ecosystem, DEFAULT_SITE.ecosystem),
-    destinations: withArray(d.destinations, DEFAULT_SITE.destinations),
+    destinations: normalizeDestinations(d.destinations),
     stay_types: withArray(d.stay_types, DEFAULT_SITE.stay_types),
     experience_tracks: withArray(d.experience_tracks, DEFAULT_SITE.experience_tracks),
     product_tags: withArray(d.product_tags, DEFAULT_SITE.product_tags),
@@ -315,4 +427,33 @@ export async function getSite(supabase: SupabaseClient): Promise<SiteContent> {
     testimonials: withArray(d.testimonials, DEFAULT_SITE.testimonials),
     faq_items: withArray(d.faq_items, DEFAULT_SITE.faq_items),
   };
+}
+
+function sameContent(a: SiteContent, b: SiteContent) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+export async function getSite(supabase: SupabaseClient): Promise<SiteContent> {
+  const { data } = await supabase.from("site_content").select("data").eq("id", 1).maybeSingle();
+  const envelope = envelopeFrom(data?.data);
+  return normalizeSiteContent(envelope.published ?? (data?.data as Partial<SiteContent> | undefined));
+}
+
+export async function getSiteCmsState(supabase: SupabaseClient): Promise<SiteCmsState> {
+  const { data } = await supabase.from("site_content").select("data").eq("id", 1).maybeSingle();
+  const envelope = envelopeFrom(data?.data);
+  const published = normalizeSiteContent(envelope.published);
+  const draft = normalizeSiteContent(envelope.draft ?? envelope.published);
+
+  return {
+    draft,
+    published,
+    hasDraftChanges: !sameContent(draft, published),
+    publishedAt: envelope.published_at ?? null,
+    draftUpdatedAt: envelope.draft_updated_at ?? null,
+  };
+}
+
+export function findDestination(site: SiteContent, slug: string) {
+  return site.destinations.find((destination) => (destination.slug || slugify(destination.name)) === slug);
 }

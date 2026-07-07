@@ -194,7 +194,7 @@ export function CmsObjectListEditor({
                       ) : (
                         <input
                           id={fieldId}
-                          type={field.kind === "url" || field.kind === "image" ? "url" : "text"}
+                          type={field.kind === "image" ? "url" : "text"}
                           value={value}
                           onChange={(event) => updateValue(rowIndex, field.key, event.target.value)}
                           placeholder={field.placeholder}

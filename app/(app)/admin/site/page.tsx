@@ -4,9 +4,9 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { CmsObjectListEditor, CmsStringListEditor, type CmsListField } from "@/components/CmsListEditor";
-import { getSite } from "@/lib/site";
+import { getSiteCmsState } from "@/lib/site";
 import { ImageUpload } from "@/components/ImageUpload";
-import { updateSite } from "./actions";
+import { discardSiteDraft, publishSite, updateSite } from "./actions";
 
 const inputCls = "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-stone-100 outline-none focus:border-gold";
 const labelCls = "mb-1 block text-sm text-stone-300";
@@ -19,9 +19,17 @@ const ecosystemFields: CmsListField[] = [
 
 const destinationFields: CmsListField[] = [
   { key: "name", label: "Destino", placeholder: "Lavras Novas" },
+  { key: "slug", label: "Slug da página", placeholder: "lavras-novas" },
   { key: "region", label: "Resumo", placeholder: "Serra, gastronomia e casarios" },
   { key: "image", label: "Imagem", kind: "image", placeholder: "https://..." },
-  { key: "href", label: "Link", kind: "url", placeholder: "/experiencias" },
+  { key: "href", label: "Link do card", kind: "url", placeholder: "/destinos/lavras-novas" },
+  { key: "intro", label: "Introdução da página", kind: "textarea", rows: 2, placeholder: "Resumo curto do destino." },
+  { key: "description", label: "Descrição da página", kind: "textarea", rows: 4, placeholder: "Texto principal da página do destino." },
+  { key: "best_time", label: "Melhor época", placeholder: "Outono e inverno" },
+  { key: "travel_time", label: "Duração sugerida", placeholder: "2 a 4 dias" },
+  { key: "highlights", label: "Destaques", kind: "textarea", rows: 4, placeholder: "Um por linha: trilhas, pousadas, cafés..." },
+  { key: "cta_label", label: "Texto do CTA", placeholder: "Ver experiências" },
+  { key: "cta_href", label: "Link do CTA", kind: "url", placeholder: "/experiencias" },
 ];
 
 const accentOptions = [
@@ -117,20 +125,47 @@ function CmsStat({ label, value }: { label: string; value: string }) {
 
 export default async function SiteCmsPage({
   searchParams,
-}: { searchParams: Promise<{ ok?: string; error?: string }> }) {
+}: { searchParams: Promise<{ ok?: string; error?: string; draft?: string; published?: string; discarded?: string }> }) {
   const { profile } = await requireRole("super_admin");
   const sp = await searchParams;
   const supabase = await createClient();
-  const site = await getSite(supabase);
+  const cms = await getSiteCmsState(supabase);
+  const site = cms.draft;
 
   return (
     <AppShell badge="Seravie Hub" nav={ADMIN_NAV} userName={profile?.full_name ?? "Administrador"} title="Site / CMS" subtitle="Edite a página pública, vitrines e avisos dos painéis.">
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Link href="/" target="_blank" className="text-sm text-gold hover:underline">Ver página pública</Link>
+        <Link href="/admin/site/preview" target="_blank" className="text-sm text-gold hover:underline">Pré-visualizar rascunho</Link>
         <Link href="/experiencias" target="_blank" className="text-sm text-gold hover:underline">Ver experiências</Link>
       </div>
+      {sp.draft && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Rascunho salvo. Revise o preview antes de publicar.</div>}
+      {sp.published && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Rascunho publicado no site.</div>}
+      {sp.discarded && <div className="mb-4 rounded-lg border border-stone-700 bg-stone-900/40 px-3 py-2 text-sm text-stone-300">Rascunho descartado. O formulário voltou para a versão publicada.</div>}
       {sp.ok && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Página atualizada.</div>}
       {sp.error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{decodeURIComponent(sp.error)}</div>}
+
+      <section className="mb-5 rounded-2xl border border-campo-border bg-campo-surface2/35 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-stone-500">Status do CMS</p>
+            <h2 className="mt-1 font-serif text-2xl text-forest-100">{cms.hasDraftChanges ? "Há alterações em rascunho" : "Rascunho igual ao publicado"}</h2>
+            <p className="mt-1 text-sm text-stone-400">
+              Publicado: {cms.publishedAt ? new Date(cms.publishedAt).toLocaleString("pt-BR") : "ainda sem data registrada"} ·
+              Rascunho: {cms.draftUpdatedAt ? new Date(cms.draftUpdatedAt).toLocaleString("pt-BR") : "sem alterações recentes"}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/admin/site/preview" target="_blank" className="rounded-lg border border-campo-border px-4 py-2 text-sm text-stone-200 transition hover:border-gold/50">Ver preview</Link>
+            <form action={discardSiteDraft}>
+              <button className="rounded-lg border border-red-900/50 px-4 py-2 text-sm text-red-300 transition hover:border-red-500/70" disabled={!cms.hasDraftChanges}>Descartar rascunho</button>
+            </form>
+            <form action={publishSite}>
+              <button className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Publicar rascunho</button>
+            </form>
+          </div>
+        </div>
+      </section>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <CmsStat label="Destinos" value={String(site.destinations.length)} />
@@ -180,7 +215,7 @@ export default async function SiteCmsPage({
             </div>
           </div>
           <TextAreaField name="destinations_text" label="Texto de apoio" value={site.destinations_text} />
-          <CmsObjectListEditor name="destinations" label="Cards de destinos" items={site.destinations} fields={destinationFields} emptyItem={{ name: "", region: "", image: "", href: "/experiencias" }} itemLabel="Destino" addLabel="Adicionar destino" titleKey="name" />
+          <CmsObjectListEditor name="destinations" label="Cards e páginas de destinos" items={site.destinations} fields={destinationFields} emptyItem={{ name: "", slug: "", region: "", image: "", href: "", intro: "", description: "", best_time: "", travel_time: "", highlights: "", cta_label: "", cta_href: "/experiencias" }} itemLabel="Destino" addLabel="Adicionar destino" titleKey="name" />
         </Section>
 
         <Section title="Hospedagens e categorias">
@@ -300,7 +335,7 @@ export default async function SiteCmsPage({
         </Section>
 
         <div className="sticky bottom-4 z-10 flex justify-end border-t border-campo-border bg-campo-bg/80 px-2 py-4 backdrop-blur">
-          <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">Salvar CMS público</button>
+          <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">Salvar rascunho</button>
         </div>
       </form>
     </AppShell>
