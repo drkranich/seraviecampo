@@ -7,10 +7,16 @@ export type DestinationItem = { name: string; region: string; image: string; hre
 export type ExperienceTrack = { title: string; text: string; accent: string; href?: string };
 export type GuideLink = { label: string; href: string };
 export type TrustItem = { label: string; text: string };
+export type FeaturedItem = { label: string; title: string; text: string; image: string; href?: string };
+export type TestimonialItem = { quote: string; name: string; role: string };
+export type FaqItem = { question: string; answer: string };
 
 export type SiteContent = {
   brand: string;
   favicon_url: string;
+  seo_title: string;
+  seo_description: string;
+  og_image_url: string;
   hero_image_url: string;
   hero_kicker: string;
   hero_title: string;
@@ -36,12 +42,22 @@ export type SiteContent = {
   product_tags: string[];
   guides_label: string;
   guide_links: GuideLink[];
+  featured_label: string;
+  featured_title: string;
+  featured_text: string;
+  featured_items: FeaturedItem[];
   host_label: string;
   host_title: string;
   host_text: string;
   host_tools: string[];
   trust_title: string;
   trust_items: TrustItem[];
+  testimonials_label: string;
+  testimonials_title: string;
+  testimonials: TestimonialItem[];
+  faq_label: string;
+  faq_title: string;
+  faq_items: FaqItem[];
   host_cta_label: string;
   host_cta_href: string;
   perfis: Perfil[];
@@ -49,6 +65,10 @@ export type SiteContent = {
   steps: Step[];
   cta_title: string;
   cta_text: string;
+  cta_primary_label: string;
+  cta_primary_href: string;
+  cta_secondary_label: string;
+  cta_secondary_href: string;
   footer: string;
   avisos: { cliente: string; produtor: string; entregador: string };
   experiencias_enabled: boolean;
@@ -62,6 +82,9 @@ const heroImage =
 export const DEFAULT_SITE: SiteContent = {
   brand: "Seravie Campo",
   favicon_url: "",
+  seo_title: "Seravie Campo - Turismo rural, experiências e produtos locais",
+  seo_description: "Reserve experiências no campo, descubra destinos rurais e compre produtos regionais diretamente de anfitriões, produtores e parceiros locais.",
+  og_image_url: heroImage,
   hero_image_url: heroImage,
   hero_kicker: "Turismo rural e economia local",
   hero_title: "Seravie Campo",
@@ -188,6 +211,32 @@ export const DEFAULT_SITE: SiteContent = {
     { label: "Viagem com crianças e pets", href: "/signup" },
     { label: "Segurança, cancelamento e reembolso", href: "/signup" },
   ],
+  featured_label: "Vitrines editáveis",
+  featured_title: "O CMS transforma a home em uma curadoria viva.",
+  featured_text: "Destaques de destinos, campanhas, épocas do ano e parceiros podem mudar sem mexer no código.",
+  featured_items: [
+    {
+      label: "Temporada",
+      title: "Fim de semana no campo",
+      text: "Pacotes com hospedagem, comida regional e experiências guiadas para casais, famílias e grupos.",
+      image: "https://images.unsplash.com/photo-1499696010180-025ef6e1a8f9?auto=format&fit=crop&w=900&q=80",
+      href: "/experiencias",
+    },
+    {
+      label: "Produto local",
+      title: "Cestas da colheita",
+      text: "Produtos frescos e artesanais conectados à viagem, à assinatura recorrente e ao produtor.",
+      image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=900&q=80",
+      href: "/signup",
+    },
+    {
+      label: "Experiência",
+      title: "Vivências com anfitriões",
+      text: "Café especial, queijo artesanal, trilhas, oficinas e cultura regional com agenda reservável.",
+      image: "https://images.unsplash.com/photo-1528712306091-ed0763094c98?auto=format&fit=crop&w=900&q=80",
+      href: "/experiencias",
+    },
+  ],
   host_label: "Área do anfitrião",
   host_title: "Produtores, pousadas, guias e restaurantes entram pela mesma porta.",
   host_text: "A página pública agora apresenta a Seravie Campo como uma infraestrutura regional: o visitante reserva, compra e planeja; o anfitrião publica, recebe e acompanha.",
@@ -197,6 +246,20 @@ export const DEFAULT_SITE: SiteContent = {
     { label: "Pagamentos e cancelamentos:", text: "políticas claras para reserva, reembolso e assinatura." },
     { label: "Avaliações e segurança:", text: "reputação, suporte, denúncias e comprovantes em um fluxo único." },
     { label: "Comunidade local:", text: "turismo, cultura e produção regional aparecem juntos, sem virar catálogo anônimo." },
+  ],
+  testimonials_label: "Sinais de confiança",
+  testimonials_title: "Uma plataforma feita para quem visita e para quem recebe.",
+  testimonials: [
+    { quote: "A página mostra o destino inteiro, não apenas um anúncio isolado.", name: "Anfitriã rural", role: "Hospedagem e experiências" },
+    { quote: "Consigo vender a vivência, os produtos e a relação com o visitante no mesmo lugar.", name: "Produtor local", role: "Produtos regionais" },
+    { quote: "A jornada fica clara: descubro, reservo, compro e volto a acompanhar a região.", name: "Cliente viajante", role: "Turismo de proximidade" },
+  ],
+  faq_label: "Dúvidas frequentes",
+  faq_title: "Antes de reservar ou anunciar",
+  faq_items: [
+    { question: "A Seravie Campo é uma hospedagem?", answer: "Não. A plataforma conecta visitantes, anfitriões, produtores, parceiros e entregadores dentro de uma experiência regional." },
+    { question: "Quem pode anunciar?", answer: "Produtores rurais, pousadas, guias, restaurantes, artesãos, operadores locais e parceiros de experiências podem entrar pelo cadastro." },
+    { question: "A página pública pode mudar sem código?", answer: "Sim. O super admin edita textos, imagens, vitrines, FAQ, depoimentos e CTAs pelo CMS." },
   ],
   host_cta_label: "Anunciar na Seravie",
   host_cta_href: "/signup",
@@ -214,6 +277,10 @@ export const DEFAULT_SITE: SiteContent = {
   ],
   cta_title: "Faça parte do ecossistema",
   cta_text: "Viajantes, anfitriões, produtores, guias, restaurantes e entregadores em uma só plataforma.",
+  cta_primary_label: "Criar conta",
+  cta_primary_href: "/signup",
+  cta_secondary_label: "Explorar experiências",
+  cta_secondary_href: "/experiencias",
   avisos: { cliente: "", produtor: "", entregador: "" },
   experiencias_enabled: true,
   experiencias_title: "Experiências no campo",
@@ -242,7 +309,10 @@ export async function getSite(supabase: SupabaseClient): Promise<SiteContent> {
     experience_tracks: withArray(d.experience_tracks, DEFAULT_SITE.experience_tracks),
     product_tags: withArray(d.product_tags, DEFAULT_SITE.product_tags),
     guide_links: withArray(d.guide_links, DEFAULT_SITE.guide_links),
+    featured_items: withArray(d.featured_items, DEFAULT_SITE.featured_items),
     host_tools: withArray(d.host_tools, DEFAULT_SITE.host_tools),
     trust_items: withArray(d.trust_items, DEFAULT_SITE.trust_items),
+    testimonials: withArray(d.testimonials, DEFAULT_SITE.testimonials),
+    faq_items: withArray(d.faq_items, DEFAULT_SITE.faq_items),
   };
 }

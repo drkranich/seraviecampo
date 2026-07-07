@@ -10,9 +10,14 @@ export async function generateMetadata(): Promise<Metadata> {
     const supabase = createRaw(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
     const site = await getSite(supabase);
     return {
-      title: `${site.brand} — Agro Gourmet`,
-      description: site.hero_subtitle,
+      title: site.seo_title || `${site.brand} — Agro Gourmet`,
+      description: site.seo_description || site.hero_subtitle,
       icons: site.favicon_url ? { icon: site.favicon_url } : undefined,
+      openGraph: {
+        title: site.seo_title || site.brand,
+        description: site.seo_description || site.hero_subtitle,
+        images: site.og_image_url ? [{ url: site.og_image_url }] : undefined,
+      },
     };
   } catch {
     return { title: "Seravie Campo — Agro Gourmet", description: "Sistema Operacional da Economia Local." };

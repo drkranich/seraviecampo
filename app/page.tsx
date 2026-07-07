@@ -179,6 +179,38 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="bg-[#101714] py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+          <div className="grid gap-5 md:grid-cols-[0.8fr_1.2fr] md:items-end">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-[#A8C7D3]">{site.featured_label}</p>
+              <h2 className="mt-3 font-serif text-4xl text-forest-50">{site.featured_title}</h2>
+            </div>
+            <p className="max-w-2xl text-sm leading-relaxed text-stone-400 md:justify-self-end">{site.featured_text}</p>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            {site.featured_items.map((item) => (
+              <Link key={`${item.label}-${item.title}`} href={item.href || "/experiencias"} className="group overflow-hidden rounded-lg border border-[#293A34] bg-[#151F1B] transition hover:border-[#A8C7D3]/60">
+                <div className="aspect-[16/10] overflow-hidden bg-campo-surface2">
+                  {item.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.image} alt={item.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+                  ) : (
+                    <div className="h-full w-full bg-[#20281E]" />
+                  )}
+                </div>
+                <div className="p-5">
+                  <p className="text-xs uppercase tracking-[0.22em] text-[#A8C7D3]">{item.label}</p>
+                  <h3 className="mt-2 font-serif text-2xl text-forest-50">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-stone-400">{item.text}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="anfitrioes" className="mx-auto max-w-7xl px-5 py-16 sm:px-6 lg:py-20">
         <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr] lg:items-center">
           <div>
@@ -204,6 +236,89 @@ export default async function Home() {
             </div>
             <Link href={site.host_cta_href || "/signup"} className="mt-7 inline-flex rounded-lg bg-gold px-5 py-3 text-sm font-semibold text-campo-bg transition hover:bg-gold-light">
               {site.host_cta_label}
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#2D3326] bg-[#12170F] py-16 lg:py-20">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-6 lg:grid-cols-[0.85fr_1.15fr]">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-[#D4BD8C]">Jornada</p>
+            <h2 className="mt-3 font-serif text-4xl text-forest-50">{site.steps_title}</h2>
+            <div className="mt-7 space-y-4">
+              {site.steps.map((step, index) => (
+                <article key={`${step.title}-${index}`} className="grid grid-cols-[2.5rem_1fr] gap-4 border-t border-[#2D3326] pt-4">
+                  <span className="font-serif text-2xl text-gold">{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3 className="font-serif text-2xl text-forest-50">{step.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-stone-400">{step.desc}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {site.perfis.map((perfil) => (
+              <article key={perfil.nome} className="rounded-lg border border-[#2D3326] bg-[#171D15] p-5">
+                <p className="text-xs uppercase tracking-[0.22em] text-[#A9C875]">{perfil.tag}</p>
+                <h3 className="mt-2 font-serif text-2xl text-forest-50">{perfil.nome}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-stone-400">{perfil.desc}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-6 lg:grid-cols-[1fr_0.9fr] lg:py-20">
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-[#E0A077]">{site.testimonials_label}</p>
+          <h2 className="mt-3 font-serif text-4xl text-forest-50">{site.testimonials_title}</h2>
+          <div className="mt-7 grid gap-3">
+            {site.testimonials.map((item) => (
+              <figure key={`${item.name}-${item.role}`} className="rounded-lg border border-[#3A2D24] bg-[#18130F] p-5">
+                <blockquote className="font-serif text-2xl leading-snug text-forest-50">“{item.quote}”</blockquote>
+                <figcaption className="mt-4 text-sm text-stone-400">
+                  <span className="text-gold">{item.name}</span> · {item.role}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-[0.24em] text-[#A8C7D3]">{site.faq_label}</p>
+          <h2 className="mt-3 font-serif text-4xl text-forest-50">{site.faq_title}</h2>
+          <div className="mt-7 divide-y divide-[#2D3326] rounded-lg border border-[#2D3326] bg-[#151A12]">
+            {site.faq_items.map((item) => (
+              <details key={item.question} className="group p-5">
+                <summary className="cursor-pointer list-none font-serif text-xl text-forest-50 marker:hidden">
+                  <span className="inline-flex w-full items-center justify-between gap-4">
+                    {item.question}
+                    <span className="text-sm text-gold transition group-open:rotate-45">+</span>
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-stone-400">{item.answer}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#171D15] py-14">
+        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-6 px-5 sm:px-6 lg:flex-row lg:items-center">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-gold">Seravie Campo</p>
+            <h2 className="mt-3 font-serif text-4xl text-forest-50">{site.cta_title}</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-400">{site.cta_text}</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link href={site.cta_primary_href || "/signup"} className="rounded-lg bg-gold px-5 py-3 text-sm font-semibold text-campo-bg transition hover:bg-gold-light">
+              {site.cta_primary_label}
+            </Link>
+            <Link href={site.cta_secondary_href || "/experiencias"} className="rounded-lg border border-campo-border px-5 py-3 text-sm font-semibold text-forest-100 transition hover:border-gold/60 hover:text-gold">
+              {site.cta_secondary_label}
             </Link>
           </div>
         </div>

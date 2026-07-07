@@ -44,9 +44,28 @@ const guideFields: CmsListField[] = [
   { key: "href", label: "Link", kind: "url", placeholder: "/signup" },
 ];
 
+const featuredFields: CmsListField[] = [
+  { key: "label", label: "Selo", placeholder: "Temporada" },
+  { key: "title", label: "Título", placeholder: "Fim de semana no campo" },
+  { key: "text", label: "Texto", kind: "textarea", rows: 3, placeholder: "Explique o destaque." },
+  { key: "image", label: "Imagem", kind: "image", placeholder: "https://..." },
+  { key: "href", label: "Link", kind: "url", placeholder: "/experiencias" },
+];
+
 const trustFields: CmsListField[] = [
   { key: "label", label: "Chamada", placeholder: "Pagamentos e cancelamentos:" },
   { key: "text", label: "Texto", kind: "textarea", rows: 2, placeholder: "Explique o compromisso de confiança." },
+];
+
+const testimonialFields: CmsListField[] = [
+  { key: "quote", label: "Depoimento", kind: "textarea", rows: 3, placeholder: "A página mostra o destino inteiro..." },
+  { key: "name", label: "Nome", placeholder: "Anfitriã rural" },
+  { key: "role", label: "Contexto", placeholder: "Hospedagem e experiências" },
+];
+
+const faqFields: CmsListField[] = [
+  { key: "question", label: "Pergunta", placeholder: "Quem pode anunciar?" },
+  { key: "answer", label: "Resposta", kind: "textarea", rows: 3, placeholder: "Explique em linguagem simples." },
 ];
 
 const stepFields: CmsListField[] = [
@@ -87,6 +106,15 @@ function TextAreaField({ name, label, value, rows = 3 }: { name: string; label: 
   );
 }
 
+function CmsStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-campo-border bg-campo-surface2/35 p-4">
+      <p className="text-xs uppercase tracking-wider text-stone-500">{label}</p>
+      <p className="mt-2 font-serif text-2xl text-forest-100">{value}</p>
+    </div>
+  );
+}
+
 export default async function SiteCmsPage({
   searchParams,
 }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
@@ -104,7 +132,23 @@ export default async function SiteCmsPage({
       {sp.ok && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Página atualizada.</div>}
       {sp.error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{decodeURIComponent(sp.error)}</div>}
 
+      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <CmsStat label="Destinos" value={String(site.destinations.length)} />
+        <CmsStat label="Experiências" value={String(site.experience_tracks.length)} />
+        <CmsStat label="Vitrines" value={String(site.featured_items.length)} />
+        <CmsStat label="Depoimentos" value={String(site.testimonials.length)} />
+        <CmsStat label="FAQ" value={String(site.faq_items.length)} />
+      </div>
+
       <form action={updateSite} className="glass max-w-6xl space-y-5 rounded-2xl border border-campo-border p-5 sm:p-6">
+        <Section title="SEO e compartilhamento">
+          <TextField name="seo_title" label="Título para Google e redes" value={site.seo_title} />
+          <TextAreaField name="seo_description" label="Descrição para busca e compartilhamento" value={site.seo_description} rows={2} />
+          <div className="rounded-xl border border-campo-border bg-campo-bg/35 p-4">
+            <ImageUpload name="og_image_url" label="Imagem de compartilhamento" userId="" currentUrl={site.og_image_url || null} folder="site/seo" shape="wide" />
+          </div>
+        </Section>
+
         <Section title="Identidade e hero">
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="rounded-xl border border-campo-border bg-campo-bg/35 p-4">
@@ -182,6 +226,17 @@ export default async function SiteCmsPage({
           <CmsObjectListEditor name="guide_links" label="Links de guias públicos" items={site.guide_links} fields={guideFields} emptyItem={{ label: "", href: "/signup" }} itemLabel="Guia" addLabel="Adicionar guia" titleKey="label" />
         </Section>
 
+        <Section title="Vitrines editoriais">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextField name="featured_label" label="Selo da seção" value={site.featured_label} />
+            <div className="sm:col-span-2">
+              <TextField name="featured_title" label="Título da seção" value={site.featured_title} />
+            </div>
+          </div>
+          <TextAreaField name="featured_text" label="Texto de apoio" value={site.featured_text} />
+          <CmsObjectListEditor name="featured_items" label="Cards de destaque" items={site.featured_items} fields={featuredFields} emptyItem={{ label: "", title: "", text: "", image: "", href: "/experiencias" }} itemLabel="Destaque" addLabel="Adicionar destaque" titleKey="title" />
+        </Section>
+
         <Section title="Área do anfitrião">
           <div className="grid gap-4 sm:grid-cols-3">
             <TextField name="host_label" label="Selo da seção" value={site.host_label} />
@@ -199,6 +254,23 @@ export default async function SiteCmsPage({
           </div>
         </Section>
 
+        <Section title="Depoimentos e perguntas frequentes">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextField name="testimonials_label" label="Selo de depoimentos" value={site.testimonials_label} />
+            <div className="sm:col-span-2">
+              <TextField name="testimonials_title" label="Título dos depoimentos" value={site.testimonials_title} />
+            </div>
+          </div>
+          <CmsObjectListEditor name="testimonials" label="Depoimentos" items={site.testimonials} fields={testimonialFields} emptyItem={{ quote: "", name: "", role: "" }} itemLabel="Depoimento" addLabel="Adicionar depoimento" titleKey="name" />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <TextField name="faq_label" label="Selo do FAQ" value={site.faq_label} />
+            <div className="sm:col-span-2">
+              <TextField name="faq_title" label="Título do FAQ" value={site.faq_title} />
+            </div>
+          </div>
+          <CmsObjectListEditor name="faq_items" label="Perguntas e respostas" items={site.faq_items} fields={faqFields} emptyItem={{ question: "", answer: "" }} itemLabel="Pergunta" addLabel="Adicionar pergunta" titleKey="question" />
+        </Section>
+
         <Section title="Avisos dos painéis">
           <div className="grid gap-4 lg:grid-cols-3">
             <TextField name="aviso_cliente" label="Aviso - cliente" value={site.avisos.cliente} />
@@ -207,13 +279,19 @@ export default async function SiteCmsPage({
           </div>
         </Section>
 
-        <Section title="Blocos legados">
+        <Section title="Jornada e chamada final">
           <TextField name="steps_title" label="Título dos passos" value={site.steps_title} />
           <CmsObjectListEditor name="steps" label="Passos" items={site.steps} fields={stepFields} emptyItem={{ title: "", desc: "" }} itemLabel="Passo" addLabel="Adicionar passo" titleKey="title" />
           <CmsObjectListEditor name="perfis" label="Cartões de perfil" items={site.perfis} fields={profileFields} emptyItem={{ tag: "", nome: "", desc: "" }} itemLabel="Perfil" addLabel="Adicionar perfil" titleKey="nome" />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField name="cta_title" label="CTA - título" value={site.cta_title} />
             <TextField name="cta_text" label="CTA - texto" value={site.cta_text} />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField name="cta_primary_label" label="Botão principal" value={site.cta_primary_label} />
+            <TextField name="cta_primary_href" label="Link do botão principal" value={site.cta_primary_href} />
+            <TextField name="cta_secondary_label" label="Botão secundário" value={site.cta_secondary_label} />
+            <TextField name="cta_secondary_href" label="Link do botão secundário" value={site.cta_secondary_href} />
           </div>
         </Section>
 
