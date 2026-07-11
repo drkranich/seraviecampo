@@ -21,6 +21,7 @@ export function PublicHome({ site }: { site: SiteContent }) {
             <a href="#destinos" className="transition hover:text-gold">Destinos</a>
             <a href="#experiencias" className="transition hover:text-gold">Experiências</a>
             <a href="#anfitrioes" className="transition hover:text-gold">Anfitriões</a>
+            <Link href="/sobre" className="transition hover:text-gold">Sobre</Link>
             <Link href="/login" className="transition hover:text-gold">Entrar</Link>
           </div>
           <Link href="/signup" className="relative z-10 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-campo-bg transition hover:bg-gold-light">
@@ -345,9 +346,14 @@ export function PublicHome({ site }: { site: SiteContent }) {
           <div>
             <h3 className="text-xs uppercase tracking-[0.22em] text-gold">Institucional</h3>
             <div className="mt-3 space-y-2">
-              <span className="block">Termos de uso</span>
-              <span className="block">Privacidade e LGPD</span>
-              <span className="block">Ajuda e suporte</span>
+              {site.institutional_pages
+                .filter((page) => page.slug)
+                .slice(0, 4)
+                .map((page) => (
+                  <Link key={page.slug} href={`/${page.slug}`} className="block hover:text-gold">
+                    {page.title}
+                  </Link>
+                ))}
             </div>
           </div>
         </div>
