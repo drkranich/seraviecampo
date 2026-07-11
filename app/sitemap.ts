@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { createClient as createRaw } from "@supabase/supabase-js";
+import { getPublicDestinations } from "@/lib/public-destinations";
 import { publicUrl } from "@/lib/public-url";
 import { destinationHref, getSite } from "@/lib/site";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/supabase/config";
@@ -13,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const site = await getSite(supabase);
+  const destinations = await getPublicDestinations(supabase, site);
   const { data: experiences } = await supabase
     .from("experiences")
     .select("id, updated_at, created_at")
@@ -27,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: publicUrl("/experiencias"), lastModified: now, changeFrequency: "daily", priority: 0.8 },
   ];
 
-  const destinationRoutes: MetadataRoute.Sitemap = site.destinations.map((destination) => ({
+  const destinationRoutes: MetadataRoute.Sitemap = destinations.map((destination) => ({
     url: publicUrl(destinationHref(destination)),
     lastModified: now,
     changeFrequency: "weekly",

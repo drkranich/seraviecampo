@@ -1,10 +1,14 @@
 import Link from "next/link";
+import { getPublicDestinations } from "@/lib/public-destinations";
 import { createClient } from "@/lib/supabase/server";
 import { destinationHref, getSite } from "@/lib/site";
+
+export const dynamic = "force-dynamic";
 
 export default async function DestinosPage() {
   const supabase = await createClient();
   const site = await getSite(supabase);
+  const destinations = await getPublicDestinations(supabase, site);
 
   return (
     <main className="min-h-screen bg-[#10140E] text-forest-100">
@@ -20,19 +24,32 @@ export default async function DestinosPage() {
         <p className="text-xs uppercase tracking-[0.24em] text-[#A9C875]">{site.destinations_label}</p>
         <h1 className="mt-4 max-w-4xl font-serif text-5xl leading-none text-forest-50 sm:text-6xl">{site.destinations_title}</h1>
         <p className="mt-5 max-w-2xl text-lg leading-relaxed text-stone-400">{site.destinations_text}</p>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-stone-500">
+          Novos destinos entram automaticamente quando produtores e parceiros publicam produtos ou experiências ativos com cidade cadastrada.
+        </p>
       </header>
 
       <section className="mx-auto grid max-w-7xl gap-4 px-5 pb-16 sm:px-6 md:grid-cols-2 xl:grid-cols-4">
-        {site.destinations.map((destination) => (
+        {destinations.map((destination) => (
           <Link key={destination.name} href={destinationHref(destination)} className="group overflow-hidden rounded-lg border border-campo-border bg-campo-surface">
             <div className="aspect-[4/5] overflow-hidden bg-campo-surface2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={destination.image} alt={destination.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
             </div>
             <div className="p-5">
-              <p className="text-xs uppercase tracking-[0.22em] text-gold">{destination.region}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-xs uppercase tracking-[0.22em] text-gold">{destination.region}</p>
+                {destination.source === "automatic" && (
+                  <span className="rounded-full border border-[#7CA049]/50 px-2 py-0.5 text-[0.65rem] uppercase tracking-[0.14em] text-[#A9C875]">
+                    Automático
+                  </span>
+                )}
+              </div>
               <h2 className="mt-2 font-serif text-3xl text-forest-50">{destination.name}</h2>
               <p className="mt-3 text-sm leading-relaxed text-stone-400">{destination.intro || destination.description || site.destinations_text}</p>
+              {destination.listing_count > 0 && (
+                <p className="mt-4 text-xs uppercase tracking-[0.16em] text-gold">{destination.offer_label}</p>
+              )}
             </div>
           </Link>
         ))}

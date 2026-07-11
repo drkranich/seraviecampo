@@ -1,9 +1,12 @@
 import Link from "next/link";
+import type { PublicDestination } from "@/lib/public-destinations";
 import { destinationHref, type SiteContent } from "@/lib/site";
 
 const teaserBorders = ["border-[#C2A878]", "border-[#7CA049]", "border-[#6D8EA0]"];
 
-export function PublicHome({ site }: { site: SiteContent }) {
+export function PublicHome({ site, destinations }: { site: SiteContent; destinations?: PublicDestination[] }) {
+  const visibleDestinations = destinations?.length ? destinations : site.destinations;
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#11150F] text-forest-100">
       <header className="relative min-h-[86vh] bg-[#15190f]">
@@ -94,18 +97,24 @@ export function PublicHome({ site }: { site: SiteContent }) {
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-4">
-          {site.destinations.map((destination) => (
-            <Link key={destination.name} href={destinationHref(destination)} className="group overflow-hidden rounded-lg border border-campo-border bg-campo-surface">
-              <div className="aspect-[4/5] overflow-hidden bg-campo-surface2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={destination.image} alt={destination.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-              </div>
-              <div className="p-4">
-                <h3 className="font-serif text-2xl text-forest-50">{destination.name}</h3>
-                <p className="mt-1 text-sm text-stone-400">{destination.region}</p>
-              </div>
-            </Link>
-          ))}
+          {visibleDestinations.slice(0, 4).map((destination) => {
+            const publicDestination = destination as Partial<PublicDestination>;
+            const offer = (publicDestination.listing_count ?? 0) > 0 ? publicDestination.offer_label ?? "" : "";
+
+            return (
+              <Link key={destination.name} href={destinationHref(destination)} className="group overflow-hidden rounded-lg border border-campo-border bg-campo-surface">
+                <div className="aspect-[4/5] overflow-hidden bg-campo-surface2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={destination.image} alt={destination.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+                </div>
+                <div className="p-4">
+                  <h3 className="font-serif text-2xl text-forest-50">{destination.name}</h3>
+                  <p className="mt-1 text-sm text-stone-400">{destination.region}</p>
+                  {offer && <p className="mt-3 text-xs uppercase tracking-[0.16em] text-gold">{offer}</p>}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
