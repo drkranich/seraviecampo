@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   const path = `${prefix}/${folder}-${Date.now()}.${ext}`;
 
   const { error } = await uploader.storage.from(bucket).upload(path, file, {
-    upsert: true,
+    upsert: false,
     contentType: file.type || "application/octet-stream",
   });
   if (error) return NextResponse.json({ error: `${error.message} (bucket: ${bucket})` }, { status: 400 });
