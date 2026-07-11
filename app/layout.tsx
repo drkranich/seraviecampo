@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { createClient as createRaw } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
+import { SITE_URL } from "@/lib/public-url";
 import { getSite } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -10,6 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const supabase = createRaw(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
     const site = await getSite(supabase);
     return {
+      metadataBase: new URL(SITE_URL),
       title: site.seo_title || `${site.brand} — Agro Gourmet`,
       description: site.seo_description || site.hero_subtitle,
       icons: site.favicon_url ? { icon: site.favicon_url } : undefined,
@@ -20,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     };
   } catch {
-    return { title: "Seravie Campo — Agro Gourmet", description: "Sistema Operacional da Economia Local." };
+    return { metadataBase: new URL(SITE_URL), title: "Seravie Campo — Agro Gourmet", description: "Sistema Operacional da Economia Local." };
   }
 }
 
