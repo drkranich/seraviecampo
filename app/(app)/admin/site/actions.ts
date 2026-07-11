@@ -51,6 +51,7 @@ function collectSiteData(formData: FormData): Partial<SiteContent> {
     trust_items: parseJsonArray(str("trust_items"), "Itens de confiança"),
     testimonials: parseJsonArray(str("testimonials"), "Depoimentos"),
     faq_items: parseJsonArray(str("faq_items"), "Perguntas frequentes"),
+    institutional_pages: parseJsonArray(str("institutional_pages"), "Paginas institucionais"),
   };
 
   return {
@@ -111,6 +112,10 @@ function revalidatePublic(site: Partial<SiteContent> | undefined) {
   revalidatePath("/experiencias");
   revalidatePath("/admin/site");
   revalidatePath("/admin/site/preview");
+  for (const page of site?.institutional_pages ?? []) {
+    const slug = page.slug || slugify(page.title || "");
+    if (slug) revalidatePath(`/${slug}`);
+  }
   for (const destination of site?.destinations ?? []) {
     const slug = destination.slug || slugify(destination.name || "");
     if (slug) revalidatePath(`/destinos/${slug}`);

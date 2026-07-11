@@ -76,6 +76,19 @@ const faqFields: CmsListField[] = [
   { key: "answer", label: "Resposta", kind: "textarea", rows: 3, placeholder: "Explique em linguagem simples." },
 ];
 
+const institutionalPageFields: CmsListField[] = [
+  { key: "slug", label: "Slug publico", placeholder: "sobre" },
+  { key: "label", label: "Selo", placeholder: "Institucional" },
+  { key: "title", label: "Titulo", placeholder: "Sobre a Seravie Campo" },
+  { key: "summary", label: "Resumo", kind: "textarea", rows: 2, placeholder: "Resumo curto da pagina." },
+  { key: "body", label: "Conteudo", kind: "textarea", rows: 8, placeholder: "Use uma linha em branco entre paragrafos." },
+  { key: "image", label: "Imagem da pagina", kind: "image", placeholder: "https://..." },
+  { key: "cta_label", label: "Texto do CTA", placeholder: "Criar conta" },
+  { key: "cta_href", label: "Link do CTA", kind: "url", placeholder: "/signup" },
+  { key: "seo_title", label: "Titulo SEO", placeholder: "Sobre a Seravie Campo" },
+  { key: "seo_description", label: "Descricao SEO", kind: "textarea", rows: 2, placeholder: "Descricao para Google e redes." },
+];
+
 const stepFields: CmsListField[] = [
   { key: "title", label: "Título", placeholder: "Planeje" },
   { key: "desc", label: "Descrição", kind: "textarea", rows: 2, placeholder: "Explique esta etapa." },
@@ -167,12 +180,13 @@ export default async function SiteCmsPage({
         </div>
       </section>
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <CmsStat label="Destinos" value={String(site.destinations.length)} />
         <CmsStat label="Experiências" value={String(site.experience_tracks.length)} />
         <CmsStat label="Vitrines" value={String(site.featured_items.length)} />
         <CmsStat label="Depoimentos" value={String(site.testimonials.length)} />
         <CmsStat label="FAQ" value={String(site.faq_items.length)} />
+        <CmsStat label="Paginas" value={String(site.institutional_pages.length)} />
       </div>
 
       <form action={updateSite} className="glass max-w-6xl space-y-5 rounded-2xl border border-campo-border p-5 sm:p-6">

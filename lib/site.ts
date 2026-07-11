@@ -23,6 +23,18 @@ export type TrustItem = { label: string; text: string };
 export type FeaturedItem = { label: string; title: string; text: string; image: string; href?: string };
 export type TestimonialItem = { quote: string; name: string; role: string };
 export type FaqItem = { question: string; answer: string };
+export type InstitutionalPage = {
+  slug: string;
+  label: string;
+  title: string;
+  summary: string;
+  body: string;
+  image: string;
+  cta_label?: string;
+  cta_href?: string;
+  seo_title?: string;
+  seo_description?: string;
+};
 
 export type SiteContent = {
   brand: string;
@@ -71,6 +83,7 @@ export type SiteContent = {
   faq_label: string;
   faq_title: string;
   faq_items: FaqItem[];
+  institutional_pages: InstitutionalPage[];
   host_cta_label: string;
   host_cta_href: string;
   perfis: Perfil[];
@@ -321,6 +334,56 @@ export const DEFAULT_SITE: SiteContent = {
     { question: "Quem pode anunciar?", answer: "Produtores rurais, pousadas, guias, restaurantes, artesãos, operadores locais e parceiros de experiências podem entrar pelo cadastro." },
     { question: "A página pública pode mudar sem código?", answer: "Sim. O super admin edita textos, imagens, vitrines, FAQ, depoimentos e CTAs pelo CMS." },
   ],
+  institutional_pages: [
+    {
+      slug: "sobre",
+      label: "Institucional",
+      title: "Sobre a Seravie Campo",
+      summary: "Uma plataforma para aproximar viajantes, produtores, anfitrioes e experiencias rurais em uma economia local mais organizada.",
+      body: "A Seravie Campo nasce para transformar destinos rurais em ecossistemas vivos. A plataforma reune hospedagens, experiencias, produtos regionais, guias locais, entregas e conteudo publico em uma jornada unica.\n\nA proposta e dar mais autonomia para quem recebe e mais clareza para quem visita. O produtor, a pousada, o guia, o restaurante e o parceiro local passam a operar dentro de uma estrutura digital pensada para territorio, confianca e recorrencia.\n\nO visitante descobre destinos, planeja experiencias, compra produtos e acompanha a regiao mesmo depois da viagem. A comunidade local ganha ferramentas para publicar, vender, receber, organizar pedidos e construir reputacao.",
+      image: heroImage,
+      cta_label: "Criar conta",
+      cta_href: "/signup",
+      seo_title: "Sobre a Seravie Campo",
+      seo_description: "Conheca a plataforma Seravie Campo para turismo rural, experiencias e economia local.",
+    },
+    {
+      slug: "ajuda",
+      label: "Ajuda",
+      title: "Ajuda e suporte",
+      summary: "Orientacoes para visitantes, produtores, anfitrioes, parceiros e entregadores usarem a plataforma com mais seguranca.",
+      body: "Para visitantes, a Seravie Campo organiza descoberta, reserva, compra e acompanhamento em uma unica conta. Use as paginas publicas para conhecer destinos e entre para acessar pedidos, reservas, suporte e pagamentos.\n\nPara produtores e anfitrioes, o painel interno permite gerenciar perfil, produtos, experiencias, pedidos, reservas, financeiro e comunicacao com clientes. O super admin acompanha aprovacoes, moderacao, pagamentos e conteudo publico.\n\nEm caso de duvida, acesse sua area interna e abra o suporte. Quando houver uma compra, reserva ou entrega em andamento, mantenha as conversas e comprovantes dentro da plataforma.",
+      image: "https://images.unsplash.com/photo-1528712306091-ed0763094c98?auto=format&fit=crop&w=1600&q=80",
+      cta_label: "Entrar na conta",
+      cta_href: "/login",
+      seo_title: "Ajuda e suporte | Seravie Campo",
+      seo_description: "Ajuda para usar a Seravie Campo como cliente, produtor, parceiro ou entregador.",
+    },
+    {
+      slug: "termos",
+      label: "Termos",
+      title: "Termos de uso",
+      summary: "Regras gerais para uso da plataforma, cadastro, publicacao de ofertas, pagamentos, reservas e comunicacao entre as partes.",
+      body: "A Seravie Campo atua como plataforma de conexao entre usuarios, produtores, anfitrioes, parceiros e entregadores. Cada participante e responsavel pelas informacoes publicadas, pela qualidade do servico ofertado e pelo cumprimento das regras aplicaveis.\n\nAo usar a plataforma, o usuario concorda em manter dados verdadeiros, respeitar politicas de seguranca, nao publicar conteudo enganoso e cumprir combinados de pedido, reserva, entrega ou experiencia.\n\nPagamentos, cancelamentos, reembolsos, disputas e verificacoes podem seguir regras especificas exibidas nos fluxos internos. A plataforma pode moderar, suspender ou remover cadastros e conteudos que violem estes termos ou coloquem a comunidade em risco.",
+      image: "https://images.unsplash.com/photo-1499696010180-025ef6e1a8f9?auto=format&fit=crop&w=1600&q=80",
+      cta_label: "Falar com suporte",
+      cta_href: "/login",
+      seo_title: "Termos de uso | Seravie Campo",
+      seo_description: "Termos gerais de uso da plataforma Seravie Campo.",
+    },
+    {
+      slug: "privacidade",
+      label: "Privacidade",
+      title: "Privacidade e LGPD",
+      summary: "Como a Seravie Campo trata dados pessoais para operar contas, pedidos, reservas, pagamentos, seguranca e suporte.",
+      body: "A Seravie Campo coleta dados necessarios para cadastro, autenticacao, verificacao, pagamentos, pedidos, reservas, suporte e melhoria da experiencia. Isso pode incluir dados de contato, perfil, documentos, historico de uso, mensagens e comprovantes.\n\nOs dados sao usados para operar a plataforma, proteger usuarios, prevenir fraude, cumprir obrigacoes legais e permitir que clientes, produtores, parceiros e entregadores executem suas atividades com mais confianca.\n\nO usuario pode solicitar informacoes sobre seus dados e atualizacoes cadastrais pelos canais de suporte. Dados sensiveis e documentos devem ser tratados apenas pelos fluxos oficiais da plataforma.",
+      image: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1600&q=80",
+      cta_label: "Acessar suporte",
+      cta_href: "/login",
+      seo_title: "Privacidade e LGPD | Seravie Campo",
+      seo_description: "Politica publica de privacidade e tratamento de dados da Seravie Campo.",
+    },
+  ],
   host_cta_label: "Anunciar na Seravie",
   host_cta_href: "/signup",
   perfis: [
@@ -426,6 +489,10 @@ function normalizeSiteContent(value: Partial<SiteContent> | undefined): SiteCont
     trust_items: withArray(d.trust_items, DEFAULT_SITE.trust_items),
     testimonials: withArray(d.testimonials, DEFAULT_SITE.testimonials),
     faq_items: withArray(d.faq_items, DEFAULT_SITE.faq_items),
+    institutional_pages: withArray(d.institutional_pages, DEFAULT_SITE.institutional_pages).map((page) => ({
+      ...page,
+      slug: page.slug || slugify(page.title),
+    })),
   };
 }
 
@@ -456,4 +523,8 @@ export async function getSiteCmsState(supabase: SupabaseClient): Promise<SiteCms
 
 export function findDestination(site: SiteContent, slug: string) {
   return site.destinations.find((destination) => (destination.slug || slugify(destination.name)) === slug);
+}
+
+export function findInstitutionalPage(site: SiteContent, slug: string) {
+  return site.institutional_pages.find((page) => (page.slug || slugify(page.title)) === slug);
 }
