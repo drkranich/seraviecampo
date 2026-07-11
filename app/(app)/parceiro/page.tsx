@@ -14,6 +14,7 @@ import {
   type Experience,
   type ExperienceBooking,
 } from "@/lib/experiences";
+import { getSite } from "@/lib/site";
 
 type CustomerPreview = { id: string; full_name: string | null; display_name: string | null };
 
@@ -26,6 +27,8 @@ function startOfDay(date: Date) {
 export default async function ParceiroPage() {
   const { user, profile } = await requireRole("parceiro");
   const supabase = await createClient();
+  const site = await getSite(supabase);
+  const panel = site.panel_content.parceiro;
 
   const [{ data: expData }, { data: bookData }, { data: acc }] = await Promise.all([
     supabase.from("experiences").select("*").eq("producer_id", user.id).order("created_at", { ascending: false }),
@@ -94,14 +97,14 @@ export default async function ParceiroPage() {
       userName={profile?.full_name ?? "Parceiro"}
       profileHref="/parceiro/perfil"
       title={greeting(profile?.full_name)}
-      subtitle="Central para publicar vivências, acompanhar agenda e receber com transparência."
+      subtitle={panel.subtitle}
     >
       <section className="mb-6 grid gap-4 lg:grid-cols-3">
         <div className="glass rounded-2xl border border-campo-border p-6 lg:col-span-2">
-          <p className="text-xs uppercase tracking-wider text-gold">Operação de experiências</p>
-          <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">Transforme agenda, reservas e recebimentos em rotina simples.</h2>
+          <p className="text-xs uppercase tracking-wider text-gold">{panel.label}</p>
+          <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">{panel.title}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-400">
-            O painel mostra o que está publicado, o que precisa de confirmação e como está a receita das suas vivências.
+            {panel.text}
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-4">
             <ActionTile href="/parceiro/experiencias" label="Ativas" value={String(ativos.length)} />

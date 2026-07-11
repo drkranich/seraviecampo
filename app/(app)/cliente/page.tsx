@@ -11,6 +11,7 @@ import { formatBRL } from "@/lib/catalog";
 import { ORDER_STATUS_LABEL, ORDER_STATUS_STYLE, type OrderStatus, type PaymentStatus } from "@/lib/orders";
 import { RES_STATUS_LABEL, RES_STATUS_STYLE, type Reservation, type ReservationStatus } from "@/lib/reservations";
 import { EXP_STATUS_LABEL, EXP_STATUS_STYLE, formatExpPrice, type ExperienceBooking } from "@/lib/experiences";
+import { getSite } from "@/lib/site";
 
 const PRODUCER_FIELDS =
   "id, full_name, display_name, farm_name, city, state, avatar_url, bio, verification_status";
@@ -30,6 +31,8 @@ type ProductPreview = { id: string; name: string };
 export default async function ClientePage() {
   const { user, profile } = await requireRole("cliente");
   const supabase = await createClient();
+  const site = await getSite(supabase);
+  const panel = site.panel_content.cliente;
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -106,15 +109,15 @@ export default async function ClientePage() {
   const nextBooking = upcomingBookings[0];
 
   return (
-    <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title={greeting(profile?.full_name)} subtitle="Seu painel para comprar, reservar e planejar experiências no campo.">
+    <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title={greeting(profile?.full_name)} subtitle={panel.subtitle}>
       <PanelNotice role="cliente" />
 
       <section className="mb-6 grid gap-4 lg:grid-cols-3">
         <div className="glass rounded-2xl border border-campo-border p-6 lg:col-span-2">
-          <p className="text-xs uppercase tracking-wider text-gold">Painel do viajante</p>
-          <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">Organize sua próxima compra ou vivência sem sair da rede Seravie.</h2>
+          <p className="text-xs uppercase tracking-wider text-gold">{panel.label}</p>
+          <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">{panel.title}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-400">
-            Produtos prontos, pré-colheitas, produtores favoritos e experiências aparecem juntos para você decidir o próximo passo.
+            {panel.text}
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <ActionCard href="/cliente/explorar" label="Comprar agora" text={`${fresh.length} produtos frescos`} />

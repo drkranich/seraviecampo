@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { CmsObjectListEditor, CmsStringListEditor, type CmsListField } from "@/components/CmsListEditor";
-import { getSiteCmsState } from "@/lib/site";
+import { getSiteCmsState, type PanelContent } from "@/lib/site";
 import { ImageUpload } from "@/components/ImageUpload";
 import { discardSiteDraft, publishSite, updateSite } from "./actions";
 
@@ -123,6 +123,22 @@ function TextAreaField({ name, label, value, rows = 3 }: { name: string; label: 
     <div>
       <label className={labelCls}>{label}</label>
       <textarea name={name} defaultValue={value} rows={rows} className={inputCls} />
+    </div>
+  );
+}
+
+function PanelFields({ prefix, title, value }: { prefix: string; title: string; value: PanelContent }) {
+  return (
+    <div className="rounded-lg border border-campo-border bg-campo-bg/35 p-4">
+      <h3 className="mb-3 font-serif text-lg text-forest-100">{title}</h3>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField name={`panel_${prefix}_subtitle`} label="Subtítulo do AppShell" value={value.subtitle} />
+        <TextField name={`panel_${prefix}_label`} label="Selo do card principal" value={value.label} />
+      </div>
+      <div className="mt-4 space-y-4">
+        <TextField name={`panel_${prefix}_title`} label="Título do card principal" value={value.title} />
+        <TextAreaField name={`panel_${prefix}_text`} label="Texto do card principal" value={value.text} rows={3} />
+      </div>
     </div>
   );
 }
@@ -338,6 +354,15 @@ export default async function SiteCmsPage({
             <TextField name="aviso_cliente" label="Aviso - cliente" value={site.avisos.cliente} />
             <TextField name="aviso_produtor" label="Aviso - produtor" value={site.avisos.produtor} />
             <TextField name="aviso_entregador" label="Aviso - entregador" value={site.avisos.entregador} />
+          </div>
+        </Section>
+
+        <Section title="Textos das dashboards internas">
+          <div className="grid gap-4 xl:grid-cols-2">
+            <PanelFields prefix="cliente" title="Cliente" value={site.panel_content.cliente} />
+            <PanelFields prefix="produtor" title="Produtor rural" value={site.panel_content.produtor} />
+            <PanelFields prefix="parceiro" title="Parceiro de experiências" value={site.panel_content.parceiro} />
+            <PanelFields prefix="entregador" title="Entregador" value={site.panel_content.entregador} />
           </div>
         </Section>
 

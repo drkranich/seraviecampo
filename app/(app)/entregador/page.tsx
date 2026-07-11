@@ -6,6 +6,7 @@ import { AppShell, ENTREGADOR_NAV } from "@/components/AppShell";
 import { PanelNotice } from "@/components/PanelNotice";
 import { AreaChart } from "@/components/charts";
 import { formatBRL } from "@/lib/catalog";
+import { getSite } from "@/lib/site";
 import { acceptDelivery } from "./actions";
 import { DeliveryProof } from "@/components/DeliveryProof";
 
@@ -34,6 +35,8 @@ function startOfDay(date: Date) {
 export default async function EntregadorPage() {
   const { user, profile } = await requireRole("entregador");
   const supabase = await createClient();
+  const site = await getSite(supabase);
+  const panel = site.panel_content.entregador;
 
   const [{ data: avail }, { data: mineData }] = await Promise.all([
     supabase
@@ -85,15 +88,15 @@ export default async function EntregadorPage() {
   }
 
   return (
-    <AppShell badge="Entregador" nav={ENTREGADOR_NAV} userName={profile?.full_name ?? "Entregador"} title={greeting(profile?.full_name)} subtitle="Central de rotas, paradas e ganhos.">
+    <AppShell badge="Entregador" nav={ENTREGADOR_NAV} userName={profile?.full_name ?? "Entregador"} title={greeting(profile?.full_name)} subtitle={panel.subtitle}>
       <PanelNotice role="entregador" />
 
       <section className="mb-6 grid gap-4 lg:grid-cols-3">
         <div className="glass rounded-2xl border border-campo-border p-6 lg:col-span-2">
-          <p className="text-xs uppercase tracking-wider text-gold">Operação de entrega</p>
-          <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">Veja sua rota, aceite novas entregas e acompanhe ganhos.</h2>
+          <p className="text-xs uppercase tracking-wider text-gold">{panel.label}</p>
+          <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">{panel.title}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-400">
-            A tela inicial agora prioriza o que o entregador precisa em campo: próxima parada, valores, contatos e comprovante de entrega.
+            {panel.text}
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-4">
             <ActionTile href="/entregador/rotas" label="Em rota" value={String(active.length)} />

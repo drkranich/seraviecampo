@@ -70,6 +70,32 @@ function collectSiteData(formData: FormData): Partial<SiteContent> {
     cta_text: str("cta_text"),
     footer: str("footer"),
     avisos: { cliente: str("aviso_cliente"), produtor: str("aviso_produtor"), entregador: str("aviso_entregador") },
+    panel_content: {
+      cliente: {
+        subtitle: str("panel_cliente_subtitle"),
+        label: str("panel_cliente_label"),
+        title: str("panel_cliente_title"),
+        text: str("panel_cliente_text"),
+      },
+      produtor: {
+        subtitle: str("panel_produtor_subtitle"),
+        label: str("panel_produtor_label"),
+        title: str("panel_produtor_title"),
+        text: str("panel_produtor_text"),
+      },
+      parceiro: {
+        subtitle: str("panel_parceiro_subtitle"),
+        label: str("panel_parceiro_label"),
+        title: str("panel_parceiro_title"),
+        text: str("panel_parceiro_text"),
+      },
+      entregador: {
+        subtitle: str("panel_entregador_subtitle"),
+        label: str("panel_entregador_label"),
+        title: str("panel_entregador_title"),
+        text: str("panel_entregador_text"),
+      },
+    },
     experiencias_enabled: formData.get("experiencias_enabled") === "on",
     experiencias_title: str("experiencias_title"),
     experiencias_subtitle: str("experiencias_subtitle"),
@@ -112,6 +138,10 @@ function revalidatePublic(site: Partial<SiteContent> | undefined) {
   revalidatePath("/experiencias");
   revalidatePath("/admin/site");
   revalidatePath("/admin/site/preview");
+  revalidatePath("/cliente");
+  revalidatePath("/produtor");
+  revalidatePath("/parceiro");
+  revalidatePath("/entregador");
   for (const page of site?.institutional_pages ?? []) {
     const slug = page.slug || slugify(page.title || "");
     if (slug) revalidatePath(`/${slug}`);

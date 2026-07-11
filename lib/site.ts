@@ -23,6 +23,12 @@ export type TrustItem = { label: string; text: string };
 export type FeaturedItem = { label: string; title: string; text: string; image: string; href?: string };
 export type TestimonialItem = { quote: string; name: string; role: string };
 export type FaqItem = { question: string; answer: string };
+export type PanelContent = {
+  subtitle: string;
+  label: string;
+  title: string;
+  text: string;
+};
 export type InstitutionalPage = {
   slug: string;
   label: string;
@@ -97,6 +103,12 @@ export type SiteContent = {
   cta_secondary_href: string;
   footer: string;
   avisos: { cliente: string; produtor: string; entregador: string };
+  panel_content: {
+    cliente: PanelContent;
+    produtor: PanelContent;
+    parceiro: PanelContent;
+    entregador: PanelContent;
+  };
   experiencias_enabled: boolean;
   experiencias_title: string;
   experiencias_subtitle: string;
@@ -405,6 +417,32 @@ export const DEFAULT_SITE: SiteContent = {
   cta_secondary_label: "Explorar experiências",
   cta_secondary_href: "/experiencias",
   avisos: { cliente: "", produtor: "", entregador: "" },
+  panel_content: {
+    cliente: {
+      subtitle: "Seu painel para comprar, reservar e planejar experiências no campo.",
+      label: "Painel do viajante",
+      title: "Organize sua próxima compra ou vivência sem sair da rede Seravie.",
+      text: "Produtos prontos, pré-colheitas, produtores favoritos e experiências aparecem juntos para você decidir o próximo passo.",
+    },
+    produtor: {
+      subtitle: "Resumo da operação: vendas, catálogo, colheitas reservadas e experiências.",
+      label: "Central do fornecedor",
+      title: "Acompanhe o que precisa de ação hoje.",
+      text: "Pedidos novos, reservas de colheita, estoque, vitrine e experiências aparecem juntos para facilitar a rotina.",
+    },
+    parceiro: {
+      subtitle: "Central para publicar vivências, acompanhar agenda e receber com transparência.",
+      label: "Operação de experiências",
+      title: "Transforme agenda, reservas e recebimentos em rotina simples.",
+      text: "O painel mostra o que está publicado, o que precisa de confirmação e como está a receita das suas vivências.",
+    },
+    entregador: {
+      subtitle: "Central de rotas, paradas e ganhos.",
+      label: "Operação de entrega",
+      title: "Veja sua rota, aceite novas entregas e acompanhe ganhos.",
+      text: "A tela inicial prioriza o que o entregador precisa em campo: próxima parada, valores, contatos e comprovante de entrega.",
+    },
+  },
   experiencias_enabled: true,
   experiencias_title: "Experiências no campo",
   experiencias_subtitle: "Vivências, gastronomia rural, rotas culturais e turismo de produção com quem conhece o território.",
@@ -439,6 +477,15 @@ function normalizeDestinations(value: DestinationItem[] | undefined) {
       slug,
     };
   });
+}
+
+function normalizePanelContent(value: Partial<SiteContent["panel_content"]> | undefined): SiteContent["panel_content"] {
+  return {
+    cliente: { ...DEFAULT_SITE.panel_content.cliente, ...(value?.cliente ?? {}) },
+    produtor: { ...DEFAULT_SITE.panel_content.produtor, ...(value?.produtor ?? {}) },
+    parceiro: { ...DEFAULT_SITE.panel_content.parceiro, ...(value?.parceiro ?? {}) },
+    entregador: { ...DEFAULT_SITE.panel_content.entregador, ...(value?.entregador ?? {}) },
+  };
 }
 
 export function destinationHref(destination: DestinationItem) {
@@ -489,6 +536,7 @@ function normalizeSiteContent(value: Partial<SiteContent> | undefined): SiteCont
     trust_items: withArray(d.trust_items, DEFAULT_SITE.trust_items),
     testimonials: withArray(d.testimonials, DEFAULT_SITE.testimonials),
     faq_items: withArray(d.faq_items, DEFAULT_SITE.faq_items),
+    panel_content: normalizePanelContent(d.panel_content),
     institutional_pages: withArray(d.institutional_pages, DEFAULT_SITE.institutional_pages).map((page) => ({
       ...page,
       slug: page.slug || slugify(page.title),

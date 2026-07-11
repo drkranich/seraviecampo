@@ -9,6 +9,7 @@ import { formatBRL, CATEGORY_LABEL, type ProductCategory, type ProductionStatus 
 import { ORDER_STATUS_LABEL, ORDER_STATUS_STYLE, type OrderStatus } from "@/lib/orders";
 import { RES_STATUS_LABEL, RES_STATUS_STYLE, type Reservation, type ReservationStatus } from "@/lib/reservations";
 import { EXP_STATUS_LABEL, EXP_STATUS_STYLE, type Experience, type ExperienceBooking } from "@/lib/experiences";
+import { getSite } from "@/lib/site";
 
 type ItemRow = { product_id: string | null; product_name: string; quantity: number; line_total_cents: number };
 type OrderRow = {
@@ -43,6 +44,8 @@ function startOfDay(d: Date) {
 export default async function ProdutorPage() {
   const { user, profile } = await requireRole("produtor");
   const supabase = await createClient();
+  const site = await getSite(supabase);
+  const panel = site.panel_content.produtor;
 
   const since = new Date();
   since.setDate(since.getDate() - 60);
@@ -166,16 +169,16 @@ export default async function ProdutorPage() {
       userName={profile?.full_name ?? "Produtor"}
       profileHref="/produtor/perfil"
       title={greeting(profile?.full_name)}
-      subtitle="Resumo da operação: vendas, catálogo, colheitas reservadas e experiências."
+      subtitle={panel.subtitle}
     >
       <PanelNotice role="produtor" />
 
       <section className="mb-6 grid gap-4 lg:grid-cols-3">
         <div className="glass rounded-2xl border border-campo-border p-6 lg:col-span-2">
-          <p className="text-xs uppercase tracking-wider text-gold">Central do fornecedor</p>
-          <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">Acompanhe o que precisa de ação hoje.</h2>
+          <p className="text-xs uppercase tracking-wider text-gold">{panel.label}</p>
+          <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">{panel.title}</h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-400">
-            Pedidos novos, reservas de colheita, estoque, vitrine e experiências aparecem juntos para facilitar a rotina.
+            {panel.text}
           </p>
           <div className="mt-5 grid gap-3 sm:grid-cols-4">
             <ActionTile href="/produtor/pedidos" label="Pedidos" value={String(pendingOrders.length)} />
