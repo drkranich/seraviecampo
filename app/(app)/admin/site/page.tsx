@@ -320,6 +320,19 @@ export default async function SiteCmsPage({
           <CmsObjectListEditor name="faq_items" label="Perguntas e respostas" items={site.faq_items} fields={faqFields} emptyItem={{ question: "", answer: "" }} itemLabel="Pergunta" addLabel="Adicionar pergunta" titleKey="question" />
         </Section>
 
+        <Section title="Paginas institucionais">
+          <CmsObjectListEditor
+            name="institutional_pages"
+            label="Paginas publicas"
+            items={site.institutional_pages}
+            fields={institutionalPageFields}
+            emptyItem={{ slug: "", label: "", title: "", summary: "", body: "", image: "", cta_label: "", cta_href: "/signup", seo_title: "", seo_description: "" }}
+            itemLabel="Pagina"
+            addLabel="Adicionar pagina"
+            titleKey="title"
+          />
+        </Section>
+
         <Section title="Avisos dos painéis">
           <div className="grid gap-4 lg:grid-cols-3">
             <TextField name="aviso_cliente" label="Aviso - cliente" value={site.avisos.cliente} />
