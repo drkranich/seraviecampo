@@ -20,7 +20,7 @@ function admin() {
 }
 
 export async function POST(request: Request) {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+  const secret = process.env.STRIPE_WEBHOOK_SECRET?.trim() || process.env.PAYMENTS_SANDBOX_WEBHOOK_SECRET?.trim();
   const payload = await request.text();
 
   if (secret) {

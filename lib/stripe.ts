@@ -1,8 +1,13 @@
 // Cliente Stripe via API REST (fetch) — roda nativo no Cloudflare Workers,
-// sem SDK e sem dependências. A chave secreta vem de STRIPE_SECRET_KEY
+// sem SDK e sem dependências. A chave secreta vem dos secrets Stripe do servidor
 // (secret no servidor — NUNCA NEXT_PUBLIC, NUNCA no repositório).
 
-const SECRET = process.env.STRIPE_SECRET_KEY?.trim();
+function readSecret(name: string) {
+  const value = process.env[name]?.trim();
+  return value || undefined;
+}
+
+const SECRET = readSecret("STRIPE_SECRET_KEY") ?? readSecret("STRIPE_SANDBOX_API_KEY");
 
 export function stripeEnabled(): boolean {
   return !!SECRET;
@@ -11,7 +16,7 @@ export function stripeEnabled(): boolean {
 type Form = Record<string, string>;
 
 async function stripeApi(path: string, form?: Form, method = "POST") {
-  if (!SECRET) throw new Error("Stripe não configurado (STRIPE_SECRET_KEY ausente).");
+  if (!SECRET) throw new Error("Stripe nao configurado (STRIPE_SECRET_KEY ou STRIPE_SANDBOX_API_KEY ausente).");
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     method,
     headers: {
