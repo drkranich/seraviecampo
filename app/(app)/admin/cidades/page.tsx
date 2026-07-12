@@ -33,7 +33,7 @@ export default async function CidadesPage() {
               <div className="mt-3 flex gap-4 text-sm">
                 <span className="text-leaf">🌾 {c.produtores}</span>
                 <span className="text-gold">👥 {c.clientes}</span>
-                <span className="text-blue-300">🛵 {c.entregadores}</span>
+                <span className="text-leaf-light">🛵 {c.entregadores}</span>
               </div>
             </article>
           ))}

@@ -147,7 +147,7 @@ export default async function UsuarioDetalhePage({ params }: { params: Promise<{
             <TrustRow label="KYC isento" ok={Boolean(p.kyc_exempt)} muted />
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            <form action={analyze}><button className="rounded-lg border border-blue-900/60 px-3 py-1.5 text-xs text-blue-300 transition hover:bg-blue-950/40">Marcar em análise</button></form>
+            <form action={analyze}><button className="rounded-lg border border-khaki/60 px-3 py-1.5 text-xs text-cream transition hover:bg-khaki/15">Marcar em análise</button></form>
             <form action={reject}><button className="rounded-lg border border-red-900/50 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-950/40">Rejeitar</button></form>
             <form action={approve}><button className="rounded-lg bg-gold px-4 py-1.5 text-xs font-medium text-campo-bg transition hover:bg-gold-light">Aprovar</button></form>
           </div>

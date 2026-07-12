@@ -5,6 +5,7 @@ import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { ROLE_LABEL, type UserRole } from "@/lib/roles";
 import { VERIFICATION_LABEL, VERIFICATION_STYLE, locationLabel } from "@/lib/profile";
 import { Avatar } from "@/components/Avatar";
+import { GlassSelect } from "@/components/GlassSelect";
 
 type Row = {
   id: string;
@@ -224,11 +225,7 @@ function Select({
   return (
     <label>
       <span className="mb-1 block text-xs uppercase tracking-wider text-stone-500">{label}</span>
-      <select name={name} defaultValue={value} className="w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-sm text-stone-100 outline-none focus:border-gold">
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>{option.label}</option>
-        ))}
-      </select>
+      <GlassSelect name={name} defaultValue={value} options={options} buttonClassName="rounded-lg bg-campo-bg/80 text-stone-100" />
     </label>
   );
 }

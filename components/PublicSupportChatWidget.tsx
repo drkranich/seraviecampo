@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { GlassSelect } from "@/components/GlassSelect";
 
 type PublicMessage = {
   id: string;
@@ -18,6 +19,13 @@ type StoredThread = {
 
 const STORAGE_KEY = "seravie_public_support_thread_v1";
 const CHAT_HASH = "#chat-seravie";
+const SUBJECT_OPTIONS = [
+  { value: "Atendimento pelo site", label: "Atendimento pelo site" },
+  { value: "Quero anunciar", label: "Quero anunciar" },
+  { value: "Tenho duvida sobre destinos", label: "Tenho duvida sobre destinos" },
+  { value: "Preciso de suporte", label: "Preciso de suporte" },
+  { value: "Parcerias e produtores", label: "Parcerias e produtores" },
+];
 
 function readThread(): StoredThread | null {
   if (typeof window === "undefined") return null;
@@ -173,20 +181,14 @@ export function PublicSupportChatWidget() {
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome" className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none placeholder:text-stone-400 transition focus:border-gold/70 focus:bg-white/[0.09]" />
               <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" type="email" className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none placeholder:text-stone-400 transition focus:border-gold/70 focus:bg-white/[0.09]" />
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="WhatsApp ou telefone" className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none placeholder:text-stone-400 transition focus:border-gold/70 focus:bg-white/[0.09]" />
-              <select value={subject} onChange={(e) => setSubject(e.target.value)} className="rounded-xl border border-white/10 bg-[#182012] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none transition focus:border-gold/70">
-                <option>Atendimento pelo site</option>
-                <option>Quero anunciar</option>
-                <option>Tenho duvida sobre destinos</option>
-                <option>Preciso de suporte</option>
-                <option>Parcerias e produtores</option>
-              </select>
+              <GlassSelect value={subject} onChange={setSubject} options={SUBJECT_OPTIONS} />
             </div>
           )}
 
           <div className="relative max-h-[22rem] min-h-[13rem] space-y-3 overflow-y-auto p-4">
             {messages.length === 0 ? (
               <p className="rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-sm leading-relaxed text-stone-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                Ola! Conte como a Seravie Campo pode ajudar voce hoje.
+                Olá! Conte como a Seravie Campo pode ajudar você hoje.
               </p>
             ) : (
               messages.map((message) => {

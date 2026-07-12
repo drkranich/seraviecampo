@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { GlassSelect } from "@/components/GlassSelect";
 
 type FieldKind = "text" | "textarea" | "url" | "image" | "select";
 type SelectOption = { label: string; value: string };
@@ -284,11 +285,13 @@ export function CmsObjectListEditor({
                           className={inputCls}
                         />
                       ) : field.kind === "select" ? (
-                        <select id={fieldId} value={value} onChange={(event) => updateValue(rowIndex, field.key, event.target.value)} className={inputCls}>
-                          {(field.options ?? []).map((option) => (
-                            <option key={option.value} value={option.value}>{option.label}</option>
-                          ))}
-                        </select>
+                        <GlassSelect
+                          id={fieldId}
+                          value={value}
+                          onChange={(nextValue) => updateValue(rowIndex, field.key, nextValue)}
+                          options={field.options ?? []}
+                          buttonClassName="bg-campo-bg/70"
+                        />
                       ) : field.kind === "image" ? (
                         <CmsImageInput
                           id={fieldId}

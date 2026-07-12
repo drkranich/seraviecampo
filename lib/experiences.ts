@@ -43,7 +43,7 @@ export const EXP_STATUS_LABEL: Record<ExperienceStatus, string> = {
 
 export const EXP_STATUS_STYLE: Record<ExperienceStatus, string> = {
   pendente: "border-amber-900/60 text-amber-300",
-  confirmado: "border-blue-900/60 text-blue-300",
+  confirmado: "border-leaf-dark/60 text-leaf-light",
   concluido: "border-forest-700 text-forest-200",
   cancelado: "border-red-900/50 text-red-300",
 };

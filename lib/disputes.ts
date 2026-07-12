@@ -10,7 +10,7 @@ export const DISPUTE_STATUS_LABEL: Record<DisputeStatus, string> = {
 
 export const DISPUTE_STATUS_STYLE: Record<DisputeStatus, string> = {
   aberta: "border-gold/40 bg-gold/10 text-gold",
-  em_analise: "border-blue-900/60 bg-blue-950/40 text-blue-300",
+  em_analise: "border-khaki/60 bg-khaki/15 text-cream",
   reembolsada: "border-forest-700 bg-forest-900/40 text-forest-200",
   encerrada_sem_reembolso: "border-stone-700 bg-stone-900/40 text-stone-300",
   recusada: "border-red-900/50 bg-red-950/40 text-red-300",

@@ -21,7 +21,7 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
 export const ORDER_STATUS_STYLE: Record<OrderStatus, string> = {
   novo: "bg-gold/15 text-gold border-gold/40",
   preparando: "bg-forest-900/60 text-forest-200 border-forest-700",
-  saiu_entrega: "bg-blue-950/50 text-blue-300 border-blue-900/60",
+  saiu_entrega: "bg-leaf-dark/20 text-leaf-light border-leaf-dark/60",
   entregue: "bg-forest-800/60 text-forest-200 border-forest-600",
   cancelado: "bg-red-950/40 text-red-300 border-red-900/50",
 };
@@ -93,6 +93,6 @@ export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
 export const PAYMENT_STATUS_STYLE: Record<PaymentStatus, string> = {
   pendente: "border-gold/40 bg-gold/10 text-gold",
   pago: "border-forest-700 bg-forest-900/40 text-forest-200",
-  na_entrega: "border-blue-900/60 bg-blue-950/40 text-blue-300",
+  na_entrega: "border-khaki/60 bg-khaki/15 text-cream",
   reembolsado: "border-red-900/50 bg-red-950/40 text-red-300",
 };

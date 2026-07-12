@@ -79,7 +79,7 @@ export default async function PedidosClientePage({
     <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title="Meus pedidos" subtitle="Seu histórico, gastos e calendário de compras.">
       {sp.canceled && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Pedido cancelado.</div>}
       {sp.pago && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Pagamento confirmado.</div>}
-      {sp.disputa && <div className="mb-4 rounded-lg border border-blue-900/60 bg-blue-950/40 px-3 py-2 text-sm text-blue-300">Sua solicitação foi registrada. Nossa equipe vai analisar.</div>}
+      {sp.disputa && <div className="mb-4 rounded-lg border border-khaki/60 bg-khaki/15 px-3 py-2 text-sm text-cream">Sua solicitação foi registrada. Nossa equipe vai analisar.</div>}
       {sp.error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{decodeURIComponent(sp.error)}</div>}
 
       <div className="mb-6 flex items-start gap-2 rounded-lg border border-gold/30 bg-gold/5 px-4 py-3 text-sm text-stone-300">

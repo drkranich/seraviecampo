@@ -34,7 +34,7 @@ export const VERIFICATION_LABEL: Record<string, string> = {
 
 export const VERIFICATION_STYLE: Record<string, string> = {
   pendente: "border-gold/40 bg-gold/10 text-gold",
-  em_analise: "border-blue-900/60 bg-blue-950/40 text-blue-300",
+  em_analise: "border-khaki/60 bg-khaki/15 text-cream",
   verificado: "border-forest-700 bg-forest-900/40 text-forest-200",
   rejeitado: "border-red-900/50 bg-red-950/40 text-red-300",
 };

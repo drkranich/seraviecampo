@@ -165,7 +165,7 @@ export default async function ExperienciasParceiroPage({
                   </div>
                   {b.status !== "concluido" && b.status !== "cancelado" && (
                     <div className="mt-3 flex gap-2">
-                      {b.status === "pendente" && <form action={confirmar}><button className="rounded-lg border border-blue-900/60 px-3 py-1.5 text-xs text-blue-300 transition hover:bg-blue-950/40">Confirmar</button></form>}
+                      {b.status === "pendente" && <form action={confirmar}><button className="rounded-lg border border-leaf-dark/60 px-3 py-1.5 text-xs text-leaf-light transition hover:bg-leaf-dark/20">Confirmar</button></form>}
                       <form action={concluir}><button className="rounded-lg border border-forest-700 px-3 py-1.5 text-xs text-forest-200 transition hover:bg-forest-900/40">Concluir</button></form>
                       <form action={cancelar}><button className="rounded-lg border border-red-900/50 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-950/40">Cancelar</button></form>
                     </div>

@@ -133,7 +133,7 @@ function OrderCard({ order: o }: { order: OrderRow }) {
             </>
           )}
           {o.status === "saiu_entrega" && !o.self_delivery && o.delivery_person_id && (
-            <span className="text-xs text-blue-300">Entregador a caminho</span>
+            <span className="text-xs text-leaf-light">Entregador a caminho</span>
           )}
         </div>
       </div>
