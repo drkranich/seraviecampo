@@ -144,35 +144,36 @@ export function PublicSupportChatWidget() {
   }
 
   return (
-    <div id="chat-seravie" className="fixed bottom-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3">
+    <div id="chat-seravie" className="fixed bottom-4 right-4 z-50 flex max-w-[calc(100vw-2rem)] flex-col items-end gap-3 sm:bottom-6 sm:right-6">
       {open && (
-        <section className="w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-[#3A4736] bg-[#10140E] shadow-2xl shadow-black/40">
-          <header className="border-b border-[#2D3326] bg-[#171D15] p-4">
+        <section className="relative w-[min(25rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-white/15 bg-[#10140E]/70 shadow-[0_24px_80px_rgba(0,0,0,0.42)] backdrop-blur-2xl">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-[radial-gradient(circle_at_20%_0%,rgba(194,168,120,0.24),transparent_58%),radial-gradient(circle_at_88%_12%,rgba(111,166,63,0.18),transparent_48%)]" />
+          <header className="relative border-b border-white/10 bg-white/[0.04] p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.22em] text-gold">Atendimento Seravie</p>
-                <h2 className="mt-1 font-serif text-2xl text-forest-50">Converse com nossa equipe</h2>
+                <h2 className="mt-1 font-serif text-2xl text-forest-50">Converse com a gente</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-md border border-[#2D3326] px-2 py-1 text-sm text-stone-300 transition hover:border-gold/60 hover:text-gold"
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-sm text-stone-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-gold/60 hover:bg-gold/10 hover:text-gold"
                 aria-label="Fechar atendimento"
               >
                 X
               </button>
             </div>
-            <p className="mt-2 text-sm leading-relaxed text-stone-400">
-              Envie sua mensagem e a equipe interna responde por aqui, ao vivo, durante o atendimento.
+            <p className="mt-2 text-sm leading-relaxed text-stone-300">
+              Envie sua mensagem. Nossa equipe acompanha por aqui e responde durante o atendimento.
             </p>
           </header>
 
           {!thread && (
-            <div className="grid gap-2 border-b border-[#2D3326] p-4">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome" className="rounded-md border border-[#2D3326] bg-[#0D110B] px-3 py-2 text-sm text-forest-50 outline-none placeholder:text-stone-500 focus:border-gold" />
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" type="email" className="rounded-md border border-[#2D3326] bg-[#0D110B] px-3 py-2 text-sm text-forest-50 outline-none placeholder:text-stone-500 focus:border-gold" />
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="WhatsApp ou telefone" className="rounded-md border border-[#2D3326] bg-[#0D110B] px-3 py-2 text-sm text-forest-50 outline-none placeholder:text-stone-500 focus:border-gold" />
-              <select value={subject} onChange={(e) => setSubject(e.target.value)} className="rounded-md border border-[#2D3326] bg-[#0D110B] px-3 py-2 text-sm text-forest-50 outline-none focus:border-gold">
+            <div className="relative grid gap-2 border-b border-white/10 bg-black/10 p-4">
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome" className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none placeholder:text-stone-400 transition focus:border-gold/70 focus:bg-white/[0.09]" />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-mail" type="email" className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none placeholder:text-stone-400 transition focus:border-gold/70 focus:bg-white/[0.09]" />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="WhatsApp ou telefone" className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none placeholder:text-stone-400 transition focus:border-gold/70 focus:bg-white/[0.09]" />
+              <select value={subject} onChange={(e) => setSubject(e.target.value)} className="rounded-xl border border-white/10 bg-[#182012] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none transition focus:border-gold/70">
                 <option>Atendimento pelo site</option>
                 <option>Quero anunciar</option>
                 <option>Tenho duvida sobre destinos</option>
@@ -182,17 +183,17 @@ export function PublicSupportChatWidget() {
             </div>
           )}
 
-          <div className="max-h-[22rem] min-h-[13rem] space-y-3 overflow-y-auto p-4">
+          <div className="relative max-h-[22rem] min-h-[13rem] space-y-3 overflow-y-auto p-4">
             {messages.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-[#2D3326] p-4 text-sm leading-relaxed text-stone-500">
-                Escreva sua primeira mensagem. Assim que a conversa for aberta, ela aparece no Inbox interno da Seravie Campo.
+              <p className="rounded-2xl border border-white/10 bg-white/[0.05] p-4 text-sm leading-relaxed text-stone-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                Ola! Conte como a Seravie Campo pode ajudar voce hoje.
               </p>
             ) : (
               messages.map((message) => {
                 const mine = message.sender === "visitor";
                 return (
                   <div key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[82%] rounded-lg px-3 py-2 text-sm ${mine ? "bg-gold text-campo-bg" : "bg-[#1D251B] text-stone-200"}`}>
+                    <div className={`max-w-[82%] rounded-2xl px-3 py-2 text-sm shadow-[0_10px_30px_rgba(0,0,0,0.22)] ${mine ? "bg-gold/95 text-campo-bg" : "border border-white/10 bg-white/[0.07] text-stone-200 backdrop-blur"}`}>
                       <p className="whitespace-pre-wrap leading-relaxed">{message.body}</p>
                       <p className={`mt-1 text-[0.65rem] ${mine ? "text-campo-bg/70" : "text-stone-500"}`}>
                         {mine ? "Voce" : "Equipe Seravie"} - {formatTime(message.created_at)}
@@ -205,14 +206,14 @@ export function PublicSupportChatWidget() {
             <div ref={endRef} />
           </div>
 
-          <form onSubmit={submit} className="border-t border-[#2D3326] p-3">
-            {error && <p className="mb-2 rounded-md border border-red-900/50 bg-red-950/30 px-3 py-2 text-xs text-red-200">{error}</p>}
+          <form onSubmit={submit} className="relative border-t border-white/10 bg-black/10 p-3">
+            {error && <p className="mb-2 rounded-xl border border-red-900/50 bg-red-950/40 px-3 py-2 text-xs text-red-200 backdrop-blur">{error}</p>}
             {status === "closed" ? (
-              <p className="rounded-md border border-[#2D3326] px-3 py-2 text-sm text-stone-400">Esta conversa foi encerrada pela equipe.</p>
+              <p className="rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-stone-300">Esta conversa foi encerrada pela equipe.</p>
             ) : (
               <div className="flex gap-2">
-                <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Escreva sua mensagem" className="min-w-0 flex-1 rounded-md border border-[#2D3326] bg-[#0D110B] px-3 py-2 text-sm text-forest-50 outline-none placeholder:text-stone-500 focus:border-gold" />
-                <button disabled={busy} className="rounded-md bg-gold px-4 py-2 text-sm font-semibold text-campo-bg transition hover:bg-gold-light disabled:opacity-60">
+                <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Escreva sua mensagem" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-sm text-forest-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] outline-none placeholder:text-stone-400 transition focus:border-gold/70 focus:bg-white/[0.09]" />
+                <button disabled={busy} className="rounded-xl bg-gold px-4 py-2 text-sm font-semibold text-campo-bg shadow-[0_10px_30px_rgba(194,168,120,0.22)] transition hover:bg-gold-light disabled:opacity-60">
                   Enviar
                 </button>
               </div>
@@ -224,10 +225,11 @@ export function PublicSupportChatWidget() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="rounded-lg border border-[#C2A878]/60 bg-gold px-5 py-3 text-sm font-semibold text-campo-bg shadow-xl shadow-black/30 transition hover:bg-gold-light"
+        className="group flex items-center gap-3 rounded-full border border-white/20 bg-[#10140E]/72 px-4 py-3 text-sm font-semibold text-forest-50 shadow-[0_18px_50px_rgba(0,0,0,0.38)] backdrop-blur-2xl transition hover:border-gold/60 hover:bg-[#10140E]/86"
         aria-expanded={open}
       >
-        Fale com a Seravie
+        <span className="h-2.5 w-2.5 rounded-full bg-gold shadow-[0_0_18px_rgba(194,168,120,0.85)] transition group-hover:scale-110" />
+        <span>Fale com a Seravie</span>
       </button>
     </div>
   );
