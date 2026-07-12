@@ -109,7 +109,7 @@ export default async function DestinoPage({ params }: { params: Promise<{ slug: 
                 <h2 className="mt-3 font-serif text-4xl text-forest-50">O que já está ativo neste destino</h2>
               </div>
               <p className="max-w-2xl text-sm leading-relaxed text-stone-400 md:justify-self-end">
-                Estes cards vêm dos cadastros reais de produtores e parceiros. Quando uma nova oferta ativa entra na plataforma, ela passa a compor o destino automaticamente.
+                Produtos, experiências e anfitriões locais reunidos para ajudar você a montar uma viagem com mais sabor, presença e conexão com o território.
               </p>
             </div>
 

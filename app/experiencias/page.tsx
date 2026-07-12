@@ -43,7 +43,7 @@ export default async function ExperienciasPublicPage() {
       <section className="mx-auto max-w-6xl px-6 pb-16">
         {experiences.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-campo-border glass p-12 text-center text-stone-400">
-            Em breve, experiências extraordinárias no campo. Volte logo.
+            No momento, não há experiências publicadas. Explore os destinos e acompanhe as próximas vivências da rede Seravie Campo.
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

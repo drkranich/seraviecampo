@@ -27,7 +27,7 @@ export function PublicInstitutionalPage({ site, page }: { site: SiteContent; pag
           </Link>
           <div className="flex flex-wrap items-center gap-4 text-sm text-forest-100/80">
             <Link href="/destinos" className="transition hover:text-gold">Destinos</Link>
-            <Link href="/experiencias" className="transition hover:text-gold">Experiencias</Link>
+            <Link href="/experiencias" className="transition hover:text-gold">Experiências</Link>
             <Link href="/login" className="transition hover:text-gold">Entrar</Link>
           </div>
         </nav>

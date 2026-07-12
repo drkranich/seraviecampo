@@ -22,7 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     };
   } catch {
-    return { metadataBase: new URL(SITE_URL), title: "Seravie Campo — Agro Gourmet", description: "Sistema Operacional da Economia Local." };
+    return {
+      metadataBase: new URL(SITE_URL),
+      title: "Seravie Campo - Turismo rural, experiencias e produtos regionais",
+      description: "Descubra destinos rurais, experiencias locais, hospedagens e produtos regionais em uma rede criada para aproximar visitantes e comunidades do campo.",
+    };
   }
 }
 

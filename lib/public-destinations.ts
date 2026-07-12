@@ -197,11 +197,11 @@ function offerLabel(productCount: number, experienceCount: number, producerCount
     producerCount > 0 ? countLabel(producerCount, "anfitrião local", "anfitriões locais") : "",
   ].filter(Boolean);
 
-  return parts.length ? parts.join(" · ") : "Destino em formação";
+  return parts.length ? parts.join(" · ") : "Curadoria local";
 }
 
 function automaticDescription(name: string, label: string) {
-  return `${name} aparece automaticamente na Seravie Campo porque já tem ${label.toLowerCase()} publicados por anfitriões, produtores ou parceiros locais.`;
+  return `Em ${name}, a Seravie Campo reúne ${label.toLowerCase()} ligados ao território, à cultura local e à produção regional.`;
 }
 
 function automaticHighlights(productCount: number, experienceCount: number, producerCount: number) {
