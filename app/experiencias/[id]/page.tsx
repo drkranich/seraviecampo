@@ -5,6 +5,7 @@ import { getSite } from "@/lib/site";
 import { stripeEnabled } from "@/lib/stripe";
 import { Carousel } from "@/components/Carousel";
 import { ExperienceBooking } from "@/components/ExperienceBooking";
+import { PublicSupportChatWidget } from "@/components/PublicSupportChatWidget";
 import { EXP_CATEGORY_LABEL, durationLabel, type Experience } from "@/lib/experiences";
 
 export const dynamic = "force-dynamic";
@@ -121,6 +122,7 @@ export default async function ExperienciaDetalhePublic({
       </div>
 
       <footer className="mx-auto max-w-6xl px-6 py-10 text-center text-xs leading-relaxed text-stone-600">{site.footer}</footer>
+      <PublicSupportChatWidget />
     </main>
   );
 }

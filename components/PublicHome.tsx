@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PublicDestination } from "@/lib/public-destinations";
+import { PublicSupportChatWidget } from "@/components/PublicSupportChatWidget";
 import { destinationHref, type SiteContent } from "@/lib/site";
 
 const teaserBorders = ["border-[#C2A878]", "border-[#7CA049]", "border-[#6D8EA0]"];
@@ -355,9 +356,10 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
           <div>
             <h3 className="text-xs uppercase tracking-[0.22em] text-gold">Institucional</h3>
             <div className="mt-3 space-y-2">
+              <a href="#chat-seravie" className="block hover:text-gold">Fale conosco</a>
               {site.institutional_pages
                 .filter((page) => page.slug)
-                .slice(0, 4)
+                .slice(0, 3)
                 .map((page) => (
                   <Link key={page.slug} href={`/${page.slug}`} className="block hover:text-gold">
                     {page.title}
@@ -367,6 +369,7 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
           </div>
         </div>
       </footer>
+      <PublicSupportChatWidget />
     </main>
   );
 }

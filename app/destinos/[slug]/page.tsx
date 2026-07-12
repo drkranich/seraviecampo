@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PublicSupportChatWidget } from "@/components/PublicSupportChatWidget";
 import { findPublicDestination, getDestinationListings, type DestinationExperience, type DestinationProduct, type DestinationProducer } from "@/lib/public-destinations";
 import { createClient } from "@/lib/supabase/server";
 import { destinationHighlights, getSite } from "@/lib/site";
@@ -158,6 +159,7 @@ export default async function DestinoPage({ params }: { params: Promise<{ slug: 
           </Link>
         </div>
       </section>
+      <PublicSupportChatWidget />
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PublicSupportChatWidget } from "@/components/PublicSupportChatWidget";
 import type { InstitutionalPage, SiteContent } from "@/lib/site";
 
 function splitParagraphs(value: string) {
@@ -59,6 +60,7 @@ export function PublicInstitutionalPage({ site, page }: { site: SiteContent; pag
           </Link>
         </aside>
       </section>
+      <PublicSupportChatWidget />
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PublicSupportChatWidget } from "@/components/PublicSupportChatWidget";
 import { getPublicDestinations } from "@/lib/public-destinations";
 import { createClient } from "@/lib/supabase/server";
 import { destinationHref, getSite } from "@/lib/site";
@@ -41,7 +42,7 @@ export default async function DestinosPage() {
                 <p className="text-xs uppercase tracking-[0.22em] text-gold">{destination.region}</p>
                 {destination.source === "automatic" && (
                   <span className="rounded-full border border-[#7CA049]/50 px-2 py-0.5 text-[0.65rem] uppercase tracking-[0.14em] text-[#A9C875]">
-                    Automático
+                    Oferta local
                   </span>
                 )}
               </div>
@@ -54,6 +55,7 @@ export default async function DestinosPage() {
           </Link>
         ))}
       </section>
+      <PublicSupportChatWidget />
     </main>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PublicSupportChatWidget } from "@/components/PublicSupportChatWidget";
 import { createClient } from "@/lib/supabase/server";
 import { getSite } from "@/lib/site";
 import { EXP_CATEGORY_LABEL, formatExpPrice, durationLabel, type Experience } from "@/lib/experiences";
@@ -79,6 +80,7 @@ export default async function ExperienciasPublicPage() {
       </section>
 
       <footer className="mx-auto max-w-6xl px-6 py-10 text-center text-xs leading-relaxed text-stone-600">{site.footer}</footer>
+      <PublicSupportChatWidget />
     </main>
   );
 }
