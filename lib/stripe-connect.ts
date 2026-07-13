@@ -40,7 +40,8 @@ export async function refreshStripeAccountStatus(
   version: StripeConnectAccountVersion
 ): Promise<StripeConnectedAccountStatus> {
   const status = await getConnectedAccountStatus(accountId, version);
-  await db.from("profiles").update(stripeStatusUpdate(status)).eq("id", userId);
+  const updated = await db.from("profiles").update(stripeStatusUpdate(status)).eq("id", userId);
+  if (updated.error) throw updated.error;
   return status;
 }
 

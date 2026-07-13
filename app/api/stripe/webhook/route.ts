@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createSb } from "@supabase/supabase-js";
 import { verifyStripeSignature } from "@/lib/stripe";
+import { refreshStripeAccountStatus, stripeConnectVersion } from "@/lib/stripe-connect";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { payoutProducerForOrder, payoutExperienceBooking } from "@/lib/payouts";
 
@@ -10,9 +11,11 @@ type StripeEvent = {
   type?: string;
   livemode?: boolean;
   data?: { object?: Record<string, unknown> };
+  related_object?: { id?: string; type?: string; url?: string };
 };
 type ExistingWebhookEvent = { status: string; updated_at: string | null };
 type SupabaseResult = { error: { code?: string; message?: string } | null };
+type StripeProfileRow = { id: string; stripe_account_version: string | null };
 
 const PROCESSING_STALE_MS = 10 * 60 * 1000;
 
@@ -51,6 +54,10 @@ function valueAsString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
 }
 
+function relatedObjectOf(event: StripeEvent): Record<string, unknown> {
+  return event.related_object && typeof event.related_object === "object" ? event.related_object as Record<string, unknown> : {};
+}
+
 function metadataOf(obj: Record<string, unknown>): Record<string, string> {
   return (obj.metadata ?? {}) as Record<string, string>;
 }
@@ -72,7 +79,7 @@ async function reserveStripeEvent(db: AdminDb, event: StripeEvent, obj: Record<s
   const row = {
     id: event.id,
     type: event.type ?? "unknown",
-    object_id: valueAsString(obj.id),
+    object_id: valueAsString(obj.id) ?? valueAsString(relatedObjectOf(event).id),
     livemode: typeof event.livemode === "boolean" ? event.livemode : null,
     status: "processing",
     error: null,
@@ -296,6 +303,61 @@ async function handleStripeDisputeEvent(db: AdminDb, obj: Record<string, unknown
   }
 }
 
+function isConnectedAccountEvent(type: string | undefined): boolean {
+  if (!type) return false;
+  return type === "account.updated"
+    || type === "v1.account.updated"
+    || type === "v2.core.account.created"
+    || type === "v2.core.account.updated"
+    || type === "v2.core.account.closed"
+    || type === "v2.core.account[requirements].updated"
+    || type === "v2.core.account[future_requirements].updated"
+    || type.startsWith("v2.core.account[configuration.recipient]");
+}
+
+function connectedAccountIdFromEvent(event: StripeEvent, obj: Record<string, unknown>): string | null {
+  const related = relatedObjectOf(event);
+  const relatedType = valueAsString(related.type);
+  const relatedId = valueAsString(related.id);
+  if (relatedId && (relatedType === "account" || relatedType === "v2.core.account")) return relatedId;
+
+  const objectType = valueAsString(obj.object);
+  const objectId = valueAsString(obj.id);
+  if (objectId && (objectType === "account" || objectType === "v2.core.account")) return objectId;
+
+  return valueAsString(obj.account);
+}
+
+async function handleConnectedAccountEvent(db: AdminDb, event: StripeEvent, obj: Record<string, unknown>) {
+  const accountId = connectedAccountIdFromEvent(event, obj);
+  if (!accountId) return;
+
+  const { data, error } = await db
+    .from("profiles")
+    .select("id, stripe_account_version")
+    .eq("stripe_account_id", accountId)
+    .maybeSingle();
+  if (error) throw error;
+
+  const profile = data as StripeProfileRow | null;
+  if (!profile?.id) return;
+
+  if (event.type === "v2.core.account.closed") {
+    throwIfError(await db.from("profiles").update({
+      stripe_charges_enabled: false,
+      stripe_account_status: "restricted",
+      stripe_transfers_status: "closed",
+      stripe_requirements_due: [],
+      stripe_requirements_past_due: [],
+      stripe_last_status_sync_at: new Date().toISOString(),
+    }).eq("id", profile.id));
+    return;
+  }
+
+  const version = event.type?.startsWith("v2.core.") ? "v2" : stripeConnectVersion(profile.stripe_account_version);
+  await refreshStripeAccountStatus(db, profile.id, accountId, version);
+}
+
 async function processStripeEvent(db: AdminDb, event: StripeEvent) {
   const obj = (event.data?.object ?? {}) as Record<string, unknown>;
   const meta = metadataOf(obj);
@@ -310,6 +372,8 @@ async function processStripeEvent(db: AdminDb, event: StripeEvent) {
     await handleRefundEvent(db, obj);
   } else if (event.type?.startsWith("charge.dispute.")) {
     await handleStripeDisputeEvent(db, obj);
+  } else if (isConnectedAccountEvent(event.type)) {
+    await handleConnectedAccountEvent(db, event, obj);
   } else if (event.type === "customer.subscription.deleted" && obj.id) {
     const subscriptionId = String(obj.id);
     throwIfError(await db.from("subscriptions").update({ status: "cancelada" }).eq("stripe_subscription_id", subscriptionId));
