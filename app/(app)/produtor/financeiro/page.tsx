@@ -1,11 +1,22 @@
 import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, PRODUTOR_NAV } from "@/components/AppShell";
+import { PayoutTransferTable } from "@/components/PayoutTransferTable";
 import { stripeEnabled, getAccount } from "@/lib/stripe";
 import { formatBRL } from "@/lib/catalog";
 import { DEFAULT_PRODUCER_PLAN } from "@/lib/plans";
 import { getPlanById, producerCommissionPctDb } from "@/lib/plans-db";
+import { courierShareCents } from "@/lib/shipping";
+import { sumTransfers, type PayoutTransferRow } from "@/lib/financial";
 import { setPayoutMode } from "./actions";
+
+type PayableOrder = {
+  total_cents: number;
+  delivery_fee_cents: number;
+  self_delivery: boolean;
+  producer_paid_out: boolean;
+  courier_paid_out: boolean;
+};
 
 export default async function FinanceiroPage({
   searchParams,
@@ -57,6 +68,34 @@ export default async function FinanceiroPage({
   const commission = Math.round((productRevenue * pct) / 100);
   const subscriptionCost = plan?.price_cents ?? 0;
   const netMensal = productRevenue - commission - subscriptionCost;
+
+  const [{ data: transferData }, { data: payableOrderData }] = await Promise.all([
+    supabase.from("payout_transfers")
+      .select("id, source_type, source_id, recipient_id, stripe_transfer_id, stripe_reversal_id, kind, amount_cents, currency, status, error, created_at, reversed_at")
+      .eq("recipient_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(12),
+    supabase.from("orders")
+      .select("total_cents, delivery_fee_cents, self_delivery, producer_paid_out, courier_paid_out")
+      .eq("producer_id", user.id)
+      .neq("status", "cancelado")
+      .eq("payment_status", "pago"),
+  ]);
+  const transfers = (transferData ?? []) as PayoutTransferRow[];
+  const payableOrders = (payableOrderData ?? []) as PayableOrder[];
+  const pendingProducts = payableOrders
+    .filter((order) => !order.producer_paid_out)
+    .reduce((total, order) => {
+      const revenue = order.total_cents - (order.delivery_fee_cents || 0);
+      return total + Math.max(0, revenue - Math.round((revenue * pct) / 100));
+    }, 0);
+  const pendingSelfDelivery = payableOrders
+    .filter((order) => order.self_delivery && !order.courier_paid_out)
+    .reduce((total, order) => total + courierShareCents(order.delivery_fee_cents || 0), 0);
+  const pendingPayout = pendingProducts + pendingSelfDelivery;
+  const sentPayout = sumTransfers(transfers, "created");
+  const reversedPayout = sumTransfers(transfers, "reversed");
+  const failedTransfers = transfers.filter((transfer) => transfer.status === "failed").length;
 
   const errMsg: Record<string, string> = {
     stripe_off: "Pagamento online temporariamente indisponível. Tente novamente em instantes ou acione o suporte.",
@@ -123,6 +162,17 @@ export default async function FinanceiroPage({
             </StatusBox>
           )}
         </div>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="mb-3 font-serif text-xl text-forest-100">Extrato de repasses</h2>
+        <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Line label="A liberar" value={formatBRL(pendingPayout)} accent />
+          <Line label="Enviado via Stripe" value={formatBRL(sentPayout)} />
+          <Line label="Estornado" value={formatBRL(reversedPayout)} />
+          <Line label="Falhas de repasse" value={String(failedTransfers)} />
+        </div>
+        <PayoutTransferTable transfers={transfers} />
       </section>
 
       <section className="glass mt-6 max-w-2xl rounded-2xl border border-campo-border p-6">
