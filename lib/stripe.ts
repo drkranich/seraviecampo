@@ -15,13 +15,14 @@ export function stripeEnabled(): boolean {
 
 type Form = Record<string, string>;
 
-async function stripeApi(path: string, form?: Form, method = "POST") {
+async function stripeApi(path: string, form?: Form, method = "POST", opts?: { idempotencyKey?: string }) {
   if (!SECRET) throw new Error("Stripe nao configurado (STRIPE_SECRET_KEY ou STRIPE_SANDBOX_API_KEY ausente).");
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     method,
     headers: {
       Authorization: `Bearer ${SECRET}`,
       "Content-Type": "application/x-www-form-urlencoded",
+      ...(opts?.idempotencyKey ? { "Idempotency-Key": opts.idempotencyKey } : {}),
     },
     body: form ? new URLSearchParams(form).toString() : undefined,
   });
@@ -139,6 +140,7 @@ export async function createTransfer(opts: {
   currency: string;
   destinationAccountId: string;
   metadata?: Record<string, string>;
+  idempotencyKey?: string;
 }): Promise<string> {
   const form: Form = {
     amount: String(opts.amountCents),
@@ -146,8 +148,36 @@ export async function createTransfer(opts: {
     destination: opts.destinationAccountId,
   };
   for (const [k, v] of Object.entries(opts.metadata ?? {})) form[`metadata[${k}]`] = v;
-  const t = await stripeApi("transfers", form);
+  const t = await stripeApi("transfers", form, "POST", { idempotencyKey: opts.idempotencyKey });
   return t.id as string;
+}
+
+export async function createTransferReversal(opts: {
+  transferId: string;
+  amountCents?: number;
+  metadata?: Record<string, string>;
+  idempotencyKey?: string;
+}): Promise<string> {
+  const form: Form = {};
+  if (opts.amountCents != null) form.amount = String(opts.amountCents);
+  for (const [k, v] of Object.entries(opts.metadata ?? {})) form[`metadata[${k}]`] = v;
+  const reversal = await stripeApi(`transfers/${opts.transferId}/reversals`, form, "POST", { idempotencyKey: opts.idempotencyKey });
+  return reversal.id as string;
+}
+
+export async function createRefund(opts: {
+  paymentIntentId: string;
+  amountCents?: number;
+  reason?: "duplicate" | "fraudulent" | "requested_by_customer";
+  metadata?: Record<string, string>;
+  idempotencyKey?: string;
+}): Promise<{ id: string; status: string | null }> {
+  const form: Form = { payment_intent: opts.paymentIntentId };
+  if (opts.amountCents != null) form.amount = String(opts.amountCents);
+  if (opts.reason) form.reason = opts.reason;
+  for (const [k, v] of Object.entries(opts.metadata ?? {})) form[`metadata[${k}]`] = v;
+  const refund = await stripeApi("refunds", form, "POST", { idempotencyKey: opts.idempotencyKey });
+  return { id: refund.id as string, status: (refund.status as string | undefined) ?? null };
 }
 
 // ---------- Cliente Stripe + cartão salvo (IA Rural, cobrança por uso) ----------

@@ -11,6 +11,35 @@ async function currencyOfCustomer(db: any, customerId: string): Promise<string> 
   return (data?.currency as string) || "BRL";
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error || "Erro desconhecido");
+}
+
+async function recordPayoutTransfer(db: any, row: {
+  source_type: "order" | "experience_booking";
+  source_id: string;
+  recipient_id: string;
+  destination_account_id: string;
+  stripe_transfer_id?: string | null;
+  kind: string;
+  amount_cents: number;
+  currency: string;
+  status: "created" | "failed";
+  error?: string | null;
+  metadata?: Record<string, string>;
+}) {
+  try {
+    await db.from("payout_transfers").insert({
+      ...row,
+      stripe_transfer_id: row.stripe_transfer_id ?? null,
+      error: row.error ?? null,
+      metadata: row.metadata ?? {},
+    });
+  } catch {
+    // Auditoria operacional: nao duplica repasse se o registro auxiliar falhar.
+  }
+}
+
 // Repasse do PRODUTOR (valor dos produtos − comissão), só se repasse "imediato".
 export async function payoutProducerForOrder(db: any, orderId: string, force = false): Promise<void> {
   if (!stripeEnabled()) return;
@@ -32,10 +61,42 @@ export async function payoutProducerForOrder(db: any, orderId: string, force = f
   if (net <= 0) return;
 
   const currency = await currencyOfCustomer(db, o.customer_id);
+  const metadata = { order_id: orderId, kind: "producer" };
   try {
-    await createTransfer({ amountCents: net, currency, destinationAccountId: prod.stripe_account_id, metadata: { order_id: orderId, kind: "producer" } });
+    const transferId = await createTransfer({
+      amountCents: net,
+      currency,
+      destinationAccountId: prod.stripe_account_id,
+      metadata,
+      idempotencyKey: `seravie-order-${orderId}-producer`,
+    });
+    await recordPayoutTransfer(db, {
+      source_type: "order",
+      source_id: orderId,
+      recipient_id: o.producer_id,
+      destination_account_id: prod.stripe_account_id,
+      stripe_transfer_id: transferId,
+      kind: "producer",
+      amount_cents: net,
+      currency,
+      status: "created",
+      metadata,
+    });
     await db.from("orders").update({ producer_paid_out: true }).eq("id", orderId);
-  } catch { /* re-tenta em outro evento */ }
+  } catch (error) {
+    await recordPayoutTransfer(db, {
+      source_type: "order",
+      source_id: orderId,
+      recipient_id: o.producer_id,
+      destination_account_id: prod.stripe_account_id,
+      kind: "producer",
+      amount_cents: net,
+      currency,
+      status: "failed",
+      error: errorMessage(error),
+      metadata,
+    });
+  }
 }
 
 // Repasse do FRETE para quem entregou (entregador, ou o próprio produtor se auto-entrega).
@@ -56,10 +117,43 @@ export async function payoutCourierForOrder(db: any, orderId: string): Promise<v
   const net = courierShareCents(fee);
   if (net <= 0) return;
   const currency = await currencyOfCustomer(db, o.customer_id);
+  const kind = o.self_delivery ? "producer_delivery" : "courier";
+  const metadata = { order_id: orderId, kind };
   try {
-    await createTransfer({ amountCents: net, currency, destinationAccountId: rec.stripe_account_id, metadata: { order_id: orderId, kind: o.self_delivery ? "producer_delivery" : "courier" } });
+    const transferId = await createTransfer({
+      amountCents: net,
+      currency,
+      destinationAccountId: rec.stripe_account_id,
+      metadata,
+      idempotencyKey: `seravie-order-${orderId}-${kind}`,
+    });
+    await recordPayoutTransfer(db, {
+      source_type: "order",
+      source_id: orderId,
+      recipient_id: recipientId,
+      destination_account_id: rec.stripe_account_id,
+      stripe_transfer_id: transferId,
+      kind,
+      amount_cents: net,
+      currency,
+      status: "created",
+      metadata,
+    });
     await db.from("orders").update({ courier_paid_out: true }).eq("id", orderId);
-  } catch { /* re-tenta na conclusão */ }
+  } catch (error) {
+    await recordPayoutTransfer(db, {
+      source_type: "order",
+      source_id: orderId,
+      recipient_id: recipientId,
+      destination_account_id: rec.stripe_account_id,
+      kind,
+      amount_cents: net,
+      currency,
+      status: "failed",
+      error: errorMessage(error),
+      metadata,
+    });
+  }
 }
 
 
@@ -82,10 +176,42 @@ export async function payoutExperienceBooking(db: any, bookingId: string, force 
   if (net <= 0) return;
 
   const currency = (b.currency as string) || "BRL";
+  const metadata = { booking_id: bookingId, kind: "experience" };
   try {
-    await createTransfer({ amountCents: net, currency, destinationAccountId: prod.stripe_account_id, metadata: { booking_id: bookingId, kind: "experience" } });
+    const transferId = await createTransfer({
+      amountCents: net,
+      currency,
+      destinationAccountId: prod.stripe_account_id,
+      metadata,
+      idempotencyKey: `seravie-booking-${bookingId}-experience`,
+    });
+    await recordPayoutTransfer(db, {
+      source_type: "experience_booking",
+      source_id: bookingId,
+      recipient_id: b.producer_id,
+      destination_account_id: prod.stripe_account_id,
+      stripe_transfer_id: transferId,
+      kind: "experience",
+      amount_cents: net,
+      currency,
+      status: "created",
+      metadata,
+    });
     await db.from("experience_bookings").update({ producer_paid_out: true }).eq("id", bookingId);
-  } catch { /* re-tenta em outro evento/ciclo */ }
+  } catch (error) {
+    await recordPayoutTransfer(db, {
+      source_type: "experience_booking",
+      source_id: bookingId,
+      recipient_id: b.producer_id,
+      destination_account_id: prod.stripe_account_id,
+      kind: "experience",
+      amount_cents: net,
+      currency,
+      status: "failed",
+      error: errorMessage(error),
+      metadata,
+    });
+  }
 }
 
 // Job mensal: repassa o acumulado dos produtores "mensal" e cobra o uso da IA.

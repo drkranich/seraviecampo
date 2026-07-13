@@ -79,7 +79,7 @@ export type ExperienceBooking = {
   total_cents: number;
   currency: string;
   status: ExperienceStatus;
-  payment_status: "pendente" | "pago";
+  payment_status: "pendente" | "pago" | "reembolso_pendente" | "reembolsado";
   paid_at: string | null;
   producer_paid_out: boolean;
   note: string | null;

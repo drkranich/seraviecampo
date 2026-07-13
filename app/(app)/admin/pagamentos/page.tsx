@@ -20,6 +20,47 @@ type StripeWebhookEvent = {
   created_at: string;
   processed_at: string | null;
 };
+type PaymentRefund = {
+  id: string;
+  dispute_id: string | null;
+  order_id: string | null;
+  booking_id: string | null;
+  stripe_refund_id: string | null;
+  stripe_payment_intent_id: string | null;
+  amount_cents: number;
+  currency: string;
+  status: string;
+  reason: string | null;
+  failure_reason: string | null;
+  created_at: string;
+};
+type PayoutTransfer = {
+  id: string;
+  source_type: "order" | "experience_booking";
+  source_id: string;
+  recipient_id: string | null;
+  destination_account_id: string;
+  stripe_transfer_id: string | null;
+  stripe_reversal_id: string | null;
+  kind: string;
+  amount_cents: number;
+  currency: string;
+  status: string;
+  error: string | null;
+  created_at: string;
+  reversed_at: string | null;
+};
+type StripeDisputeRow = {
+  id: string;
+  order_id: string | null;
+  booking_id: string | null;
+  amount_cents: number | null;
+  currency: string | null;
+  status: string | null;
+  reason: string | null;
+  evidence_due_by: string | null;
+  updated_at: string;
+};
 
 const ACTIVE = ["active", "ativa", "ativo", "trialing"];
 
@@ -31,19 +72,36 @@ export default async function AdminPagamentosPage() {
 
   const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
 
-  const [{ data: profsData }, { data: subsData }, { data: ordersData }, { data: webhookData }] = await Promise.all([
+  const [
+    { data: profsData },
+    { data: subsData },
+    { data: ordersData },
+    { data: webhookData },
+    { data: refundsData },
+    { data: transfersData },
+    { data: stripeDisputesData },
+  ] = await Promise.all([
     supabase.from("profiles").select("id, role, full_name, display_name, farm_name, payout_mode"),
     supabase.from("subscriptions").select("account_id, plan, status"),
     supabase.from("orders").select("id, customer_id, producer_id, delivery_person_id, total_cents, delivery_fee_cents, payment_status")
       .neq("status", "cancelado").in("payment_status", ["pago", "na_entrega"]).gte("created_at", monthStart.toISOString()),
     supabase.from("stripe_webhook_events").select("id, type, object_id, status, error, livemode, created_at, processed_at")
       .order("created_at", { ascending: false }).limit(12),
+    supabase.from("payment_refunds").select("id, dispute_id, order_id, booking_id, stripe_refund_id, stripe_payment_intent_id, amount_cents, currency, status, reason, failure_reason, created_at")
+      .order("created_at", { ascending: false }).limit(12),
+    supabase.from("payout_transfers").select("id, source_type, source_id, recipient_id, destination_account_id, stripe_transfer_id, stripe_reversal_id, kind, amount_cents, currency, status, error, created_at, reversed_at")
+      .order("created_at", { ascending: false }).limit(16),
+    supabase.from("stripe_disputes").select("id, order_id, booking_id, amount_cents, currency, status, reason, evidence_due_by, updated_at")
+      .order("updated_at", { ascending: false }).limit(12),
   ]);
 
   const profs = (profsData ?? []) as Prof[];
   const subs = (subsData ?? []) as Sub[];
   const orders = (ordersData ?? []) as Ord[];
   const webhookEvents = (webhookData ?? []) as StripeWebhookEvent[];
+  const refunds = (refundsData ?? []) as PaymentRefund[];
+  const transfers = (transfersData ?? []) as PayoutTransfer[];
+  const stripeDisputes = (stripeDisputesData ?? []) as StripeDisputeRow[];
   const profMap = new Map(profs.map((p) => [p.id, p]));
 
   // Assinaturas ativas por papel
@@ -93,6 +151,14 @@ export default async function AdminPagamentosPage() {
   const clients = [...byClient.entries()].sort((a, b) => b[1] - a[1]);
   const failedWebhooks = webhookEvents.filter((event) => event.status === "failed").length;
   const lastWebhook = webhookEvents[0];
+  const refundedTotal = refunds
+    .filter((refund) => refund.status === "succeeded")
+    .reduce((total, refund) => total + refund.amount_cents, 0);
+  const transferTotal = transfers
+    .filter((transfer) => transfer.status === "created")
+    .reduce((total, transfer) => total + transfer.amount_cents, 0);
+  const failedTransfers = transfers.filter((transfer) => transfer.status === "failed").length;
+  const openStripeDisputes = stripeDisputes.filter((dispute) => dispute.status && !["won", "lost"].includes(dispute.status)).length;
 
   return (
     <AppShell badge="Seravie Hub" nav={ADMIN_NAV} title="Pagamentos" subtitle="Receita da plataforma no mês corrente (pedidos pagos + assinaturas).">
@@ -106,10 +172,17 @@ export default async function AdminPagamentosPage() {
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <Card label="Webhooks Stripe registrados" value={String(webhookEvents.length)} />
         <Card label="Webhooks com falha" value={String(failedWebhooks)} accent={failedWebhooks > 0} />
-        <Card label="Ultimo webhook" value={lastWebhook ? statusLabel(lastWebhook.status) : "Sem eventos"} />
+        <Card label="Último webhook" value={lastWebhook ? statusLabel(lastWebhook.status) : "Sem eventos"} />
       </div>
 
-      <Table title="Webhooks Stripe (ultimos eventos)" cols={["Evento", "Status", "Objeto", "Criado", "Processado", "Erro"]} empty="Nenhum webhook Stripe registrado ainda.">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card label="Reembolsos Stripe" value={formatBRL(refundedTotal)} accent={refundedTotal > 0} />
+        <Card label="Repasses enviados" value={formatBRL(transferTotal)} />
+        <Card label="Repasses com falha" value={String(failedTransfers)} accent={failedTransfers > 0} />
+        <Card label="Disputas Stripe abertas" value={String(openStripeDisputes)} accent={openStripeDisputes > 0} />
+      </div>
+
+      <Table title="Webhooks Stripe (últimos eventos)" cols={["Evento", "Status", "Objeto", "Criado", "Processado", "Erro"]} empty="Nenhum webhook Stripe registrado ainda.">
         {webhookEvents.map((event) => (
           <tr key={event.id} className="border-t border-campo-border">
             <td className="px-4 py-2">
@@ -123,6 +196,67 @@ export default async function AdminPagamentosPage() {
             <td className="px-4 py-2">
               <p className="max-w-[260px] truncate text-xs text-stone-400">{event.error ?? "-"}</p>
             </td>
+          </tr>
+        ))}
+      </Table>
+
+      <Table title="Repasses Stripe (últimas transferências)" cols={["Origem", "Destinatário", "Status", "Valor", "Transferência", "Erro"]} empty="Nenhum repasse Stripe registrado ainda.">
+        {transfers.map((transfer) => (
+          <tr key={transfer.id} className="border-t border-campo-border">
+            <td className="px-4 py-2">
+              <p className="text-forest-100">{sourceLabel(transfer.source_type)} · {kindLabel(transfer.kind)}</p>
+              <p className="max-w-[220px] truncate font-mono text-[0.65rem] text-stone-500">{transfer.source_id}</p>
+            </td>
+            <td className="px-4 py-2">
+              <p className="text-stone-300">{profileLabel(profMap.get(transfer.recipient_id ?? ""))}</p>
+              <p className="max-w-[220px] truncate font-mono text-[0.65rem] text-stone-500">{transfer.destination_account_id}</p>
+            </td>
+            <td className={`px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] ${transferStatusClass(transfer.status)}`}>{transferStatusLabel(transfer.status)}</td>
+            <td className="px-4 py-2 text-gold">{formatBRL(transfer.amount_cents)}</td>
+            <td className="px-4 py-2">
+              <p className="max-w-[220px] truncate font-mono text-xs text-stone-400">{transfer.stripe_transfer_id ?? "-"}</p>
+              {transfer.stripe_reversal_id && <p className="max-w-[220px] truncate font-mono text-[0.65rem] text-red-300">reversal {transfer.stripe_reversal_id}</p>}
+            </td>
+            <td className="px-4 py-2">
+              <p className="max-w-[260px] truncate text-xs text-stone-400">{transfer.error ?? "-"}</p>
+            </td>
+          </tr>
+        ))}
+      </Table>
+
+      <Table title="Reembolsos Stripe" cols={["Origem", "Status", "Valor", "Refund", "Criado", "Falha"]} empty="Nenhum reembolso Stripe registrado ainda.">
+        {refunds.map((refund) => (
+          <tr key={refund.id} className="border-t border-campo-border">
+            <td className="px-4 py-2">
+              <p className="text-forest-100">{refund.order_id ? "Pedido" : refund.booking_id ? "Experiência" : "Sem vínculo"}</p>
+              <p className="max-w-[220px] truncate font-mono text-[0.65rem] text-stone-500">{refund.order_id ?? refund.booking_id ?? refund.dispute_id ?? "-"}</p>
+            </td>
+            <td className={`px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] ${refundStatusClass(refund.status)}`}>{refundStatusLabel(refund.status)}</td>
+            <td className="px-4 py-2 text-gold">{formatBRL(refund.amount_cents)}</td>
+            <td className="px-4 py-2">
+              <p className="max-w-[220px] truncate font-mono text-xs text-stone-400">{refund.stripe_refund_id ?? "-"}</p>
+              {refund.stripe_payment_intent_id && <p className="max-w-[220px] truncate font-mono text-[0.65rem] text-stone-500">{refund.stripe_payment_intent_id}</p>}
+            </td>
+            <td className="px-4 py-2 text-stone-400">{formatDateTime(refund.created_at)}</td>
+            <td className="px-4 py-2">
+              <p className="max-w-[260px] truncate text-xs text-stone-400">{refund.failure_reason ?? "-"}</p>
+            </td>
+          </tr>
+        ))}
+      </Table>
+
+      <Table title="Disputas Stripe" cols={["Stripe", "Origem", "Status", "Valor", "Motivo", "Evidencia"]} empty="Nenhuma disputa Stripe registrada ainda.">
+        {stripeDisputes.map((dispute) => (
+          <tr key={dispute.id} className="border-t border-campo-border">
+            <td className="px-4 py-2 font-mono text-xs text-forest-100">{dispute.id}</td>
+            <td className="px-4 py-2">
+              <p className="text-stone-300">{dispute.order_id ? "Pedido" : dispute.booking_id ? "Experiência" : "Sem vínculo"}</p>
+              <p className="max-w-[220px] truncate font-mono text-[0.65rem] text-stone-500">{dispute.order_id ?? dispute.booking_id ?? "-"}</p>
+            </td>
+            <td className="px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#D9C68D]">{dispute.status ?? "-"}</td>
+            <td className="px-4 py-2 text-gold">{dispute.amount_cents != null ? formatBRL(dispute.amount_cents) : "-"}</td>
+            <td className="px-4 py-2 text-stone-400">{dispute.reason ?? "-"}</td>
+            <td className="px-4 py-2 text-stone-400">{formatDateTime(dispute.evidence_due_by)}</td>
           </tr>
         ))}
       </Table>
@@ -181,6 +315,54 @@ function statusClass(status: string): string {
   if (status === "failed") return "text-red-300";
   if (status === "processing") return "text-[#D9C68D]";
   return "text-stone-400";
+}
+
+function transferStatusLabel(status: string): string {
+  if (status === "created") return "Enviado";
+  if (status === "failed") return "Falhou";
+  if (status === "reversed") return "Estornado";
+  return status || "Indefinido";
+}
+
+function transferStatusClass(status: string): string {
+  if (status === "created") return "text-[#A9C875]";
+  if (status === "failed") return "text-red-300";
+  if (status === "reversed") return "text-[#D9C68D]";
+  return "text-stone-400";
+}
+
+function refundStatusLabel(status: string): string {
+  if (status === "succeeded") return "Concluído";
+  if (status === "pending") return "Pendente";
+  if (status === "failed") return "Falhou";
+  if (status === "canceled") return "Cancelado";
+  return status || "Indefinido";
+}
+
+function refundStatusClass(status: string): string {
+  if (status === "succeeded") return "text-[#A9C875]";
+  if (status === "failed" || status === "canceled") return "text-red-300";
+  if (status === "pending") return "text-[#D9C68D]";
+  return "text-stone-400";
+}
+
+function sourceLabel(source: string): string {
+  if (source === "order") return "Pedido";
+  if (source === "experience_booking") return "Experiência";
+  return source || "Origem";
+}
+
+function kindLabel(kind: string): string {
+  if (kind === "producer") return "produtor";
+  if (kind === "courier") return "entregador";
+  if (kind === "producer_delivery") return "autoentrega";
+  if (kind === "experience") return "experiência";
+  return kind || "repasse";
+}
+
+function profileLabel(profile: Prof | undefined): string {
+  if (!profile) return "Conta conectada";
+  return producerName(profile);
 }
 
 function formatDateTime(value: string | null): string {

@@ -81,12 +81,13 @@ export type Order = {
   created_at: string;
 };
 
-export type PaymentStatus = "pendente" | "pago" | "na_entrega" | "reembolsado";
+export type PaymentStatus = "pendente" | "pago" | "na_entrega" | "reembolso_pendente" | "reembolsado";
 
 export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
   pendente: "Pagamento pendente",
   pago: "Pago",
   na_entrega: "Pagar na entrega",
+  reembolso_pendente: "Reembolso pendente",
   reembolsado: "Reembolsado",
 };
 
@@ -94,5 +95,6 @@ export const PAYMENT_STATUS_STYLE: Record<PaymentStatus, string> = {
   pendente: "border-gold/40 bg-gold/10 text-gold",
   pago: "border-forest-700 bg-forest-900/40 text-forest-200",
   na_entrega: "border-khaki/60 bg-khaki/15 text-cream",
+  reembolso_pendente: "border-khaki/60 bg-khaki/15 text-cream",
   reembolsado: "border-red-900/50 bg-red-950/40 text-red-300",
 };

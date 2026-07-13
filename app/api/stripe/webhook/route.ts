@@ -20,14 +20,20 @@ function throwIfError(result: SupabaseResult): void {
   if (result.error) throw result.error;
 }
 
-async function markOrderPaid(db: AdminDb, orderId: string) {
-  const updated = await db.from("orders").update({ payment_status: "pago", paid_at: new Date().toISOString() }).eq("id", orderId);
+async function markOrderPaid(db: AdminDb, orderId: string, refs?: { paymentIntentId?: string | null; checkoutSessionId?: string | null }) {
+  const updates: Record<string, unknown> = { payment_status: "pago", paid_at: new Date().toISOString() };
+  if (refs?.paymentIntentId) updates.stripe_payment_intent_id = refs.paymentIntentId;
+  if (refs?.checkoutSessionId) updates.stripe_checkout_session_id = refs.checkoutSessionId;
+  const updated = await db.from("orders").update(updates).eq("id", orderId);
   throwIfError(updated);
   await payoutProducerForOrder(db, orderId);
 }
 
-async function markExperiencePaid(db: AdminDb, bookingId: string) {
-  const updated = await db.from("experience_bookings").update({ payment_status: "pago", status: "confirmado", paid_at: new Date().toISOString() }).eq("id", bookingId);
+async function markExperiencePaid(db: AdminDb, bookingId: string, refs?: { paymentIntentId?: string | null; checkoutSessionId?: string | null }) {
+  const updates: Record<string, unknown> = { payment_status: "pago", status: "confirmado", paid_at: new Date().toISOString() };
+  if (refs?.paymentIntentId) updates.stripe_payment_intent_id = refs.paymentIntentId;
+  if (refs?.checkoutSessionId) updates.stripe_checkout_session_id = refs.checkoutSessionId;
+  const updated = await db.from("experience_bookings").update(updates).eq("id", bookingId);
   throwIfError(updated);
   await payoutExperienceBooking(db, bookingId);
 }
@@ -107,8 +113,12 @@ async function handleCheckoutSession(db: AdminDb, event: StripeEvent, obj: Recor
 
   if (mode === "payment") {
     if (!paid) return;
-    if (meta.order_id) await markOrderPaid(db, meta.order_id);
-    if (meta.booking_id) await markExperiencePaid(db, meta.booking_id);
+    const refs = {
+      paymentIntentId: valueAsString(obj.payment_intent),
+      checkoutSessionId: valueAsString(obj.id),
+    };
+    if (meta.order_id) await markOrderPaid(db, meta.order_id, refs);
+    if (meta.booking_id) await markExperiencePaid(db, meta.booking_id, refs);
     return;
   }
 
@@ -153,6 +163,139 @@ async function handleCheckoutSession(db: AdminDb, event: StripeEvent, obj: Recor
   }
 }
 
+function valueAsNumber(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function stripeTimestamp(value: unknown): string | null {
+  const seconds = valueAsNumber(value);
+  return seconds ? new Date(seconds * 1000).toISOString() : null;
+}
+
+async function findOrderOrBookingByPaymentIntent(db: AdminDb, paymentIntentId: string | null) {
+  if (!paymentIntentId) return { orderId: null as string | null, bookingId: null as string | null };
+
+  const { data: order } = await db
+    .from("orders")
+    .select("id")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .maybeSingle();
+  if (order?.id) return { orderId: order.id as string, bookingId: null };
+
+  const { data: booking } = await db
+    .from("experience_bookings")
+    .select("id")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .maybeSingle();
+  return { orderId: null, bookingId: (booking?.id as string | undefined) ?? null };
+}
+
+async function handleRefundEvent(db: AdminDb, obj: Record<string, unknown>) {
+  const meta = metadataOf(obj);
+  const refundId = valueAsString(obj.id);
+  const paymentIntentId = valueAsString(obj.payment_intent);
+  if (!refundId) return;
+
+  const linked = await findOrderOrBookingByPaymentIntent(db, paymentIntentId);
+  const orderId = meta.order_id || linked.orderId;
+  const bookingId = meta.booking_id || linked.bookingId;
+  const status = valueAsString(obj.status) || "pending";
+  const amount = valueAsNumber(obj.amount) ?? 0;
+  const currency = (valueAsString(obj.currency) || "brl").toUpperCase();
+
+  const refundRow = {
+    dispute_id: meta.dispute_id || null,
+    order_id: orderId || null,
+    booking_id: bookingId || null,
+    stripe_refund_id: refundId,
+    stripe_payment_intent_id: paymentIntentId,
+    amount_cents: amount,
+    currency,
+    status,
+    reason: valueAsString(obj.reason),
+    failure_reason: valueAsString(obj.failure_reason),
+  };
+  const upserted = await db.from("payment_refunds").upsert(refundRow, { onConflict: "stripe_refund_id" });
+  throwIfError(upserted);
+
+  if (refundRow.dispute_id && status === "succeeded") {
+    throwIfError(await db.from("disputes").update({
+      status: "reembolsada",
+      refunded: true,
+      stripe_refund_id: refundId,
+      refund_amount_cents: amount,
+      resolved_at: new Date().toISOString(),
+    }).eq("id", refundRow.dispute_id));
+  } else if (refundRow.dispute_id && status === "failed") {
+    throwIfError(await db.from("disputes").update({
+      status: "em_analise",
+      refunded: false,
+      stripe_refund_id: refundId,
+      refund_amount_cents: amount,
+    }).eq("id", refundRow.dispute_id));
+  }
+
+  if (orderId && status === "succeeded") {
+    throwIfError(await db.from("orders").update({ payment_status: "reembolsado", stripe_refund_id: refundId, refunded_at: new Date().toISOString(), status: "cancelado" }).eq("id", orderId));
+  } else if (orderId && status === "failed") {
+    throwIfError(await db.from("orders").update({ payment_status: "pago" }).eq("id", orderId));
+  }
+
+  if (bookingId && status === "succeeded") {
+    throwIfError(await db.from("experience_bookings").update({ payment_status: "reembolsado", stripe_refund_id: refundId, refunded_at: new Date().toISOString(), status: "cancelado" }).eq("id", bookingId));
+  } else if (bookingId && status === "failed") {
+    throwIfError(await db.from("experience_bookings").update({ payment_status: "pago" }).eq("id", bookingId));
+  }
+}
+
+async function handleStripeDisputeEvent(db: AdminDb, obj: Record<string, unknown>) {
+  const stripeDisputeId = valueAsString(obj.id);
+  if (!stripeDisputeId) return;
+
+  const paymentIntentId = valueAsString(obj.payment_intent);
+  const linked = await findOrderOrBookingByPaymentIntent(db, paymentIntentId);
+  const status = valueAsString(obj.status);
+  const reason = valueAsString(obj.reason);
+  const raw = JSON.parse(JSON.stringify(obj));
+
+  const upserted = await db.from("stripe_disputes").upsert({
+    id: stripeDisputeId,
+    charge_id: valueAsString(obj.charge),
+    stripe_payment_intent_id: paymentIntentId,
+    order_id: linked.orderId,
+    booking_id: linked.bookingId,
+    amount_cents: valueAsNumber(obj.amount),
+    currency: valueAsString(obj.currency)?.toUpperCase() ?? null,
+    status,
+    reason,
+    evidence_due_by: stripeTimestamp((obj.evidence_details as Record<string, unknown> | undefined)?.due_by),
+    raw,
+  });
+  throwIfError(upserted);
+
+  if (linked.orderId) {
+    const existing = await db.from("disputes").select("id").eq("stripe_dispute_id", stripeDisputeId).maybeSingle();
+    if (existing.error) throw existing.error;
+    if (existing.data?.id) {
+      throwIfError(await db.from("disputes").update({ stripe_status: status, stripe_reason: reason }).eq("id", existing.data.id));
+    } else {
+      const { data: order } = await db.from("orders").select("customer_id").eq("id", linked.orderId).maybeSingle();
+      if (!order?.customer_id) return;
+      throwIfError(await db.from("disputes").insert({
+        order_id: linked.orderId,
+        opened_by: order.customer_id,
+        opened_role: "stripe",
+        reason: "cobranca",
+        description: `Disputa aberta no Stripe: ${reason || "sem motivo informado"}.`,
+        status: "em_analise",
+        stripe_dispute_id: stripeDisputeId,
+        stripe_status: status,
+        stripe_reason: reason,
+      }));
+    }
+  }
+}
+
 async function processStripeEvent(db: AdminDb, event: StripeEvent) {
   const obj = (event.data?.object ?? {}) as Record<string, unknown>;
   const meta = metadataOf(obj);
@@ -160,9 +303,13 @@ async function processStripeEvent(db: AdminDb, event: StripeEvent) {
   if (event.type === "checkout.session.completed" || event.type === "checkout.session.async_payment_succeeded") {
     await handleCheckoutSession(db, event, obj);
   } else if (event.type === "payment_intent.succeeded" && meta.order_id) {
-    await markOrderPaid(db, meta.order_id);
+    await markOrderPaid(db, meta.order_id, { paymentIntentId: valueAsString(obj.id) });
   } else if (event.type === "payment_intent.succeeded" && meta.booking_id) {
-    await markExperiencePaid(db, meta.booking_id);
+    await markExperiencePaid(db, meta.booking_id, { paymentIntentId: valueAsString(obj.id) });
+  } else if (event.type === "refund.created" || event.type === "refund.updated" || event.type === "refund.failed") {
+    await handleRefundEvent(db, obj);
+  } else if (event.type?.startsWith("charge.dispute.")) {
+    await handleStripeDisputeEvent(db, obj);
   } else if (event.type === "customer.subscription.deleted" && obj.id) {
     const subscriptionId = String(obj.id);
     throwIfError(await db.from("subscriptions").update({ status: "cancelada" }).eq("stripe_subscription_id", subscriptionId));

@@ -38,6 +38,12 @@ export type Dispute = {
   status: DisputeStatus;
   resolution_note: string | null;
   refunded: boolean;
+  stripe_dispute_id: string | null;
+  stripe_refund_id: string | null;
+  refund_amount_cents: number | null;
+  stripe_status: string | null;
+  stripe_reason: string | null;
   created_at: string;
+  updated_at: string;
   resolved_at: string | null;
 };
