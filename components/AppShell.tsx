@@ -106,6 +106,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/inbox", label: "Inbox", icon: "inbox" },
   { href: "/admin/planos", label: "Planos", icon: "crown" },
   { href: "/admin/site", label: "Site / CMS", icon: "discover" },
+  { href: "/admin/email-marketing", label: "Email Marketing", icon: "megaphone" },
   { href: "/admin/termos", label: "Termos", icon: "shield" },
 ];
 

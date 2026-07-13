@@ -199,11 +199,12 @@ export default async function AdminPage() {
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-400">
             Aprovações, disputas, entregas sem responsável, vitrine e volume financeiro ficam juntos para reduzir ruído operacional.
           </p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-4">
+          <div className="mt-5 grid gap-3 sm:grid-cols-5">
             <ActionTile href="/admin/aprovacoes" label="Aprovações" value={String(pendingApprovals.length)} alert={pendingApprovals.length > 0} />
             <ActionTile href="/admin/disputas" label="Disputas" value={String(openDisputes.length)} alert={openDisputes.length > 0} />
             <ActionTile href="/admin/pagamentos" label="GMV 60d" value={formatBRL(gmv)} />
             <ActionTile href="/admin/site" label="CMS" value="Editar" />
+            <ActionTile href="/admin/email-marketing" label="Email" value="Campanhas" />
           </div>
         </div>
 
