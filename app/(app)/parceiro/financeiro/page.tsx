@@ -2,7 +2,15 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, PARCEIRO_NAV } from "@/components/AppShell";
 import { PayoutTransferTable } from "@/components/PayoutTransferTable";
-import { stripeEnabled, getAccount } from "@/lib/stripe";
+import { stripeEnabled } from "@/lib/stripe";
+import {
+  refreshStripeAccountStatus,
+  stripeAccountReady,
+  stripeAccountStatusFromProfile,
+  stripeAccountStatusText,
+  stripeAccountStatusTitle,
+  stripeConnectVersion,
+} from "@/lib/stripe-connect";
 import { formatMoney } from "@/lib/money";
 import { getPlanById, experiencePlanIdOf, experienceCommissionPct } from "@/lib/plans-db";
 import { sumTransfers, type PayoutTransferRow } from "@/lib/financial";
@@ -23,19 +31,19 @@ export default async function FinanceiroParceiroPage({
   const supabase = await createClient();
 
   const { data: acc } = await supabase
-    .from("profiles").select("stripe_account_id, stripe_charges_enabled, payout_mode, currency").eq("id", user.id).single();
+    .from("profiles").select("stripe_account_id, stripe_charges_enabled, stripe_account_version, stripe_account_status, stripe_transfers_status, stripe_requirements_due, stripe_requirements_past_due, payout_mode, currency").eq("id", user.id).single();
   const accountId = (acc?.stripe_account_id as string | null) ?? null;
-  let chargesEnabled = Boolean(acc?.stripe_charges_enabled);
+  const accountVersion = stripeConnectVersion(acc?.stripe_account_version);
+  let accountStatus = stripeAccountStatusFromProfile(acc);
+  let chargesEnabled = stripeAccountReady(acc);
   const currency = (acc?.currency as string) || "BRL";
   const payoutMode = ((acc as { payout_mode?: string } | null)?.payout_mode ?? "mensal");
 
   if (stripeEnabled() && accountId) {
     try {
-      const a = await getAccount(accountId);
-      if (a.charges_enabled !== chargesEnabled) {
-        chargesEnabled = a.charges_enabled;
-        await supabase.from("profiles").update({ stripe_charges_enabled: chargesEnabled }).eq("id", user.id);
-      }
+      const status = await refreshStripeAccountStatus(supabase, user.id, accountId, accountVersion);
+      accountStatus = status.accountStatus;
+      chargesEnabled = status.ready;
     } catch { /* mantém status */ }
   }
 
@@ -104,7 +112,9 @@ export default async function FinanceiroParceiroPage({
             </form>
           ) : !chargesEnabled ? (
             <form action="/api/stripe/connect" method="post">
-              <StatusBox tone="warn" title="Cadastro incompleto">Continue o cadastro no Stripe para liberar os recebimentos.</StatusBox>
+              <StatusBox tone={accountStatus === "restricted" ? "warn" : "muted"} title={stripeAccountStatusTitle(accountStatus)}>
+                {stripeAccountStatusText(Boolean(accountId), accountStatus)}
+              </StatusBox>
               <button className="mt-4 rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">Continuar cadastro</button>
             </form>
           ) : (

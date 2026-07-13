@@ -1,4 +1,5 @@
 import { createTransfer, chargeOffSession, stripeEnabled } from "@/lib/stripe";
+import { canReceiveStripeTransfers } from "@/lib/stripe-connect";
 import { producerCommissionPctDb, experienceCommissionPct } from "@/lib/plans-db";
 import { courierShareCents } from "@/lib/shipping";
 
@@ -49,8 +50,8 @@ export async function payoutProducerForOrder(db: any, orderId: string, force = f
   if (!o || o.payment_status !== "pago" || o.producer_paid_out) return;
 
   const { data: prod } = await db.from("profiles")
-    .select("stripe_account_id, stripe_charges_enabled, payout_mode").eq("id", o.producer_id).single();
-  if (!prod?.stripe_account_id || !prod.stripe_charges_enabled) return;
+    .select("stripe_account_id, stripe_charges_enabled, stripe_account_status, stripe_transfers_status, payout_mode").eq("id", o.producer_id).single();
+  if (!canReceiveStripeTransfers(prod)) return;
   if (!force && prod.payout_mode !== "imediato") return; // mensal acumula -> job mensal usa force=true
 
   const { data: sub } = await db.from("subscriptions").select("plan, status").eq("account_id", o.producer_id).maybeSingle();
@@ -111,8 +112,8 @@ export async function payoutCourierForOrder(db: any, orderId: string): Promise<v
 
   const recipientId = o.self_delivery ? o.producer_id : o.delivery_person_id;
   if (!recipientId) return;
-  const { data: rec } = await db.from("profiles").select("stripe_account_id, stripe_charges_enabled").eq("id", recipientId).single();
-  if (!rec?.stripe_account_id || !rec.stripe_charges_enabled) return;
+  const { data: rec } = await db.from("profiles").select("stripe_account_id, stripe_charges_enabled, stripe_account_status, stripe_transfers_status").eq("id", recipientId).single();
+  if (!canReceiveStripeTransfers(rec)) return;
 
   const net = courierShareCents(fee);
   if (net <= 0) return;
@@ -166,8 +167,8 @@ export async function payoutExperienceBooking(db: any, bookingId: string, force 
   if (!b || b.payment_status !== "pago" || b.producer_paid_out) return;
 
   const { data: prod } = await db.from("profiles")
-    .select("stripe_account_id, stripe_charges_enabled, payout_mode").eq("id", b.producer_id).single();
-  if (!prod?.stripe_account_id || !prod.stripe_charges_enabled) return;
+    .select("stripe_account_id, stripe_charges_enabled, stripe_account_status, stripe_transfers_status, payout_mode").eq("id", b.producer_id).single();
+  if (!canReceiveStripeTransfers(prod)) return;
   if (!force && prod.payout_mode !== "imediato") return; // mensal acumula -> job mensal usa force=true
 
   const pct = await experienceCommissionPct(db, b.producer_id as string);

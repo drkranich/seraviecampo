@@ -6,6 +6,7 @@ import { AreaChart } from "@/components/charts";
 import { formatBRL } from "@/lib/catalog";
 import { courierShareCents } from "@/lib/shipping";
 import { sumTransfers, type PayoutTransferRow } from "@/lib/financial";
+import { stripeAccountStatusFromProfile, stripeAccountStatusText } from "@/lib/stripe-connect";
 
 type Row = { delivery_fee_cents: number; created_at: string };
 type PendingOrder = { delivery_fee_cents: number };
@@ -43,7 +44,7 @@ export default async function GanhosPage() {
       .eq("payment_status", "pago")
       .eq("courier_paid_out", false),
     supabase.from("profiles")
-      .select("stripe_account_id, stripe_charges_enabled")
+      .select("stripe_account_id, stripe_charges_enabled, stripe_account_status, stripe_transfers_status")
       .eq("id", user.id)
       .single(),
   ]);
@@ -54,7 +55,7 @@ export default async function GanhosPage() {
   const reversedPayout = sumTransfers(transfers, "reversed");
   const failedTransfers = transfers.filter((transfer) => transfer.status === "failed").length;
   const accountConnected = Boolean(accountData?.stripe_account_id);
-  const accountReady = Boolean(accountData?.stripe_charges_enabled);
+  const accountStatus = stripeAccountStatusFromProfile(accountData);
 
   const labels: string[] = [];
   const series: number[] = [];
@@ -78,7 +79,7 @@ export default async function GanhosPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-serif text-lg text-forest-100">Conta de recebimento</h2>
-            <p className="mt-1 text-sm text-stone-400">{accountStatusText(accountConnected, accountReady)}</p>
+            <p className="mt-1 text-sm text-stone-400">{stripeAccountStatusText(accountConnected, accountStatus)}</p>
           </div>
           <form action="/api/stripe/connect" method="post">
             <button className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">
@@ -104,12 +105,6 @@ export default async function GanhosPage() {
       </section>
     </AppShell>
   );
-}
-
-function accountStatusText(connected: boolean, ready: boolean): string {
-  if (!connected) return "Conecte uma conta Stripe para receber os fretes pagos online.";
-  if (!ready) return "Sua conta Stripe existe, mas ainda precisa concluir o cadastro para liberar repasses.";
-  return "Conta Stripe conectada e pronta para receber os repasses dos fretes.";
 }
 
 function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {

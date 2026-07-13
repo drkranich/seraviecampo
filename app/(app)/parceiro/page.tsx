@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell, PARCEIRO_NAV } from "@/components/AppShell";
 import { AreaChart } from "@/components/charts";
 import { stripeEnabled } from "@/lib/stripe";
+import { canReceiveStripeTransfers } from "@/lib/stripe-connect";
 import { getPlanById, experiencePlanIdOf, experienceCommissionPct } from "@/lib/plans-db";
 import { formatMoney } from "@/lib/money";
 import {
@@ -33,13 +34,13 @@ export default async function ParceiroPage() {
   const [{ data: expData }, { data: bookData }, { data: acc }] = await Promise.all([
     supabase.from("experiences").select("*").eq("producer_id", user.id).order("created_at", { ascending: false }),
     supabase.from("experience_bookings").select("*").eq("producer_id", user.id).order("created_at", { ascending: false }),
-    supabase.from("profiles").select("stripe_account_id, stripe_charges_enabled, currency").eq("id", user.id).single(),
+    supabase.from("profiles").select("stripe_account_id, stripe_charges_enabled, stripe_account_status, stripe_transfers_status, currency").eq("id", user.id).single(),
   ]);
 
   const exps = (expData ?? []) as Experience[];
   const bookings = (bookData ?? []) as ExperienceBooking[];
   const currency = (acc?.currency as string) || exps[0]?.currency || "BRL";
-  const connected = Boolean(acc?.stripe_account_id) && Boolean(acc?.stripe_charges_enabled);
+  const connected = canReceiveStripeTransfers(acc);
   const planId = await experiencePlanIdOf(supabase, user.id);
   const plan = await getPlanById(supabase, planId);
   const pct = await experienceCommissionPct(supabase, user.id);

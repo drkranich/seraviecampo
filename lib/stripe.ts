@@ -8,12 +8,29 @@ function readSecret(name: string) {
 }
 
 const SECRET = readSecret("STRIPE_SECRET_KEY") ?? readSecret("STRIPE_SANDBOX_API_KEY");
+const STRIPE_API_VERSION = "2026-06-24.dahlia";
 
 export function stripeEnabled(): boolean {
   return !!SECRET;
 }
 
 type Form = Record<string, string>;
+type JsonBody = Record<string, unknown>;
+export type StripeConnectAccountVersion = "v2" | "legacy";
+export type StripeConnectAccountStatus = "not_started" | "pending" | "active" | "restricted";
+
+export type StripeConnectedAccountStatus = {
+  id: string;
+  version: StripeConnectAccountVersion;
+  dashboard: string | null;
+  transfersStatus: string | null;
+  chargesEnabled: boolean;
+  detailsSubmitted: boolean;
+  ready: boolean;
+  accountStatus: StripeConnectAccountStatus;
+  requirementsDue: string[];
+  requirementsPastDue: string[];
+};
 
 async function stripeApi(path: string, form?: Form, method = "POST", opts?: { idempotencyKey?: string }) {
   if (!SECRET) throw new Error("Stripe nao configurado (STRIPE_SECRET_KEY ou STRIPE_SANDBOX_API_KEY ausente).");
@@ -31,19 +48,129 @@ async function stripeApi(path: string, form?: Form, method = "POST", opts?: { id
   return data;
 }
 
+async function stripeJsonApi(path: string, body?: JsonBody, method = "POST", opts?: { idempotencyKey?: string; stripeVersion?: string }) {
+  if (!SECRET) throw new Error("Stripe nao configurado (STRIPE_SECRET_KEY ou STRIPE_SANDBOX_API_KEY ausente).");
+  const res = await fetch(`https://api.stripe.com/${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${SECRET}`,
+      "Content-Type": "application/json",
+      "Stripe-Version": opts?.stripeVersion ?? STRIPE_API_VERSION,
+      ...(opts?.idempotencyKey ? { "Idempotency-Key": opts.idempotencyKey } : {}),
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = (await res.json()) as Record<string, unknown> & { error?: { code?: string; message?: string } };
+  if (!res.ok) {
+    const code = data?.error?.code ? ` (${data.error.code})` : "";
+    throw new Error(`${data?.error?.message || "Erro na API do Stripe"}${code}`);
+  }
+  return data;
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
+}
+
+function asStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function requirementLabel(entry: Record<string, unknown>): string {
+  const reference = asRecord(entry.reference);
+  return String(
+    entry.description
+      ?? reference.resource
+      ?? reference.inquiry
+      ?? reference.type
+      ?? "requirement"
+  );
+}
+
+function requirementsByDeadline(requirements: unknown, status: "currently_due" | "past_due"): string[] {
+  const req = asRecord(requirements);
+  const legacy = status === "currently_due" ? asStringArray(req.currently_due) : asStringArray(req.past_due);
+  if (legacy.length > 0) return legacy;
+
+  const entries = Array.isArray(req.entries) ? req.entries : [];
+  return entries
+    .map((entry) => asRecord(entry))
+    .filter((entry) => asRecord(entry.minimum_deadline).status === status)
+    .map(requirementLabel)
+    .filter(Boolean);
+}
+
+function recipientTransfersStatus(account: Record<string, unknown>): string | null {
+  const configuration = asRecord(account.configuration);
+  const recipient = asRecord(configuration.recipient);
+  const capabilities = asRecord(recipient.capabilities);
+  const stripeBalance = asRecord(capabilities.stripe_balance);
+  const transfers = asRecord(stripeBalance.stripe_transfers);
+  return typeof transfers.status === "string" ? transfers.status : null;
+}
+
+function statusFromCapability(transfersStatus: string | null, due: string[], pastDue: string[]): StripeConnectAccountStatus {
+  if (transfersStatus === "active") return "active";
+  if (transfersStatus === "restricted" || pastDue.length > 0) return "restricted";
+  if (transfersStatus === "pending" || due.length > 0) return "pending";
+  return "pending";
+}
+
 // ---------- Stripe Connect (produtor recebe dos clientes) ----------
 export async function createConnectAccount(email: string): Promise<string> {
-  const acc = await stripeApi("accounts", {
-    type: "express",
-    email,
-    "capabilities[card_payments][requested]": "true",
-    "capabilities[transfers][requested]": "true",
-    "business_type": "individual",
+  const acc = await stripeJsonApi("v2/core/accounts", {
+    contact_email: email || undefined,
+    dashboard: "express",
+    identity: {
+      country: "BR",
+      entity_type: "individual",
+    },
+    configuration: {
+      recipient: {
+        capabilities: {
+          stripe_balance: {
+            stripe_transfers: {
+              requested: true,
+            },
+          },
+        },
+      },
+    },
+    defaults: {
+      responsibilities: {
+        fees_collector: "application",
+        losses_collector: "application",
+      },
+    },
+    include: ["configuration.recipient", "identity", "requirements", "defaults"],
   });
   return acc.id as string;
 }
 
-export async function createAccountLink(accountId: string, refreshUrl: string, returnUrl: string): Promise<string> {
+export async function createAccountLink(
+  accountId: string,
+  refreshUrl: string,
+  returnUrl: string,
+  version: StripeConnectAccountVersion = "v2"
+): Promise<string> {
+  if (version === "v2") {
+    const link = await stripeJsonApi("v2/core/account_links", {
+      account: accountId,
+      use_case: {
+        type: "account_onboarding",
+        account_onboarding: {
+          configurations: ["recipient"],
+          refresh_url: refreshUrl,
+          return_url: returnUrl,
+          collection_options: {
+            fields: "currently_due",
+          },
+        },
+      },
+    });
+    return link.url as string;
+  }
+
   const link = await stripeApi("account_links", {
     account: accountId,
     refresh_url: refreshUrl,
@@ -53,9 +180,61 @@ export async function createAccountLink(accountId: string, refreshUrl: string, r
   return link.url as string;
 }
 
-export async function getAccount(accountId: string) {
+async function getLegacyAccountStatus(accountId: string): Promise<StripeConnectedAccountStatus> {
   const acc = await stripeApi(`accounts/${accountId}`, undefined, "GET");
-  return { charges_enabled: !!acc.charges_enabled, details_submitted: !!acc.details_submitted };
+  const requirements = asRecord(acc.requirements);
+  const due = asStringArray(requirements.currently_due);
+  const pastDue = asStringArray(requirements.past_due);
+  const ready = !!acc.charges_enabled;
+  return {
+    id: accountId,
+    version: "legacy",
+    dashboard: typeof acc.type === "string" ? acc.type : "express",
+    transfersStatus: ready ? "active" : null,
+    chargesEnabled: ready,
+    detailsSubmitted: !!acc.details_submitted,
+    ready,
+    accountStatus: ready ? "active" : pastDue.length > 0 ? "restricted" : "pending",
+    requirementsDue: due,
+    requirementsPastDue: pastDue,
+  };
+}
+
+async function getV2AccountStatus(accountId: string): Promise<StripeConnectedAccountStatus> {
+  const include = new URLSearchParams();
+  include.append("include[0]", "configuration.recipient");
+  include.append("include[1]", "requirements");
+  include.append("include[2]", "defaults");
+  include.append("include[3]", "identity");
+  const acc = await stripeJsonApi(`v2/core/accounts/${accountId}?${include.toString()}`, undefined, "GET");
+  const transfersStatus = recipientTransfersStatus(acc);
+  const due = requirementsByDeadline(acc.requirements, "currently_due");
+  const pastDue = requirementsByDeadline(acc.requirements, "past_due");
+  const ready = transfersStatus === "active";
+  return {
+    id: accountId,
+    version: "v2",
+    dashboard: typeof acc.dashboard === "string" ? acc.dashboard : null,
+    transfersStatus,
+    chargesEnabled: ready,
+    detailsSubmitted: ready || due.length === 0,
+    ready,
+    accountStatus: statusFromCapability(transfersStatus, due, pastDue),
+    requirementsDue: due,
+    requirementsPastDue: pastDue,
+  };
+}
+
+export async function getConnectedAccountStatus(
+  accountId: string,
+  version: StripeConnectAccountVersion = "v2"
+): Promise<StripeConnectedAccountStatus> {
+  return version === "legacy" ? getLegacyAccountStatus(accountId) : getV2AccountStatus(accountId);
+}
+
+export async function getAccount(accountId: string) {
+  const acc = await getLegacyAccountStatus(accountId);
+  return { charges_enabled: acc.chargesEnabled, details_submitted: acc.detailsSubmitted };
 }
 
 // ---------- Assinatura do SaaS (produtor paga a Seravie Campo) ----------
