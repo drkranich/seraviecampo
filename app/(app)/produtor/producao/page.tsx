@@ -28,7 +28,7 @@ export default async function ProducaoPage() {
             <section key={st} className="glass rounded-2xl border border-campo-border p-4">
               <h2 className="mb-3 font-serif text-base text-forest-100">{STATUS_LABEL[st]} <span className="text-stone-500">({items.length})</span></h2>
               {items.length === 0 ? (
-                <p className="text-xs text-stone-500">Nada aqui ainda.</p>
+                <p className="text-xs text-stone-500">Sem produtos neste estágio.</p>
               ) : (
                 <ul className="space-y-2">
                   {items.map((p) => (

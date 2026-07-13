@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { CmsObjectListEditor, CmsStringListEditor, type CmsListField } from "@/components/CmsListEditor";
 import { getPublicDestinations } from "@/lib/public-destinations";
-import { getSiteCmsState, type PanelContent } from "@/lib/site";
+import { destinationHref, getSiteCmsState, type PanelContent } from "@/lib/site";
 import { ImageUpload } from "@/components/ImageUpload";
 import { discardSiteDraft, publishSite, updateSite } from "./actions";
 
@@ -249,6 +249,30 @@ export default async function SiteCmsPage({
               Quando produtores e parceiros publicam produtos ou experiências com cidade/estado no perfil, a Seravie Campo gera destinos automaticamente. Os cards abaixo são curadoria editorial opcional para destacar cidades estratégicas, ajustar imagem, texto e SEO.
             </p>
           </div>
+          {automaticDestinations.length > 0 && (
+            <div className="rounded-xl border border-campo-border bg-campo-bg/35 p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-stone-500">Destinos gerados pela plataforma</p>
+                  <h3 className="font-serif text-xl text-forest-100">Ofertas ativas que já alimentam o site público</h3>
+                </div>
+                <Link href="/destinos" target="_blank" className="text-sm text-gold hover:underline">Ver vitrine</Link>
+              </div>
+              <div className="grid gap-2 md:grid-cols-2">
+                {automaticDestinations.slice(0, 6).map((destination) => (
+                  <Link
+                    key={destination.slug || destination.name}
+                    href={destinationHref(destination)}
+                    target="_blank"
+                    className="rounded-lg border border-campo-border bg-campo-surface/60 px-3 py-2 transition hover:border-gold/50"
+                  >
+                    <span className="block font-serif text-base text-forest-100">{destination.name}</span>
+                    <span className="mt-1 block text-xs uppercase tracking-[0.16em] text-[#A9C875]">{destination.offer_label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="grid gap-4 sm:grid-cols-3">
             <TextField name="destinations_label" label="Selo da seção" value={site.destinations_label} />
             <div className="sm:col-span-2">

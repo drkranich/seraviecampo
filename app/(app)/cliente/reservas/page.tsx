@@ -35,7 +35,7 @@ export default async function ReservasClientePage({
 
   return (
     <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title="Reserva de colheita" subtitle="Garanta produtos que ainda estão sendo cultivados.">
-      {sp.ok && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Reserva registrada! O produtor vai confirmar em breve.</div>}
+      {sp.ok && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Reserva registrada! O produtor recebeu a solicitação e confirma pelo painel.</div>}
       {sp.canc && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Reserva cancelada.</div>}
       {sp.error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{decodeURIComponent(sp.error)}</div>}
 

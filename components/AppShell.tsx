@@ -46,7 +46,6 @@ export function ModuleCard({ title, desc }: { title: string; desc: string }) {
     <article className="glass rounded-2xl border border-campo-border p-5">
       <h3 className="font-serif text-lg text-forest-100">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-stone-400">{desc}</p>
-      <span className="mt-3 inline-block text-xs uppercase tracking-wider text-stone-600">Em breve</span>
     </article>
   );
 }

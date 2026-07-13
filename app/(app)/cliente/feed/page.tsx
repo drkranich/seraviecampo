@@ -22,7 +22,7 @@ export default async function FeedClientePage() {
   return (
     <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title="Feed dos produtores" subtitle="Acompanhe os bastidores de quem produz o seu alimento.">
       {posts.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center text-stone-400">Nenhuma publicação ainda. Volte em breve!</div>
+        <div className="rounded-2xl border border-dashed border-campo-border glass p-10 text-center text-stone-400">O feed ainda não tem publicações. Quando produtores e parceiros compartilharem colheitas, bastidores e novidades, elas aparecem aqui.</div>
       ) : (
         <div className="max-w-2xl space-y-5">
           {posts.map((post) => {

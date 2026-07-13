@@ -38,15 +38,11 @@ export default async function DestinosPage() {
               <img src={destination.image} alt={destination.name} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
             </div>
             <div className="p-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs uppercase tracking-[0.22em] text-gold">{destination.region}</p>
-                {destination.source === "automatic" && (
-                  <span className="rounded-full border border-[#7CA049]/50 px-2 py-0.5 text-[0.65rem] uppercase tracking-[0.14em] text-[#A9C875]">
-                    Oferta local
-                  </span>
-                )}
-              </div>
+              <p className="text-xs uppercase tracking-[0.22em] text-gold">{destination.region}</p>
               <h2 className="mt-2 font-serif text-3xl text-forest-50">{destination.name}</h2>
+              {destination.listing_count > 0 && (
+                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[#A9C875]">{destination.offer_label}</p>
+              )}
               <p className="mt-3 text-sm leading-relaxed text-stone-400">{destination.intro || destination.description || site.destinations_text}</p>
             </div>
           </Link>

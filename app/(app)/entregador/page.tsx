@@ -175,7 +175,7 @@ export default async function EntregadorPage() {
       <section id="entregas-disponiveis">
         <h2 className="mb-3 font-serif text-lg text-forest-100">Entregas disponíveis</h2>
         {available.length === 0 ? (
-          <Empty>Nenhuma entrega disponível agora. Volte em breve.</Empty>
+          <Empty>Nenhuma entrega disponível agora. Quando um produtor liberar um pedido para rota, ele aparece aqui automaticamente.</Empty>
         ) : (
           <div className="space-y-3">{available.map((order) => <Card key={order.id} order={order} mode="accept" />)}</div>
         )}
