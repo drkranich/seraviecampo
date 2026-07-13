@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PublicDestination } from "@/lib/public-destinations";
+import { DestinationSearchField } from "@/components/DestinationSearchField";
 import { PublicSupportChatWidget } from "@/components/PublicSupportChatWidget";
 import { destinationHref, type SiteContent } from "@/lib/site";
 
@@ -45,10 +46,7 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
           </div>
 
           <form action="/experiencias" className="mt-10 grid max-w-6xl gap-2 rounded-lg border border-white/20 bg-[#10140E]/80 p-2 shadow-2xl shadow-black/30 backdrop-blur md:grid-cols-[1.3fr_1fr_1fr_.8fr_auto]">
-            <label className="flex min-w-0 flex-col rounded-md bg-white/[0.06] px-4 py-3">
-              <span className="text-xs uppercase tracking-[0.18em] text-forest-100/60">Destino</span>
-              <input name="destino" placeholder="Lavras Novas, Ouro Preto..." className="mt-1 min-w-0 bg-transparent text-sm text-forest-50 outline-none placeholder:text-forest-100/40" />
-            </label>
+            <DestinationSearchField destinations={visibleDestinations} />
             <label className="flex flex-col rounded-md bg-white/[0.06] px-4 py-3">
               <span className="text-xs uppercase tracking-[0.18em] text-forest-100/60">Chegada</span>
               <input name="checkin" type="date" className="mt-1 bg-transparent text-sm text-forest-50 outline-none [color-scheme:dark]" />
