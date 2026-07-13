@@ -68,7 +68,6 @@ export async function createSubscriptionCheckout(opts: {
 }): Promise<string> {
   const form: Form = {
     mode: "subscription",
-    "payment_method_types[0]": "card",
     "line_items[0][price]": opts.priceId,
     "line_items[0][quantity]": "1",
     customer_email: opts.customerEmail,
@@ -96,7 +95,6 @@ export async function createOrderCheckout(opts: {
 }): Promise<string> {
   const session = await stripeApi("checkout/sessions", {
     mode: "payment",
-    "payment_method_types[0]": "card",
     "line_items[0][price_data][currency]": opts.currency.toLowerCase(),
     "line_items[0][price_data][product_data][name]": opts.description,
     "line_items[0][price_data][unit_amount]": String(opts.amountCents),
@@ -122,7 +120,6 @@ export async function createExperienceCheckout(opts: {
 }): Promise<string> {
   const session = await stripeApi("checkout/sessions", {
     mode: "payment",
-    "payment_method_types[0]": "card",
     "line_items[0][price_data][currency]": opts.currency.toLowerCase(),
     "line_items[0][price_data][product_data][name]": opts.description,
     "line_items[0][price_data][unit_amount]": String(opts.amountCents),
@@ -171,7 +168,6 @@ export async function createSetupCheckout(opts: {
     mode: "setup",
     customer: opts.customerId,
     client_reference_id: opts.clientReferenceId,
-    "payment_method_types[0]": "card",
     success_url: opts.successUrl,
     cancel_url: opts.cancelUrl,
   });
@@ -223,15 +219,27 @@ export async function createRecurringPrice(opts: {
 }
 
 // ---------- Verificação de webhook (Web Crypto, compatível com Workers) ----------
-export async function verifyStripeSignature(payload: string, sigHeader: string | null, secret: string): Promise<boolean> {
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+export async function verifyStripeSignature(payload: string, sigHeader: string | null, secret: string, toleranceSeconds = 300): Promise<boolean> {
   if (!sigHeader) return false;
-  const parts = Object.fromEntries(sigHeader.split(",").map((p) => p.split("=")));
-  const t = parts["t"];
-  const v1 = parts["v1"];
-  if (!t || !v1) return false;
+  const entries = sigHeader.split(",").map((p) => {
+    const [key, ...rest] = p.split("=");
+    return [key, rest.join("=")] as const;
+  });
+  const t = entries.find(([key]) => key === "t")?.[1];
+  const signatures = entries.filter(([key]) => key === "v1").map(([, value]) => value);
+  const timestamp = Number(t);
+  if (!t || signatures.length === 0 || !Number.isFinite(timestamp)) return false;
+  if (Math.abs(Date.now() / 1000 - timestamp) > toleranceSeconds) return false;
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode(`${t}.${payload}`));
   const expected = [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, "0")).join("");
-  return expected === v1;
+  return signatures.some((value) => timingSafeEqual(expected, value));
 }

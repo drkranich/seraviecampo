@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       clientReferenceId: user.id,
       successUrl: `${origin}/api/stripe/return?plan=${plan.id}`,
       cancelUrl: `${origin}${area}?canceled=1`,
+      metadata: { kind: "subscription", plan: plan.id, role: plan.role },
     });
     return NextResponse.redirect(url, { status: 303 });
   } catch (e) {

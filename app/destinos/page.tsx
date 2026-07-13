@@ -48,9 +48,6 @@ export default async function DestinosPage() {
               </div>
               <h2 className="mt-2 font-serif text-3xl text-forest-50">{destination.name}</h2>
               <p className="mt-3 text-sm leading-relaxed text-stone-400">{destination.intro || destination.description || site.destinations_text}</p>
-              {destination.listing_count > 0 && (
-                <p className="mt-4 text-xs uppercase tracking-[0.16em] text-gold">{destination.offer_label}</p>
-              )}
             </div>
           </Link>
         ))}

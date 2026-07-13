@@ -98,11 +98,7 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-4">
-          {visibleDestinations.slice(0, 4).map((destination) => {
-            const publicDestination = destination as Partial<PublicDestination>;
-            const offer = (publicDestination.listing_count ?? 0) > 0 ? publicDestination.offer_label ?? "" : "";
-
-            return (
+          {visibleDestinations.slice(0, 4).map((destination) => (
               <Link key={destination.name} href={destinationHref(destination)} className="group overflow-hidden rounded-lg border border-campo-border bg-campo-surface">
                 <div className="aspect-[4/5] overflow-hidden bg-campo-surface2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -111,11 +107,9 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
                 <div className="p-4">
                   <h3 className="font-serif text-2xl text-forest-50">{destination.name}</h3>
                   <p className="mt-1 text-sm text-stone-400">{destination.region}</p>
-                  {offer && <p className="mt-3 text-xs uppercase tracking-[0.16em] text-gold">{offer}</p>}
                 </div>
               </Link>
-            );
-          })}
+          ))}
         </div>
       </section>
 

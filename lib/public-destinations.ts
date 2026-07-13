@@ -186,29 +186,25 @@ function locationForExperience(experience: ExperienceDestinationRow) {
   return locationFrom(experience.producer?.city, experience.producer?.state) ?? locationFromFreeText(experience.location);
 }
 
-function countLabel(count: number, singular: string, plural: string) {
-  return `${count} ${count === 1 ? singular : plural}`;
-}
-
 function offerLabel(productCount: number, experienceCount: number, producerCount: number) {
   const parts = [
-    productCount > 0 ? countLabel(productCount, "produto regional", "produtos regionais") : "",
-    experienceCount > 0 ? countLabel(experienceCount, "experiência", "experiências") : "",
-    producerCount > 0 ? countLabel(producerCount, "anfitrião local", "anfitriões locais") : "",
+    productCount > 0 ? "Produtos regionais" : "",
+    experienceCount > 0 ? "Experiências" : "",
+    producerCount > 0 ? "Anfitriões locais" : "",
   ].filter(Boolean);
 
   return parts.length ? parts.join(" · ") : "Curadoria local";
 }
 
-function automaticDescription(name: string, label: string) {
-  return `Em ${name}, a Seravie Campo organiza uma vitrine viva com ${label.toLowerCase()} publicados por produtores e parceiros locais. Cada oferta ajuda o visitante a enxergar o destino pelo território, pelos sabores e pelas pessoas que recebem.`;
+function automaticDescription(name: string) {
+  return `Em ${name}, a Seravie Campo organiza uma vitrine viva de ofertas publicadas por produtores, anfitriões e parceiros locais. Cada publicação ajuda o visitante a enxergar o destino pelo território, pelos sabores e pelas pessoas que recebem.`;
 }
 
 function automaticHighlights(productCount: number, experienceCount: number, producerCount: number) {
   return [
-    productCount > 0 ? countLabel(productCount, "produto regional publicado", "produtos regionais publicados") : "",
-    experienceCount > 0 ? countLabel(experienceCount, "experiência disponível", "experiências disponíveis") : "",
-    producerCount > 0 ? countLabel(producerCount, "anfitrião/produtor ativo", "anfitriões/produtores ativos") : "",
+    productCount > 0 ? "Produtos regionais publicados por produtores locais" : "",
+    experienceCount > 0 ? "Experiências rurais disponíveis para reserva" : "",
+    producerCount > 0 ? "Anfitriões e produtores com presença ativa na plataforma" : "",
   ]
     .filter(Boolean)
     .join("\n");
@@ -339,8 +335,8 @@ function buildAutomaticDestinations(site: SiteContent, products: ProductDestinat
         city: aggregate.city,
         state: aggregate.state,
         offer_label: label,
-        intro: automaticDescription(aggregate.name, label),
-        description: automaticDescription(aggregate.name, label),
+        intro: automaticDescription(aggregate.name),
+        description: automaticDescription(aggregate.name),
         highlights: automaticHighlights(aggregate.product_count, aggregate.experience_count, producer_count),
         best_time: "Consulte a sazonalidade com os anfitriões locais.",
         travel_time: "Roteiros flexíveis conforme as ofertas publicadas.",

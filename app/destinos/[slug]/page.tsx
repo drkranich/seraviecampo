@@ -60,9 +60,6 @@ export default async function DestinoPage({ params }: { params: Promise<{ slug: 
           <p className="text-xs uppercase tracking-[0.26em] text-gold">{destination.region}</p>
           <h1 className="mt-4 max-w-4xl font-serif text-6xl font-semibold leading-none text-forest-50 sm:text-7xl">{destination.name}</h1>
           <p className="mt-6 max-w-2xl text-xl leading-relaxed text-forest-50/80">{destination.intro || destination.description || site.destinations_text}</p>
-          {destination.listing_count > 0 && (
-            <p className="mt-4 max-w-2xl text-sm uppercase tracking-[0.18em] text-[#D9C68D]">{destination.offer_label}</p>
-          )}
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href={destination.cta_href || "/experiencias"} className="rounded-lg bg-gold px-5 py-3 text-sm font-semibold text-campo-bg transition hover:bg-gold-light">
               {destination.cta_label || "Ver experiências"}
