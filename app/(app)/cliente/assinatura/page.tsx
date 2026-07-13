@@ -26,8 +26,8 @@ export default async function AssinaturaClientePage({
   const st = trialStatus({ createdAt: prof?.created_at ?? new Date().toISOString(), purchaseCount: count ?? 0, hasPaidPlan: hasPaid });
 
   const errMsg: Record<string, string> = {
-    stripe_off: "Pagamentos ainda não ativados pela plataforma.",
-    price_off: "Preço deste plano ainda não configurado.",
+    stripe_off: "Pagamento online temporariamente indisponível. Tente novamente em instantes ou acione o suporte.",
+    price_off: "Este plano precisa de um preço Stripe vinculado. Avise o suporte para ajustar.",
   };
 
   return (
@@ -43,7 +43,7 @@ export default async function AssinaturaClientePage({
       {error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{errMsg[error] ?? decodeURIComponent(error)}</div>}
       {!stripeEnabled() && (
         <div className="mb-6 rounded-xl border border-campo-border bg-campo-surface2 px-4 py-3 text-sm text-stone-400">
-          Pagamentos em configuração. Você pode ver os planos; a assinatura é liberada quando o Stripe for ativado.
+          Pagamento online temporariamente indisponível. Os planos continuam visíveis; tente assinar novamente em instantes.
         </div>
       )}
       {cancelado && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Assinatura cancelada. Ativa até o fim do ciclo; sem cobrança no próximo mês.</div>}

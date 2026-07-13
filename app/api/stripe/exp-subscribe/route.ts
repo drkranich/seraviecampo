@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.redirect(`${origin}${area}?error=${encodeURIComponent("Plano inválido.")}`, { status: 303 });
   }
 
-  // Plano gratuito (Inicial) — ativa direto, sem Stripe.
+  // Plano gratuito (Inicial) não precisa de checkout.
   if ((plan.price_cents ?? 0) <= 0) {
     await supabase.from("experience_subscriptions").upsert(
       { account_id: user.id, plan: plan.id, status: "ativa", stripe_subscription_id: null, cancel_at_period_end: false, updated_at: new Date().toISOString() },

@@ -33,8 +33,8 @@ export default async function ConfigEntregadorPage({
   }
 
   const errMsg: Record<string, string> = {
-    stripe_off: "Pagamentos ainda não ativados pela plataforma.",
-    connect_setup: "Os recebimentos via Stripe estão sendo ativados pela plataforma. Tente novamente em breve.",
+    stripe_off: "Pagamento online temporariamente indisponível. Tente novamente em instantes ou acione o suporte.",
+    connect_setup: "Não foi possível abrir o onboarding do Stripe agora. Tente novamente em instantes.",
   };
 
   return (
@@ -45,10 +45,10 @@ export default async function ConfigEntregadorPage({
 
       <section className="glass mb-4 max-w-2xl rounded-2xl border border-campo-border p-6">
         <h2 className="font-serif text-lg text-forest-100">Recebimentos (Stripe)</h2>
-        <p className="mt-2 text-sm text-stone-400">Conecte sua conta bancária via Stripe para receber pelos fretes das entregas. O valor do frete cai direto para você (menos a taxa da plataforma).</p>
+        <p className="mt-2 text-sm text-stone-400">A Seravie Campo processa os fretes via Stripe e repassa seus valores para a conta conectada, com a taxa da plataforma descontada.</p>
         <div className="mt-4">
           {!stripeEnabled() ? (
-            <div className="rounded-xl border border-campo-border bg-campo-surface2 px-4 py-3 text-sm text-stone-400">Pagamentos em configuração pela plataforma.</div>
+            <div className="rounded-xl border border-campo-border bg-campo-surface2 px-4 py-3 text-sm text-stone-400">Pagamento online temporariamente indisponível. Tente novamente em instantes.</div>
           ) : !accountId ? (
             <form action="/api/stripe/connect" method="post">
               <button className="rounded-lg bg-gold px-6 py-2.5 font-medium text-campo-bg transition hover:bg-gold-light">Conectar conta Stripe</button>

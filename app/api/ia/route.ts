@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   if (!aiEnabled()) return NextResponse.json({ error: "A IA Rural ainda não foi ativada pela plataforma (falta a chave AI_API_KEY)." }, { status: 503 });
 
-  // Cobrança por uso: exige cartão cadastrado (à parte do plano). Sem Stripe ativo, cortesia nos testes.
+  // Cobrança por uso: exige cartão cadastrado (à parte do plano). Em ambiente sem cobrança online, mantém cortesia nos testes.
   if (stripeEnabled()) {
     const { data: prof } = await supabase.from("profiles").select("ai_card_added").eq("id", user.id).single();
     if (!prof?.ai_card_added) {

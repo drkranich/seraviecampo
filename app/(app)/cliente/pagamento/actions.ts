@@ -14,9 +14,11 @@ export async function confirmPayment(orderId: string) {
   if (o.payment_status !== "pendente") redirect("/cliente/pagamento");
 
   const isCash = o.payment_method === "dinheiro";
+  if (!isCash) redirect("/cliente/pagamento?error=" + encodeURIComponent("Pagamentos online devem ser finalizados via Stripe."));
+
   await supabase.from("orders").update({
-    payment_status: isCash ? "na_entrega" : "pago",
-    paid_at: isCash ? null : new Date().toISOString(),
+    payment_status: "na_entrega",
+    paid_at: null,
   }).eq("id", orderId).eq("customer_id", user.id);
 
   revalidatePath("/cliente/pagamento");

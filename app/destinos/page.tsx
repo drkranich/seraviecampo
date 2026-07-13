@@ -26,7 +26,7 @@ export default async function DestinosPage() {
         <h1 className="mt-4 max-w-4xl font-serif text-5xl leading-none text-forest-50 sm:text-6xl">{site.destinations_title}</h1>
         <p className="mt-5 max-w-2xl text-lg leading-relaxed text-stone-400">{site.destinations_text}</p>
         <p className="mt-4 max-w-2xl text-sm leading-relaxed text-stone-500">
-          A seleção combina curadoria da Seravie Campo com ofertas de anfitriões, produtores e parceiros locais.
+          A vitrine é formada por cidades e rotas onde produtores, anfitriões e parceiros locais já publicam produtos, vivências e serviços conectados ao campo.
         </p>
       </header>
 

@@ -198,7 +198,7 @@ export function PublicSupportChatWidget() {
                     <div className={`max-w-[82%] rounded-2xl px-3 py-2 text-sm shadow-[0_10px_30px_rgba(0,0,0,0.22)] ${mine ? "bg-gold/95 text-campo-bg" : "border border-white/10 bg-white/[0.07] text-stone-200 backdrop-blur"}`}>
                       <p className="whitespace-pre-wrap leading-relaxed">{message.body}</p>
                       <p className={`mt-1 text-[0.65rem] ${mine ? "text-campo-bg/70" : "text-stone-500"}`}>
-                        {mine ? "Voce" : "Equipe Seravie"} - {formatTime(message.created_at)}
+                        {mine ? "Você" : "Equipe Seravie"} - {formatTime(message.created_at)}
                       </p>
                     </div>
                   </div>

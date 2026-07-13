@@ -59,8 +59,8 @@ export default async function FinanceiroPage({
   const netMensal = productRevenue - commission - subscriptionCost;
 
   const errMsg: Record<string, string> = {
-    stripe_off: "A plataforma ainda não ativou o Stripe. Volte em breve.",
-    connect_setup: "Os recebimentos via Stripe estão sendo ativados pela plataforma. Tente novamente em breve.",
+    stripe_off: "Pagamento online temporariamente indisponível. Tente novamente em instantes ou acione o suporte.",
+    connect_setup: "Não foi possível abrir o onboarding do Stripe agora. Tente novamente em instantes.",
   };
 
   return (
@@ -88,15 +88,15 @@ export default async function FinanceiroPage({
       <section className="glass max-w-2xl rounded-2xl border border-campo-border p-6">
         <h2 className="font-serif text-xl text-forest-100">Conta de recebimento (Stripe Connect)</h2>
         <p className="mt-2 text-sm leading-relaxed text-stone-400">
-          A Seravie Campo conecta você ao cliente — o dinheiro das vendas cai direto na
-          sua conta Stripe. Conecte-a uma vez para começar a cobrar.
+          A Seravie Campo intermedia os pagamentos via Stripe, calcula a comissão da
+          plataforma e repassa seus valores para a conta conectada. Conecte-a uma vez para começar.
         </p>
 
         <div className="mt-6">
           {!stripeEnabled() ? (
-            <StatusBox tone="muted" title="Stripe em configuração">
-              A integração de pagamentos será ativada pela plataforma. Assim que disponível,
-              o botão de conectar aparece aqui.
+            <StatusBox tone="muted" title="Pagamento online indisponível">
+              Não foi possível carregar o Stripe neste ambiente. Tente novamente em instantes
+              ou acione o suporte interno.
             </StatusBox>
           ) : !accountId ? (
             <form action="/api/stripe/connect" method="post">
@@ -119,7 +119,7 @@ export default async function FinanceiroPage({
             </form>
           ) : (
             <StatusBox tone="ok" title="Conta conectada ✓">
-              Tudo certo! Você já pode receber pagamentos dos clientes diretamente.
+              Tudo certo! Você já pode receber os repasses dos pagamentos intermediados pela Seravie Campo.
             </StatusBox>
           )}
         </div>

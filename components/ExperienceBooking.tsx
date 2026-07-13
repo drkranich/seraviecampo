@@ -62,7 +62,7 @@ export function ExperienceBooking({
 
       <button disabled={!enabled}
         className="mt-4 w-full rounded-lg bg-gold py-3 font-medium text-campo-bg transition hover:bg-gold-light disabled:cursor-not-allowed disabled:opacity-50">
-        {enabled ? "Reservar e pagar" : "Pagamentos em configuração"}
+        {enabled ? "Reservar e pagar" : "Pagamento online indisponível"}
       </button>
       <p className="mt-2 text-center text-xs text-stone-600">Pagamento seguro via Stripe. Você só confirma após o pagamento.</p>
     </form>

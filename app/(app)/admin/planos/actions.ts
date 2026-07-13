@@ -28,7 +28,7 @@ export async function updatePlan(formData: FormData) {
   const values: Record<string, unknown> = { name, tagline, price_cents, commission_pct, features, active, updated_at: new Date().toISOString() };
 
   if (manualPriceId) {
-    // Price ID colado manualmente pelo admin — usa direto (conecta o plano ao Stripe).
+    // Price ID colado manualmente pelo admin — vincula o plano ao preço Stripe informado.
     values.stripe_price_id = manualPriceId;
   } else if (stripeEnabled() && price_cents > 0 && price_cents !== (cur.price_cents as number)) {
     try {

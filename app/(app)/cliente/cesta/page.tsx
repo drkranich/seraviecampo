@@ -133,8 +133,8 @@ export default async function CestaPage({
                 Finalizar pedido
               </button>
               <p className="text-center text-[0.7rem] leading-relaxed text-stone-600">
-                A Seravie Campo conecta você ao produtor. O pagamento e a entrega são
-                combinados diretamente com ele.
+                A Seravie Campo intermedia o pagamento com segurança via Stripe. A entrega
+                segue registrada na plataforma, conforme os dados do pedido.
               </p>
               <p className="text-center text-[0.7rem] leading-relaxed text-stone-500">
                 Você poderá cancelar este pedido em até <strong className="text-stone-400">24 horas</strong> após a compra, em &ldquo;Meus pedidos&rdquo;.

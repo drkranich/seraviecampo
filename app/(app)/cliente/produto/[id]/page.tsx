@@ -121,8 +121,8 @@ export default async function ProdutoDetalhePage({
               </button>
             </div>
             <p className="mt-2 text-center text-xs text-stone-600">
-              A Seravie Campo conecta você ao produtor. Pagamento e entrega são
-              combinados diretamente com ele.
+              A Seravie Campo intermedia o pagamento com segurança via Stripe. A entrega
+              segue registrada na plataforma, conforme os dados do pedido.
             </p>
           </form>
         </div>

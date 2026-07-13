@@ -176,7 +176,7 @@ export default async function ParceiroPage() {
             <Line label={`Comissão (${pct}%)`} value={`- ${formatMoney(commissionMonth, currency)}`} />
             <Line label="A receber" value={formatMoney(netMonth, currency)} accent />
           </div>
-          {!stripeEnabled() && <p className="mt-3 text-xs text-stone-500">Pagamentos em configuração pela plataforma.</p>}
+          {!stripeEnabled() && <p className="mt-3 text-xs text-stone-500">Pagamento online temporariamente indisponível.</p>}
         </section>
       </div>
 

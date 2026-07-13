@@ -3,7 +3,7 @@ import type { PublicDestination } from "@/lib/public-destinations";
 import { PublicSupportChatWidget } from "@/components/PublicSupportChatWidget";
 import { destinationHref, type SiteContent } from "@/lib/site";
 
-const teaserBorders = ["border-[#C2A878]", "border-[#7CA049]", "border-[#6D8EA0]"];
+const teaserBorders = ["border-[#C2A878]", "border-[#7CA049]", "border-[#9A9A66]"];
 
 export function PublicHome({ site, destinations }: { site: SiteContent; destinations?: PublicDestination[] }) {
   const visibleDestinations = destinations?.length ? destinations : site.destinations;
@@ -122,7 +122,7 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
       <section className="bg-[#0F1514] py-16 lg:py-20">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-[#A8C7D3]">{site.stay_label}</p>
+            <p className="text-xs uppercase tracking-[0.24em] text-[#C9BE93]">{site.stay_label}</p>
             <h2 className="mt-3 font-serif text-4xl text-forest-50">{site.stay_title}</h2>
             <p className="mt-5 text-sm leading-relaxed text-stone-400">{site.stay_text}</p>
           </div>
@@ -190,7 +190,7 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
         <div className="mx-auto max-w-7xl px-5 sm:px-6">
           <div className="grid gap-5 md:grid-cols-[0.8fr_1.2fr] md:items-end">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-[#A8C7D3]">{site.featured_label}</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-[#C9BE93]">{site.featured_label}</p>
               <h2 className="mt-3 font-serif text-4xl text-forest-50">{site.featured_title}</h2>
             </div>
             <p className="max-w-2xl text-sm leading-relaxed text-stone-400 md:justify-self-end">{site.featured_text}</p>
@@ -198,7 +198,7 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
 
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {site.featured_items.map((item) => (
-              <Link key={`${item.label}-${item.title}`} href={item.href || "/experiencias"} className="group overflow-hidden rounded-lg border border-[#293A34] bg-[#151F1B] transition hover:border-[#A8C7D3]/60">
+              <Link key={`${item.label}-${item.title}`} href={item.href || "/experiencias"} className="group overflow-hidden rounded-lg border border-[#293A34] bg-[#151F1B] transition hover:border-[#C9BE93]/60">
                 <div className="aspect-[16/10] overflow-hidden bg-campo-surface2">
                   {item.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -208,7 +208,7 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
                   )}
                 </div>
                 <div className="p-5">
-                  <p className="text-xs uppercase tracking-[0.22em] text-[#A8C7D3]">{item.label}</p>
+                  <p className="text-xs uppercase tracking-[0.22em] text-[#C9BE93]">{item.label}</p>
                   <h3 className="mt-2 font-serif text-2xl text-forest-50">{item.title}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-stone-400">{item.text}</p>
                 </div>
@@ -295,7 +295,7 @@ export function PublicHome({ site, destinations }: { site: SiteContent; destinat
         </div>
 
         <div>
-          <p className="text-xs uppercase tracking-[0.24em] text-[#A8C7D3]">{site.faq_label}</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-[#C9BE93]">{site.faq_label}</p>
           <h2 className="mt-3 font-serif text-4xl text-forest-50">{site.faq_title}</h2>
           <div className="mt-7 divide-y divide-[#2D3326] rounded-lg border border-[#2D3326] bg-[#151A12]">
             {site.faq_items.map((item) => (

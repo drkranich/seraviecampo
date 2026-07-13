@@ -27,7 +27,7 @@ export default async function ClubePage() {
     <AppShell badge="Clube Gourmet" nav={CLIENTE_NAV} userName={profile?.full_name ?? "Cliente"} title="Clube Gourmet" subtitle="Cestas selecionadas que chegam até você.">
       <section className="mb-8 overflow-hidden rounded-2xl border border-campo-border bg-gradient-to-br from-forest-900 via-campo-surface to-campo-bg p-8 sm:p-12">
         <p className="font-serif text-sm uppercase tracking-[0.3em] text-gold">Experiência de descoberta</p>
-        <h2 className="mt-2 max-w-xl font-serif text-3xl text-forest-100 sm:text-4xl">Sabores raros, direto de quem produz</h2>
+        <h2 className="mt-2 max-w-xl font-serif text-3xl text-forest-100 sm:text-4xl">Sabores raros, com origem de quem produz</h2>
         <p className="mt-3 max-w-lg text-stone-400">Monte sua cesta temática com os melhores produtores da sua região e receba quando quiser.</p>
       </section>
 

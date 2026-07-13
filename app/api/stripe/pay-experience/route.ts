@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   let people = Number(form.get("people") || 1);
 
   const back = `${origin}/experiencias/${expId}`;
-  if (!stripeEnabled()) return NextResponse.redirect(`${back}?error=${encodeURIComponent("Pagamentos em configuração.")}`, { status: 303 });
+  if (!stripeEnabled()) return NextResponse.redirect(`${back}?error=${encodeURIComponent("Pagamento online temporariamente indisponível.")}`, { status: 303 });
   if (!expId || !date) return NextResponse.redirect(`${back}?error=${encodeURIComponent("Escolha a data da experiência.")}`, { status: 303 });
 
   const supabase = await createClient();

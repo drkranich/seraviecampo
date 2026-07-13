@@ -55,7 +55,7 @@ export function SubscriptionPlans({
                     disabled={!enabled}
                     className="w-full rounded-lg bg-gold py-2.5 font-medium text-campo-bg transition hover:bg-gold-light disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Assinar {plan.name}
+                    {enabled ? `Assinar ${plan.name}` : "Pagamento online indisponível"}
                   </button>
                 </form>
               ) : (

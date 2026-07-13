@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/guard";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell, ADMIN_NAV } from "@/components/AppShell";
 import { CmsObjectListEditor, CmsStringListEditor, type CmsListField } from "@/components/CmsListEditor";
+import { getPublicDestinations } from "@/lib/public-destinations";
 import { getSiteCmsState, type PanelContent } from "@/lib/site";
 import { ImageUpload } from "@/components/ImageUpload";
 import { discardSiteDraft, publishSite, updateSite } from "./actions";
@@ -36,7 +37,7 @@ const accentOptions = [
   { label: "Dourado", value: "border-[#C2A878] text-[#D4BD8C]" },
   { label: "Verde", value: "border-[#7CA049] text-[#A9C875]" },
   { label: "Terracota", value: "border-[#B66E4B] text-[#E0A077]" },
-  { label: "Azul suave", value: "border-[#6D8EA0] text-[#A8C7D3]" },
+  { label: "Creme", value: "border-[#C9BE93] text-[#E7E1C8]" },
   { label: "Oliva", value: "border-[#9A9A66] text-[#D3D19B]" },
 ];
 
@@ -160,6 +161,10 @@ export default async function SiteCmsPage({
   const supabase = await createClient();
   const cms = await getSiteCmsState(supabase);
   const site = cms.draft;
+  const publicDestinations = await getPublicDestinations(supabase, site);
+  const liveDestinations = publicDestinations.filter((destination) => destination.listing_count > 0);
+  const automaticDestinations = publicDestinations.filter((destination) => destination.source === "automatic");
+  const publishedOfferCount = publicDestinations.reduce((total, destination) => total + destination.listing_count, 0);
 
   return (
     <AppShell badge="Seravie Hub" nav={ADMIN_NAV} userName={profile?.full_name ?? "Administrador"} title="Site / CMS" subtitle="Edite a página pública, vitrines e avisos dos painéis.">
@@ -197,12 +202,12 @@ export default async function SiteCmsPage({
       </section>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <CmsStat label="Destinos" value={String(site.destinations.length)} />
-        <CmsStat label="Experiências" value={String(site.experience_tracks.length)} />
+        <CmsStat label="Destinos editoriais" value={String(site.destinations.length)} />
+        <CmsStat label="Destinos vivos" value={String(liveDestinations.length)} />
+        <CmsStat label="Automáticos" value={String(automaticDestinations.length)} />
+        <CmsStat label="Ofertas públicas" value={String(publishedOfferCount)} />
         <CmsStat label="Vitrines" value={String(site.featured_items.length)} />
-        <CmsStat label="Depoimentos" value={String(site.testimonials.length)} />
-        <CmsStat label="FAQ" value={String(site.faq_items.length)} />
-        <CmsStat label="Paginas" value={String(site.institutional_pages.length)} />
+        <CmsStat label="Páginas" value={String(site.institutional_pages.length)} />
       </div>
 
       <form action={updateSite} className="glass max-w-6xl space-y-5 rounded-2xl border border-campo-border p-5 sm:p-6">
@@ -238,6 +243,12 @@ export default async function SiteCmsPage({
         </Section>
 
         <Section title="Destinos">
+          <div className="rounded-xl border border-gold/25 bg-gold/10 p-4 text-sm leading-relaxed text-stone-300">
+            <p className="font-medium text-forest-100">Os destinos públicos priorizam ofertas reais.</p>
+            <p className="mt-2">
+              Quando produtores e parceiros publicam produtos ou experiências com cidade/estado no perfil, a Seravie Campo gera destinos automaticamente. Os cards abaixo são curadoria editorial opcional para destacar cidades estratégicas, ajustar imagem, texto e SEO.
+            </p>
+          </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <TextField name="destinations_label" label="Selo da seção" value={site.destinations_label} />
             <div className="sm:col-span-2">
@@ -245,7 +256,7 @@ export default async function SiteCmsPage({
             </div>
           </div>
           <TextAreaField name="destinations_text" label="Texto de apoio" value={site.destinations_text} />
-          <CmsObjectListEditor name="destinations" label="Cards e páginas de destinos" items={site.destinations} fields={destinationFields} emptyItem={{ name: "", slug: "", region: "", image: "", href: "", intro: "", description: "", best_time: "", travel_time: "", highlights: "", cta_label: "", cta_href: "/experiencias" }} itemLabel="Destino" addLabel="Adicionar destino" titleKey="name" />
+          <CmsObjectListEditor name="destinations" label="Curadoria editorial de destinos" items={site.destinations} fields={destinationFields} emptyItem={{ name: "", slug: "", region: "", image: "", href: "", intro: "", description: "", best_time: "", travel_time: "", highlights: "", cta_label: "", cta_href: "/experiencias" }} itemLabel="Destino" addLabel="Adicionar destino editorial" titleKey="name" />
         </Section>
 
         <Section title="Hospedagens e categorias">

@@ -47,8 +47,8 @@ export default async function FinanceiroParceiroPage({
   const net = gross - commission;
 
   const errMsg: Record<string, string> = {
-    stripe_off: "A plataforma ainda não ativou o Stripe. Volte em breve.",
-    connect_setup: "Os recebimentos via Stripe estão sendo ativados pela plataforma. Tente novamente em breve.",
+    stripe_off: "Pagamento online temporariamente indisponível. Tente novamente em instantes ou acione o suporte.",
+    connect_setup: "Não foi possível abrir o onboarding do Stripe agora. Tente novamente em instantes.",
   };
 
   return (
@@ -61,11 +61,11 @@ export default async function FinanceiroParceiroPage({
       <section className="glass max-w-2xl rounded-2xl border border-campo-border p-6">
         <h2 className="font-serif text-xl text-forest-100">Conta de recebimento (Stripe Connect)</h2>
         <p className="mt-2 text-sm leading-relaxed text-stone-400">
-          O valor das reservas cai direto na sua conta Stripe, já com a comissão da plataforma descontada. Conecte-a uma vez para começar.
+          A Seravie Campo intermedia os pagamentos das reservas via Stripe, calcula a comissão da plataforma e repassa seus valores para a conta conectada. Conecte-a uma vez para começar.
         </p>
         <div className="mt-6">
           {!stripeEnabled() ? (
-            <StatusBox tone="muted" title="Stripe em configuração">A integração será ativada pela plataforma.</StatusBox>
+            <StatusBox tone="muted" title="Pagamento online indisponível">Não foi possível carregar o Stripe neste ambiente. Tente novamente em instantes ou acione o suporte interno.</StatusBox>
           ) : !accountId ? (
             <form action="/api/stripe/connect" method="post">
               <StatusBox tone="muted" title="Conta ainda não conectada">Conecte sua conta Stripe para receber pelas reservas.</StatusBox>

@@ -52,7 +52,7 @@ export function PublicInstitutionalPage({ site, page }: { site: SiteContent; pag
         </article>
 
         <aside className="h-fit rounded-lg border border-[#2D3326] bg-[#151A12] p-6 shadow-xl shadow-black/10">
-          <p className="text-xs uppercase tracking-[0.24em] text-[#A8C7D3]">Seravie Campo</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-[#C9BE93]">Seravie Campo</p>
           <h2 className="mt-3 font-serif text-3xl leading-tight text-forest-50">Continue a jornada</h2>
           <p className="mt-3 text-sm leading-relaxed text-stone-400">{site.cta_text}</p>
           <Link href={page.cta_href || site.cta_primary_href || "/signup"} className="mt-6 inline-flex rounded-lg bg-gold px-5 py-3 text-sm font-semibold text-campo-bg transition hover:bg-gold-light">

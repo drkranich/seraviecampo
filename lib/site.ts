@@ -136,7 +136,7 @@ export const DEFAULT_SITE: SiteContent = {
   brand: "Seravie Campo",
   favicon_url: "",
   seo_title: "Seravie Campo - Turismo rural, experiências e produtos regionais",
-  seo_description: "Descubra destinos do campo, reserve vivências com anfitriões locais e compre produtos regionais diretamente de quem produz.",
+  seo_description: "Descubra destinos do campo, reserve vivências com anfitriões locais e compre produtos regionais de quem produz, com pagamento seguro pela plataforma.",
   og_image_url: heroImage,
   hero_image_url: heroImage,
   hero_kicker: "Destinos rurais, vivências e sabores locais",
@@ -273,7 +273,7 @@ export const DEFAULT_SITE: SiteContent = {
     {
       title: "Bem-estar",
       text: "Yoga, meditação, banho de floresta, massagem, spa rural e terapias naturais.",
-      accent: "border-[#6D8EA0] text-[#A8C7D3]",
+      accent: "border-[#C9BE93] text-[#E7E1C8]",
       href: "/experiencias",
     },
     {
@@ -344,7 +344,7 @@ export const DEFAULT_SITE: SiteContent = {
   faq_items: [
     { question: "A Seravie Campo é uma hospedagem?", answer: "Não. A plataforma conecta visitantes, anfitriões, produtores, parceiros e entregadores dentro de uma experiência regional." },
     { question: "Quem pode anunciar?", answer: "Produtores rurais, pousadas, guias, restaurantes, artesãos, operadores locais e parceiros de experiências podem entrar pelo cadastro." },
-    { question: "Como os destinos aparecem na Seravie Campo?", answer: "A curadoria combina destinos selecionados pela Seravie com ofertas publicadas por produtores e parceiros locais, sempre conectadas ao turismo rural, à cultura e aos produtos regionais." },
+    { question: "Como os destinos aparecem na Seravie Campo?", answer: "Os destinos ganham forma a partir das ofertas publicadas por anfitriões, produtores e parceiros locais. A curadoria editorial entra para destacar regiões estratégicas e manter tudo alinhado ao turismo rural, à cultura e aos produtos regionais." },
   ],
   institutional_pages: [
     {
@@ -401,7 +401,7 @@ export const DEFAULT_SITE: SiteContent = {
   perfis: [
     { tag: "Viajante", nome: "Para quem visita", desc: "Descubra destinos, experiências, produtos locais e roteiros rurais em uma só jornada." },
     { tag: "Anfitrião", nome: "Para quem recebe", desc: "Apresente hospedagens, vivências, eventos e serviços para viajantes que valorizam o território." },
-    { tag: "Produtor", nome: "Para quem produz", desc: "Venda cestas, cafés, queijos, doces e artesanato diretamente a um público que busca origem." },
+    { tag: "Produtor", nome: "Para quem produz", desc: "Venda cestas, cafés, queijos, doces e artesanato para um público que busca origem, confiança e pagamento seguro." },
     { tag: "Parceiro local", nome: "Para quem cria experiências", desc: "Conduza roteiros, oficinas, degustações, trilhas e encontros culturais com agenda organizada." },
   ],
   steps_title: "Como a rede se conecta",
@@ -488,6 +488,20 @@ function normalizePanelContent(value: Partial<SiteContent["panel_content"]> | un
   };
 }
 
+function normalizeExperienceTracks(value: ExperienceTrack[] | undefined) {
+  const legacyCoolAccent = [
+    "border-[",
+    String.fromCharCode(35, 54, 68, 56, 69, 65, 48),
+    "] text-[",
+    String.fromCharCode(35, 65, 56, 67, 55, 68, 51),
+    "]",
+  ].join("");
+  return withArray(value, DEFAULT_SITE.experience_tracks).map((track) => ({
+    ...track,
+    accent: track.accent === legacyCoolAccent ? "border-[#C9BE93] text-[#E7E1C8]" : track.accent,
+  }));
+}
+
 export function destinationHref(destination: DestinationItem) {
   if (destination.href && destination.href !== "/experiencias") return destination.href;
   return `/destinos/${destination.slug || slugify(destination.name)}`;
@@ -528,7 +542,7 @@ function normalizeSiteContent(value: Partial<SiteContent> | undefined): SiteCont
     ecosystem: withArray(d.ecosystem, DEFAULT_SITE.ecosystem),
     destinations: normalizeDestinations(d.destinations),
     stay_types: withArray(d.stay_types, DEFAULT_SITE.stay_types),
-    experience_tracks: withArray(d.experience_tracks, DEFAULT_SITE.experience_tracks),
+    experience_tracks: normalizeExperienceTracks(d.experience_tracks),
     product_tags: withArray(d.product_tags, DEFAULT_SITE.product_tags),
     guide_links: withArray(d.guide_links, DEFAULT_SITE.guide_links),
     featured_items: withArray(d.featured_items, DEFAULT_SITE.featured_items),

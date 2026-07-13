@@ -92,7 +92,7 @@ export default async function DestinoPage({ params }: { params: Promise<{ slug: 
         </article>
 
         <aside className="rounded-lg border border-[#2D3326] bg-[#151A12] p-6">
-          <p className="text-xs uppercase tracking-[0.24em] text-[#A8C7D3]">Destaques</p>
+          <p className="text-xs uppercase tracking-[0.24em] text-[#C9BE93]">Destaques</p>
           <div className="mt-5 space-y-3">
             {(highlights.length ? highlights : site.stay_types.slice(0, 5)).map((item) => (
               <p key={item} className="rounded-lg border border-[#2D3326] bg-[#10140E] px-4 py-3 text-sm text-stone-300">{item}</p>
@@ -106,7 +106,7 @@ export default async function DestinoPage({ params }: { params: Promise<{ slug: 
           <div className="mx-auto max-w-7xl px-5 sm:px-6">
             <div className="grid gap-5 md:grid-cols-[0.8fr_1.2fr] md:items-end">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-[#A8C7D3]">Ofertas publicadas</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-[#C9BE93]">Ofertas publicadas</p>
                 <h2 className="mt-3 font-serif text-4xl text-forest-50">O que já está ativo neste destino</h2>
               </div>
               <p className="max-w-2xl text-sm leading-relaxed text-stone-400 md:justify-self-end">
@@ -175,13 +175,13 @@ function DestinationSection({ title, children }: { title: string; children: Reac
 
 function ExperienceCard({ experience }: { experience: DestinationExperience }) {
   return (
-    <Link href={`/experiencias/${experience.id}`} className="group overflow-hidden rounded-lg border border-[#293A34] bg-[#151F1B] transition hover:border-[#A8C7D3]/60">
+    <Link href={`/experiencias/${experience.id}`} className="group overflow-hidden rounded-lg border border-[#293A34] bg-[#151F1B] transition hover:border-[#C9BE93]/60">
       <div className="aspect-[16/10] overflow-hidden bg-campo-surface2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={experience.image} alt={experience.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
       </div>
       <div className="p-5">
-        <p className="text-xs uppercase tracking-[0.22em] text-[#A8C7D3]">{experience.category_label}</p>
+        <p className="text-xs uppercase tracking-[0.22em] text-[#C9BE93]">{experience.category_label}</p>
         <h4 className="mt-2 font-serif text-2xl text-forest-50">{experience.title}</h4>
         {experience.summary && <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-stone-400">{experience.summary}</p>}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">

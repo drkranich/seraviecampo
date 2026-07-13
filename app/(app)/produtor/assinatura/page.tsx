@@ -23,8 +23,8 @@ export default async function AssinaturaPage({
   const plans = await getPlansByRole(supabase, "produtor");
 
   const errMsg: Record<string, string> = {
-    stripe_off: "Pagamentos ainda não ativados pela plataforma.",
-    price_off: "Preço deste plano ainda não configurado.",
+    stripe_off: "Pagamento online temporariamente indisponível. Tente novamente em instantes ou acione o suporte.",
+    price_off: "Este plano precisa de um preço Stripe vinculado. Avise o suporte para ajustar.",
     plano_invalido: "Plano inválido.",
   };
 
@@ -33,7 +33,7 @@ export default async function AssinaturaPage({
       {ok && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Assinatura ativada! Bem-vindo ao próximo nível.</div>}
       {canceled && <div className="mb-4 rounded-lg border border-campo-border bg-campo-surface2 px-3 py-2 text-sm text-stone-400">Assinatura não concluída. Você pode tentar novamente quando quiser.</div>}
       {error && <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/40 px-3 py-2 text-sm text-red-300">{errMsg[error] ?? decodeURIComponent(error)}</div>}
-      {!enabled && <div className="mb-6 rounded-xl border border-campo-border bg-campo-surface2 px-4 py-3 text-sm text-stone-400">Os pagamentos estão em configuração pela plataforma. Você pode ver os planos abaixo; a assinatura é liberada assim que o Stripe for ativado.</div>}
+      {!enabled && <div className="mb-6 rounded-xl border border-campo-border bg-campo-surface2 px-4 py-3 text-sm text-stone-400">Pagamento online temporariamente indisponível. Os planos continuam visíveis; tente assinar novamente em instantes.</div>}
       {cancelado && <div className="mb-4 rounded-lg border border-forest-700 bg-forest-900/40 px-3 py-2 text-sm text-forest-200">Assinatura cancelada. Ativa até o fim do ciclo; sem cobrança no próximo mês.</div>}
 
       <SubscriptionStatus sub={sub} back="/produtor/assinatura" />

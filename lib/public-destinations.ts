@@ -201,7 +201,7 @@ function offerLabel(productCount: number, experienceCount: number, producerCount
 }
 
 function automaticDescription(name: string, label: string) {
-  return `Em ${name}, a Seravie Campo reúne ${label.toLowerCase()} ligados ao território, à cultura local e à produção regional.`;
+  return `Em ${name}, a Seravie Campo organiza uma vitrine viva com ${label.toLowerCase()} publicados por produtores e parceiros locais. Cada oferta ajuda o visitante a enxergar o destino pelo território, pelos sabores e pelas pessoas que recebem.`;
 }
 
 function automaticHighlights(productCount: number, experienceCount: number, producerCount: number) {
@@ -364,6 +364,22 @@ function manualDestination(destination: DestinationItem): PublicDestination {
   };
 }
 
+function destinationRank(destination: PublicDestination) {
+  return destination.listing_count > 0 ? 1 : 0;
+}
+
+function sortDestinations(destinations: PublicDestination[]) {
+  return destinations.sort((a, b) => {
+    const live = destinationRank(b) - destinationRank(a);
+    if (live) return live;
+    const listings = b.listing_count - a.listing_count;
+    if (listings) return listings;
+    const producers = b.producer_count - a.producer_count;
+    if (producers) return producers;
+    return a.name.localeCompare(b.name, "pt-BR");
+  });
+}
+
 function mergeDestinations(site: SiteContent, automatic: PublicDestination[]) {
   const merged = new Map<string, PublicDestination>();
 
@@ -396,7 +412,7 @@ function mergeDestinations(site: SiteContent, automatic: PublicDestination[]) {
     });
   }
 
-  return [...merged.values()];
+  return sortDestinations([...merged.values()]);
 }
 
 export async function getPublicDestinations(supabase: SupabaseClient, site: SiteContent): Promise<PublicDestination[]> {

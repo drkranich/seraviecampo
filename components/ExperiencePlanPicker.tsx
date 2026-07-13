@@ -52,7 +52,7 @@ export function ExperiencePlanPicker({
                     <input type="hidden" name="plan" value={p.id} />
                     <button disabled={!isFree && !enabled}
                       className="w-full rounded-lg bg-gold py-2.5 text-sm font-medium text-campo-bg transition hover:bg-gold-light disabled:cursor-not-allowed disabled:opacity-50">
-                      {isFree ? "Usar este plano" : enabled ? `Assinar ${p.name}` : "Pagamentos em configuração"}
+                      {isFree ? "Usar este plano" : enabled ? `Assinar ${p.name}` : "Pagamento online indisponível"}
                     </button>
                   </form>
                 )}
