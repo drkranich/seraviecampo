@@ -20,14 +20,37 @@ import {
   type EmailMarketingSegment,
   type EmailMarketingTemplate,
 } from "@/lib/email-marketing";
-import { marketingEmailProviderReady } from "@/lib/email-marketing-send";
-import { archiveTemplate, cancelQueuedCampaign, createCampaignDraft, duplicateTemplate, queueCampaign, saveTemplate, sendQueuedCampaign } from "./actions";
+import { marketingEmailProviderStatus } from "@/lib/email-marketing-send";
+import {
+  archiveTemplate,
+  cancelQueuedCampaign,
+  createCampaignDraft,
+  duplicateTemplate,
+  queueCampaign,
+  retryFailedCampaign,
+  saveTemplate,
+  scheduleCampaign,
+  sendQueuedCampaign,
+  sendTemplateTest,
+} from "./actions";
 
 const inputCls = "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-sm text-stone-100 outline-none transition focus:border-gold";
 const labelCls = "mb-1 block text-xs font-medium uppercase tracking-[0.14em] text-stone-500";
 
 type ProfileRow = { id: string; role: string; full_name: string | null; display_name: string | null; farm_name: string | null; city: string | null; state: string | null };
 type AdminEmailRow = { id: string; email: string };
+type EmailMarketingEvent = {
+  id: string;
+  campaign_id: string | null;
+  delivery_id: string | null;
+  subscriber_id: string | null;
+  recipient_user_id: string | null;
+  recipient_email: string;
+  event_type: string;
+  provider_message_id: string | null;
+  provider_payload: Record<string, unknown> | null;
+  created_at: string;
+};
 
 const emptyTemplate: EmailMarketingTemplate = {
   id: "",
@@ -60,7 +83,23 @@ const emptyTemplate: EmailMarketingTemplate = {
 export default async function EmailMarketingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ template?: string; error?: string; saved?: string; created?: string; archived?: string; campaign?: string; queued?: string; cancelled?: string; processed?: string; sent?: string; failed?: string }>;
+  searchParams: Promise<{
+    template?: string;
+    error?: string;
+    saved?: string;
+    created?: string;
+    archived?: string;
+    test?: string;
+    campaign?: string;
+    campaign_created?: string;
+    queued?: string;
+    scheduled?: string;
+    cancelled?: string;
+    processed?: string;
+    sent?: string;
+    failed?: string;
+    retried?: string;
+  }>;
 }) {
   const { profile, user } = await requireRole("super_admin");
   const sp = await searchParams;
@@ -73,6 +112,9 @@ export default async function EmailMarketingPage({
     subscribersResult,
     suppressionsResult,
     deliveriesResult,
+    eventsResult,
+    selectedDeliveriesResult,
+    selectedEventsResult,
     queuedDeliveriesResult,
     profilesResult,
     adminEmailsResult,
@@ -84,6 +126,13 @@ export default async function EmailMarketingPage({
     supabase.from("email_marketing_subscribers").select("id", { count: "exact", head: true }),
     supabase.from("email_marketing_suppressions").select("id", { count: "exact", head: true }),
     supabase.from("email_marketing_deliveries").select("*").order("created_at", { ascending: false }).limit(12),
+    supabase.from("email_marketing_events").select("*").order("created_at", { ascending: false }).limit(24),
+    sp.campaign
+      ? supabase.from("email_marketing_deliveries").select("*").eq("campaign_id", sp.campaign).order("created_at", { ascending: false }).limit(300)
+      : Promise.resolve({ data: [], error: null }),
+    sp.campaign
+      ? supabase.from("email_marketing_events").select("*").eq("campaign_id", sp.campaign).order("created_at", { ascending: false }).limit(80)
+      : Promise.resolve({ data: [], error: null }),
     supabase.from("email_marketing_deliveries").select("id", { count: "exact", head: true }).eq("status", "queued"),
     supabase.from("profiles").select("id, role, full_name, display_name, farm_name, city, state"),
     supabase.rpc("admin_emails"),
@@ -94,9 +143,20 @@ export default async function EmailMarketingPage({
   const campaigns = (campaignsResult.data ?? []) as EmailMarketingCampaign[];
   const segments = (segmentsResult.data ?? []) as EmailMarketingSegment[];
   const deliveries = (deliveriesResult.data ?? []) as EmailMarketingDelivery[];
+  const events = (eventsResult.data ?? []) as EmailMarketingEvent[];
+  const selectedDeliveries = (selectedDeliveriesResult.data ?? []) as EmailMarketingDelivery[];
+  const selectedEvents = (selectedEventsResult.data ?? []) as EmailMarketingEvent[];
   const profiles = (profilesResult.data ?? []) as ProfileRow[];
   const emails = (adminEmailsResult.data ?? []) as AdminEmailRow[];
-  const hasSchemaError = Boolean(templatesResult.error || campaignsResult.error || segmentsResult.error || deliveriesResult.error);
+  const hasSchemaError = Boolean(
+    templatesResult.error ||
+      campaignsResult.error ||
+      segmentsResult.error ||
+      deliveriesResult.error ||
+      eventsResult.error ||
+      selectedDeliveriesResult.error ||
+      selectedEventsResult.error
+  );
 
   const selected =
     sp.template === "new"
@@ -106,7 +166,11 @@ export default async function EmailMarketingPage({
   const activeTemplateId = selected?.id ?? "new";
   const publishedTemplates = templates.filter((item) => item.status === "published");
   const draftCampaigns = campaigns.filter((item) => item.status === "draft");
-  const providerReady = marketingEmailProviderReady();
+  const providerStatus = marketingEmailProviderStatus();
+  const providerReady = providerStatus.ready;
+  const selectedCampaign = (sp.campaign ? campaigns.find((item) => item.id === sp.campaign) : campaigns[0]) ?? null;
+  const campaignDeliveries = sp.campaign ? selectedDeliveries : selectedCampaign ? deliveries.filter((item) => item.campaign_id === selectedCampaign.id) : [];
+  const campaignEvents = sp.campaign ? selectedEvents : selectedCampaign ? events.filter((item) => item.campaign_id === selectedCampaign.id) : [];
   const emailById = new Map(emails.map((item) => [item.id, item.email]));
   const mailableProfiles = profiles.filter((item) => emailById.has(item.id));
   const roleCounts = new Map<string, number>();
@@ -130,8 +194,11 @@ export default async function EmailMarketingPage({
       {sp.saved && <Alert>Template salvo.</Alert>}
       {sp.created && <Alert>Novo template criado.</Alert>}
       {sp.archived && <Alert>Template arquivado.</Alert>}
-      {sp.campaign && <Alert>Campanha criada como rascunho.</Alert>}
+      {sp.test && <Alert>Email de teste enviado para o seu usuário.</Alert>}
+      {sp.campaign_created && <Alert>Campanha criada como rascunho.</Alert>}
       {sp.queued && <Alert>{Number(sp.queued) > 0 ? `${sp.queued} destinatários entraram na fila da campanha.` : "Fila revisada, sem novos destinatários."}</Alert>}
+      {sp.scheduled && <Alert>Campanha agendada. O cron só dispara quando chegar o horário escolhido.</Alert>}
+      {sp.retried && <Alert>{`${sp.retried} entregas com falha voltaram para a fila.`}</Alert>}
       {sp.cancelled && <Alert>Fila da campanha cancelada.</Alert>}
       {sp.processed && <Alert>{`${sp.processed} entregas processadas: ${sp.sent ?? 0} enviadas e ${sp.failed ?? 0} falhas.`}</Alert>}
 
@@ -158,7 +225,7 @@ export default async function EmailMarketingPage({
           <Stat label="Campanhas em rascunho" value={String(draftCampaigns.length)} />
           <Stat label="Entregas na fila" value={String(queuedDeliveriesResult.count ?? 0)} accent />
           <Stat label="Descadastros/bloqueios" value={String(suppressionsResult.count ?? 0)} />
-          <Stat label="Provedor de envio" value={providerReady ? "Ativo" : "Pendente"} accent={providerReady} />
+          <Stat label="Provedor de envio" value={providerStatus.label} accent={providerReady} hint={providerStatus.from ?? "Configure o provedor antes de enviar."} />
         </div>
       </section>
 
@@ -206,6 +273,9 @@ export default async function EmailMarketingPage({
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500">
                     <span>{Number(campaign.stats?.queued ?? 0)} na fila · {Number(campaign.stats?.sent ?? 0)} enviados · {Number(campaign.stats?.unsubscribed ?? 0)} descadastros</span>
                     <div className="flex flex-wrap gap-2">
+                      <Link href={`/admin/email-marketing?campaign=${campaign.id}`} className="rounded-lg border border-campo-border px-3 py-1.5 text-[0.72rem] font-medium text-stone-300 transition hover:border-gold/60">
+                        Ver dados
+                      </Link>
                       {["draft", "queued", "scheduled", "paused"].includes(campaign.status) && (
                         <form action={queueCampaign}>
                           <input type="hidden" name="id" value={campaign.id} />
@@ -241,6 +311,13 @@ export default async function EmailMarketingPage({
             </div>
           </section>
 
+          <CampaignInsights
+            campaign={selectedCampaign}
+            deliveries={campaignDeliveries}
+            events={campaignEvents}
+            providerReady={providerReady}
+          />
+
           <section className="mt-6 rounded-2xl border border-campo-border bg-campo-surface2/35 p-5">
             <h2 className="font-serif text-xl text-forest-100">Fila preparada</h2>
             <p className="mt-2 text-sm text-stone-500">Últimas entregas materializadas para auditoria antes do envio real.</p>
@@ -272,6 +349,10 @@ export default async function EmailMarketingPage({
               </div>
               {selected && (
                 <div className="flex flex-wrap gap-2">
+                  <form action={sendTemplateTest}>
+                    <input type="hidden" name="id" value={selected.id} />
+                    <button disabled={!providerReady} className="rounded-lg border border-gold/50 px-3 py-2 text-xs font-medium text-gold transition hover:bg-gold/10 disabled:cursor-not-allowed disabled:opacity-45">Enviar teste</button>
+                  </form>
                   <form action={duplicateTemplate}>
                     <input type="hidden" name="id" value={selected.id} />
                     <button className="rounded-lg border border-campo-border px-3 py-2 text-xs text-stone-200 transition hover:border-gold/60">Duplicar</button>
@@ -411,11 +492,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Stat({ label, value, accent, hint }: { label: string; value: string; accent?: boolean; hint?: string }) {
   return (
     <div className="rounded-2xl border border-campo-border bg-campo-surface2/45 p-4">
       <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{label}</p>
       <p className={`mt-2 font-serif text-2xl ${accent ? "text-gold" : "text-forest-100"}`}>{value}</p>
+      {hint && <p className="mt-1 truncate text-xs text-stone-500">{hint}</p>}
     </div>
   );
 }
@@ -425,6 +507,206 @@ function Audience({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-campo-border bg-campo-surface2/35 px-4 py-3">
       <p className="text-xs uppercase tracking-[0.14em] text-stone-500">{label}</p>
       <p className="mt-1 font-serif text-xl text-forest-100">{value}</p>
+    </div>
+  );
+}
+
+function countDeliveries(deliveries: EmailMarketingDelivery[], status: EmailMarketingDelivery["status"]) {
+  return deliveries.filter((delivery) => delivery.status === status).length;
+}
+
+function campaignNumber(campaign: EmailMarketingCampaign, key: string) {
+  return Number(campaign.stats?.[key] ?? 0);
+}
+
+function campaignMetrics(campaign: EmailMarketingCampaign, deliveries: EmailMarketingDelivery[]) {
+  const queued = Math.max(campaignNumber(campaign, "queued"), deliveries.length);
+  const sent = Math.max(campaignNumber(campaign, "sent"), countDeliveries(deliveries, "sent"));
+  const failed = Math.max(campaignNumber(campaign, "failed"), countDeliveries(deliveries, "failed"));
+  const opened = Math.max(campaignNumber(campaign, "opened"), deliveries.filter((delivery) => Boolean(delivery.opened_at)).length);
+  const clicked = Math.max(campaignNumber(campaign, "clicked"), deliveries.filter((delivery) => Boolean(delivery.clicked_at)).length);
+  const unsubscribed = Math.max(campaignNumber(campaign, "unsubscribed"), deliveries.filter((delivery) => Boolean(delivery.unsubscribed_at)).length);
+  return { queued, sent, failed, opened, clicked, unsubscribed };
+}
+
+function percent(value: number, total: number) {
+  if (!total) return "0%";
+  return `${Math.round((value / total) * 100)}%`;
+}
+
+function formatDateTime(value: string | null) {
+  if (!value) return "Sem data";
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+}
+
+function defaultScheduleInput() {
+  const date = new Date(Date.now() + 60 * 60 * 1000);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function eventLabel(type: string) {
+  const labels: Record<string, string> = {
+    queued: "Entrou na fila",
+    sent: "Enviado",
+    delivered: "Entregue",
+    opened: "Aberto",
+    clicked: "Clique",
+    bounced: "Bounce",
+    complained: "Reclamação",
+    unsubscribed: "Descadastro",
+    failed: "Falha",
+  };
+  return labels[type] ?? type;
+}
+
+function CampaignInsights({
+  campaign,
+  deliveries,
+  events,
+  providerReady,
+}: {
+  campaign: EmailMarketingCampaign | null;
+  deliveries: EmailMarketingDelivery[];
+  events: EmailMarketingEvent[];
+  providerReady: boolean;
+}) {
+  if (!campaign) {
+    return (
+      <section className="mt-6 rounded-2xl border border-campo-border bg-campo-surface2/35 p-5">
+        <h2 className="font-serif text-xl text-forest-100">Operação da campanha</h2>
+        <p className="mt-2 text-sm text-stone-500">Crie uma campanha a partir de um template para acompanhar fila, envios e eventos.</p>
+      </section>
+    );
+  }
+
+  const metrics = campaignMetrics(campaign, deliveries);
+  const failedDeliveries = deliveries.filter((delivery) => delivery.status === "failed");
+  const canQueue = ["draft", "queued", "scheduled", "paused"].includes(campaign.status);
+  const canSend = ["queued", "scheduled", "sending"].includes(campaign.status);
+  const canCancel = ["queued", "scheduled", "sending"].includes(campaign.status);
+
+  return (
+    <section className="mt-6 rounded-2xl border border-campo-border bg-campo-surface2/35 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Operação da campanha</p>
+          <h2 className="mt-1 truncate font-serif text-xl text-forest-100">{campaign.name}</h2>
+          <p className="mt-1 text-xs text-stone-500">
+            {CAMPAIGN_STATUS_LABEL[campaign.status]} · {campaign.scheduled_at ? `agendada para ${formatDateTime(campaign.scheduled_at)}` : `atualizada em ${formatDateTime(campaign.updated_at)}`}
+          </p>
+        </div>
+        <span className="rounded-full border border-gold/30 px-3 py-1 text-xs uppercase tracking-[0.12em] text-gold">
+          {CAMPAIGN_STATUS_LABEL[campaign.status]}
+        </span>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <MiniMetric label="Fila" value={String(metrics.queued)} detail={`${metrics.sent} enviados`} />
+        <MiniMetric label="Abertura" value={percent(metrics.opened, metrics.sent)} detail={`${metrics.opened} aberturas`} accent />
+        <MiniMetric label="Cliques" value={percent(metrics.clicked, metrics.sent)} detail={`${metrics.clicked} cliques`} />
+        <MiniMetric label="Falhas" value={String(metrics.failed)} detail={`${failedDeliveries.length} visíveis`} danger={metrics.failed > 0} />
+        <MiniMetric label="Descadastros" value={String(metrics.unsubscribed)} detail="por campanha" />
+        <MiniMetric label="Eventos" value={String(events.length)} detail="últimas interações" />
+      </div>
+
+      <div className="mt-5 space-y-2">
+        <Progress label="Envio" value={metrics.sent} total={metrics.queued} />
+        <Progress label="Engajamento" value={metrics.opened + metrics.clicked} total={Math.max(metrics.sent * 2, 1)} />
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        {canQueue && (
+          <form action={queueCampaign}>
+            <input type="hidden" name="id" value={campaign.id} />
+            <button className="rounded-lg border border-gold/45 px-3 py-2 text-xs font-medium text-gold transition hover:bg-gold/10">Montar fila</button>
+          </form>
+        )}
+        {canSend && (
+          <form action={sendQueuedCampaign}>
+            <input type="hidden" name="id" value={campaign.id} />
+            <button disabled={!providerReady} className="rounded-lg border border-forest-600 px-3 py-2 text-xs font-medium text-forest-100 transition hover:border-gold/60 disabled:cursor-not-allowed disabled:opacity-45">
+              Enviar agora
+            </button>
+          </form>
+        )}
+        <form action={retryFailedCampaign}>
+          <input type="hidden" name="id" value={campaign.id} />
+          <button disabled={failedDeliveries.length === 0} className="rounded-lg border border-campo-border px-3 py-2 text-xs font-medium text-stone-200 transition hover:border-gold/60 disabled:cursor-not-allowed disabled:opacity-40">
+            Reenfileirar falhas
+          </button>
+        </form>
+        {canCancel && (
+          <form action={cancelQueuedCampaign}>
+            <input type="hidden" name="id" value={campaign.id} />
+            <button className="rounded-lg border border-red-900/50 px-3 py-2 text-xs font-medium text-red-300 transition hover:border-red-500/70">Cancelar fila</button>
+          </form>
+        )}
+      </div>
+
+      <form action={scheduleCampaign} className="mt-5 grid gap-3 rounded-xl border border-campo-border bg-campo-bg/35 p-3 sm:grid-cols-[1fr_auto]">
+        <input type="hidden" name="id" value={campaign.id} />
+        <Field label="Agendar envio">
+          <input type="datetime-local" name="scheduled_at" defaultValue={defaultScheduleInput()} className={inputCls} />
+        </Field>
+        <div className="flex items-end">
+          <button disabled={!canQueue} className="w-full rounded-lg bg-gold px-4 py-2.5 text-sm font-medium text-campo-bg transition hover:bg-gold-light disabled:cursor-not-allowed disabled:opacity-45">
+            Agendar
+          </button>
+        </div>
+      </form>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div>
+          <h3 className="text-xs uppercase tracking-[0.16em] text-stone-500">Eventos recentes</h3>
+          <div className="mt-3 space-y-2">
+            {events.slice(0, 6).map((event) => (
+              <div key={event.id} className="rounded-lg border border-campo-border bg-campo-bg/45 px-3 py-2">
+                <p className="text-sm text-forest-100">{eventLabel(event.event_type)}</p>
+                <p className="mt-1 truncate text-xs text-stone-500">{event.recipient_email} · {formatDateTime(event.created_at)}</p>
+              </div>
+            ))}
+            {events.length === 0 && <p className="py-2 text-sm text-stone-500">Ainda não há eventos para esta campanha.</p>}
+          </div>
+        </div>
+        <div>
+          <h3 className="text-xs uppercase tracking-[0.16em] text-stone-500">Falhas recentes</h3>
+          <div className="mt-3 space-y-2">
+            {failedDeliveries.slice(0, 6).map((delivery) => (
+              <div key={delivery.id} className="rounded-lg border border-red-900/40 bg-red-950/20 px-3 py-2">
+                <p className="truncate text-sm text-red-200">{delivery.recipient_email}</p>
+                <p className="mt-1 line-clamp-2 text-xs text-red-200/70">{delivery.error_message || "Falha sem mensagem do provedor."}</p>
+              </div>
+            ))}
+            {failedDeliveries.length === 0 && <p className="py-2 text-sm text-stone-500">Nenhuma falha registrada nessa campanha.</p>}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MiniMetric({ label, value, detail, accent, danger }: { label: string; value: string; detail: string; accent?: boolean; danger?: boolean }) {
+  return (
+    <div className="rounded-xl border border-campo-border bg-campo-bg/35 px-3 py-3">
+      <p className="text-xs uppercase tracking-[0.14em] text-stone-500">{label}</p>
+      <p className={`mt-1 font-serif text-2xl ${danger ? "text-red-300" : accent ? "text-gold" : "text-forest-100"}`}>{value}</p>
+      <p className="mt-1 text-xs text-stone-500">{detail}</p>
+    </div>
+  );
+}
+
+function Progress({ label, value, total }: { label: string; value: number; total: number }) {
+  const pct = total > 0 ? Math.min(100, Math.round((value / total) * 100)) : 0;
+  return (
+    <div>
+      <div className="mb-1 flex items-center justify-between text-xs text-stone-500">
+        <span>{label}</span>
+        <span>{pct}%</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-campo-bg">
+        <div className="h-full rounded-full bg-gold" style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }

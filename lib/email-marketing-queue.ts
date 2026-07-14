@@ -14,6 +14,7 @@ type CampaignRow = {
   status: string;
   subject: string;
   reply_to_email: string | null;
+  scheduled_at: string | null;
   content_snapshot: Record<string, unknown>;
 };
 
@@ -27,7 +28,7 @@ export type ProcessEmailMarketingQueueResult = {
   error?: string;
 };
 
-export async function processEmailMarketingQueue(options: { limit?: number; campaignId?: string | null } = {}): Promise<ProcessEmailMarketingQueueResult> {
+export async function processEmailMarketingQueue(options: { limit?: number; campaignId?: string | null; force?: boolean } = {}): Promise<ProcessEmailMarketingQueueResult> {
   const db = createServiceClient();
   if (!db) {
     return { ok: false, status: 500, providerConfigured: false, processed: 0, sent: 0, failed: 0, error: "Service role ausente." };
@@ -68,7 +69,7 @@ export async function processEmailMarketingQueue(options: { limit?: number; camp
   const campaignIds = Array.from(new Set(rows.map((row) => row.campaign_id)));
   const { data: campaigns, error: campaignsError } = await db
     .from("email_marketing_campaigns")
-    .select("id, status, subject, reply_to_email, content_snapshot")
+    .select("id, status, subject, reply_to_email, scheduled_at, content_snapshot")
     .in("id", campaignIds);
   if (campaignsError) {
     return { ok: false, status: 500, providerConfigured: true, processed: 0, sent: 0, failed: 0, error: campaignsError.message };
@@ -77,13 +78,17 @@ export async function processEmailMarketingQueue(options: { limit?: number; camp
   const campaignById = new Map(((campaigns ?? []) as CampaignRow[]).map((campaign) => [campaign.id, campaign]));
   let sent = 0;
   let failed = 0;
+  let processed = 0;
   const touchedCampaignIds = new Set<string>();
+  const now = Date.now();
 
   for (const delivery of rows) {
     const campaign = campaignById.get(delivery.campaign_id);
     if (!campaign || !["queued", "scheduled", "sending"].includes(campaign.status)) continue;
+    if (!options.force && campaign.status === "scheduled" && campaign.scheduled_at && Date.parse(campaign.scheduled_at) > now) continue;
 
     touchedCampaignIds.add(campaign.id);
+    processed += 1;
     await db
       .from("email_marketing_deliveries")
       .update({ status: "sending", sending_at: new Date().toISOString(), attempts: delivery.attempts + 1 })
@@ -150,5 +155,5 @@ export async function processEmailMarketingQueue(options: { limit?: number; camp
       .eq("id", campaignId);
   }
 
-  return { ok: true, status: 200, providerConfigured: true, processed: rows.length, sent, failed };
+  return { ok: true, status: 200, providerConfigured: true, processed, sent, failed };
 }

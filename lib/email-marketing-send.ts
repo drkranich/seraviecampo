@@ -17,6 +17,13 @@ export type MarketingEmailSendResult = {
   payload?: Record<string, unknown>;
 };
 
+export type MarketingEmailProviderStatus = {
+  ready: boolean;
+  provider: "cloudflare-email-service" | "resend" | "none";
+  label: string;
+  from: string | null;
+};
+
 function cloudflareConfig() {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID?.trim();
   const token = process.env.CLOUDFLARE_EMAIL_API_TOKEN?.trim();
@@ -42,6 +49,35 @@ function formattedFrom(from: string, fromName: string) {
 
 export function marketingEmailProviderReady() {
   return Boolean(cloudflareConfig() || resendConfig());
+}
+
+export function marketingEmailProviderStatus(): MarketingEmailProviderStatus {
+  const cloudflare = cloudflareConfig();
+  if (cloudflare) {
+    return {
+      ready: true,
+      provider: "cloudflare-email-service",
+      label: "Cloudflare Email Service",
+      from: formattedFrom(cloudflare.from, cloudflare.fromName),
+    };
+  }
+
+  const resend = resendConfig();
+  if (resend) {
+    return {
+      ready: true,
+      provider: "resend",
+      label: "Resend",
+      from: formattedFrom(resend.from, resend.fromName),
+    };
+  }
+
+  return {
+    ready: false,
+    provider: "none",
+    label: "Pendente",
+    from: null,
+  };
 }
 
 export async function sendMarketingEmail(message: MarketingEmailMessage): Promise<MarketingEmailSendResult> {

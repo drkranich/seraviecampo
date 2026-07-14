@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/guard";
 import { processEmailMarketingQueue } from "@/lib/email-marketing-queue";
+import { sendMarketingEmail } from "@/lib/email-marketing-send";
 import { createClient } from "@/lib/supabase/server";
 import {
   EMAIL_AUDIENCE_OPTIONS,
@@ -27,6 +28,20 @@ function fail(message: string): never {
 
 function clean(value: FormDataEntryValue | null) {
   return String(value ?? "").trim();
+}
+
+function marketingPage(params: Record<string, string | number | null | undefined>) {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== null && value !== undefined && value !== "") search.set(key, String(value));
+  }
+  return `/admin/email-marketing?${search.toString()}`;
+}
+
+function parseBrasiliaDateTime(value: string) {
+  const normalized = value.length === 16 ? `${value}:00-03:00` : value;
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 function validValue(value: string, options: Array<{ value: string }>, fallback: string) {
@@ -291,6 +306,37 @@ export async function archiveTemplate(formData: FormData) {
   redirect("/admin/email-marketing?archived=1");
 }
 
+export async function sendTemplateTest(formData: FormData) {
+  const { user, supabase } = await adminClient();
+  const id = clean(formData.get("id"));
+  if (!id) fail("Template inválido.");
+  if (!user.email) fail("Seu usuário não tem email para receber o teste.");
+
+  const { data, error } = await supabase
+    .from("email_marketing_templates")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error || !data) fail(error?.message || "Template não encontrado.");
+
+  const template = data as EmailMarketingTemplate;
+  const unsubscribeUrl = "https://seraviecampo.com";
+  const result = await sendMarketingEmail({
+    to: user.email,
+    toName: user.user_metadata?.full_name || user.email,
+    subject: `[Teste] ${template.subject}`,
+    html: renderEmailHtml(template).replaceAll("{{unsubscribe_url}}", unsubscribeUrl),
+    text: templateToPlainText(template).replaceAll("{{unsubscribe_url}}", unsubscribeUrl),
+    replyTo: null,
+    unsubscribeUrl,
+  });
+
+  if (!result.ok) fail(result.error || "Não foi possível enviar o teste do template.");
+
+  revalidatePath("/admin/email-marketing");
+  redirect(marketingPage({ template: id, test: 1 }));
+}
+
 export async function createCampaignDraft(formData: FormData) {
   const { user, supabase } = await adminClient();
   const templateId = clean(formData.get("id"));
@@ -323,7 +369,7 @@ export async function createCampaignDraft(formData: FormData) {
     .single();
   if (insertError) fail(insertError.message);
   revalidatePath("/admin/email-marketing");
-  redirect(`/admin/email-marketing?template=${template.id}&campaign=${campaign.id}`);
+  redirect(marketingPage({ template: template.id, campaign: campaign.id, campaign_created: 1 }));
 }
 
 export async function queueCampaign(formData: FormData) {
@@ -505,9 +551,71 @@ export async function sendQueuedCampaign(formData: FormData) {
   const campaignId = clean(formData.get("id"));
   if (!campaignId) fail("Campanha inválida.");
 
-  const result = await processEmailMarketingQueue({ campaignId, limit: 25 });
+  const result = await processEmailMarketingQueue({ campaignId, limit: 25, force: true });
   if (!result.ok) fail(result.error || "Não foi possível processar a fila da campanha.");
 
   revalidatePath("/admin/email-marketing");
   redirect(`/admin/email-marketing?campaign=${campaignId}&processed=${result.processed}&sent=${result.sent}&failed=${result.failed}`);
+}
+
+export async function scheduleCampaign(formData: FormData) {
+  const { user, supabase } = await adminClient();
+  const campaignId = clean(formData.get("id"));
+  const scheduledAtInput = clean(formData.get("scheduled_at"));
+  if (!campaignId) fail("Campanha inválida.");
+  if (!scheduledAtInput) fail("Informe uma data e horário para agendar.");
+
+  const scheduledAt = parseBrasiliaDateTime(scheduledAtInput);
+  if (!scheduledAt) fail("Data de agendamento inválida.");
+  if (scheduledAt.getTime() <= Date.now()) fail("Escolha um horário futuro para agendar a campanha.");
+
+  const { error } = await supabase
+    .from("email_marketing_campaigns")
+    .update({
+      status: "scheduled",
+      scheduled_at: scheduledAt.toISOString(),
+      updated_by: user.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", campaignId)
+    .in("status", ["draft", "queued", "scheduled", "paused"]);
+  if (error) fail(error.message);
+
+  revalidatePath("/admin/email-marketing");
+  redirect(marketingPage({ campaign: campaignId, scheduled: 1 }));
+}
+
+export async function retryFailedCampaign(formData: FormData) {
+  const { user, supabase } = await adminClient();
+  const campaignId = clean(formData.get("id"));
+  if (!campaignId) fail("Campanha inválida.");
+
+  const { data, error } = await supabase
+    .from("email_marketing_deliveries")
+    .update({
+      status: "queued",
+      sending_at: null,
+      error_message: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("campaign_id", campaignId)
+    .eq("status", "failed")
+    .select("id");
+  if (error) fail(error.message);
+
+  const retried = data?.length ?? 0;
+  if (retried === 0) fail("Nenhuma entrega com falha foi encontrada nesta campanha.");
+
+  const { error: campaignError } = await supabase
+    .from("email_marketing_campaigns")
+    .update({
+      status: "queued",
+      updated_by: user.id,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", campaignId);
+  if (campaignError) fail(campaignError.message);
+
+  revalidatePath("/admin/email-marketing");
+  redirect(marketingPage({ campaign: campaignId, retried }));
 }
