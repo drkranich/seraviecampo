@@ -6,6 +6,7 @@ import { GlassSelect } from "@/components/GlassSelect";
 import { ImageUpload } from "@/components/ImageUpload";
 import {
   CAMPAIGN_STATUS_LABEL,
+  DELIVERY_STATUS_LABEL,
   EMAIL_AUDIENCE_OPTIONS,
   EMAIL_CATEGORY_OPTIONS,
   EMAIL_STATUS_OPTIONS,
@@ -15,10 +16,12 @@ import {
   cleanTemplateBlocks,
   renderEmailHtml,
   type EmailMarketingCampaign,
+  type EmailMarketingDelivery,
   type EmailMarketingSegment,
   type EmailMarketingTemplate,
 } from "@/lib/email-marketing";
-import { archiveTemplate, createCampaignDraft, duplicateTemplate, saveTemplate } from "./actions";
+import { marketingEmailProviderReady } from "@/lib/email-marketing-send";
+import { archiveTemplate, cancelQueuedCampaign, createCampaignDraft, duplicateTemplate, queueCampaign, saveTemplate, sendQueuedCampaign } from "./actions";
 
 const inputCls = "w-full rounded-lg border border-campo-border bg-campo-bg px-3 py-2 text-sm text-stone-100 outline-none transition focus:border-gold";
 const labelCls = "mb-1 block text-xs font-medium uppercase tracking-[0.14em] text-stone-500";
@@ -43,10 +46,10 @@ const emptyTemplate: EmailMarketingTemplate = {
   image_url: null,
   palette: {},
   blocks: [
-    { title: "Origem e curadoria", text: "Apresente a historia, o destino ou a oferta com linguagem direta e acolhedora." },
-    { title: "Proximo passo", text: "Explique o que a pessoa pode fazer agora dentro da Seravie Campo." },
+    { title: "Origem e curadoria", text: "Apresente a história, o destino ou a oferta com linguagem direta e acolhedora." },
+    { title: "Próximo passo", text: "Explique o que a pessoa pode fazer agora dentro da Seravie Campo." },
   ],
-  footer_note: "Voce recebeu este email por interagir com a Seravie Campo.",
+  footer_note: "Você recebeu este email por interagir com a Seravie Campo.",
   html_content: "",
   plain_text: "",
   is_system: false,
@@ -57,7 +60,7 @@ const emptyTemplate: EmailMarketingTemplate = {
 export default async function EmailMarketingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ template?: string; error?: string; saved?: string; created?: string; archived?: string; campaign?: string }>;
+  searchParams: Promise<{ template?: string; error?: string; saved?: string; created?: string; archived?: string; campaign?: string; queued?: string; cancelled?: string; processed?: string; sent?: string; failed?: string }>;
 }) {
   const { profile, user } = await requireRole("super_admin");
   const sp = await searchParams;
@@ -69,6 +72,8 @@ export default async function EmailMarketingPage({
     segmentsResult,
     subscribersResult,
     suppressionsResult,
+    deliveriesResult,
+    queuedDeliveriesResult,
     profilesResult,
     adminEmailsResult,
     leadsResult,
@@ -78,6 +83,8 @@ export default async function EmailMarketingPage({
     supabase.from("email_marketing_segments").select("*").eq("active", true).order("name", { ascending: true }),
     supabase.from("email_marketing_subscribers").select("id", { count: "exact", head: true }),
     supabase.from("email_marketing_suppressions").select("id", { count: "exact", head: true }),
+    supabase.from("email_marketing_deliveries").select("*").order("created_at", { ascending: false }).limit(12),
+    supabase.from("email_marketing_deliveries").select("id", { count: "exact", head: true }).eq("status", "queued"),
     supabase.from("profiles").select("id, role, full_name, display_name, farm_name, city, state"),
     supabase.rpc("admin_emails"),
     supabase.from("public_support_threads").select("id", { count: "exact", head: true }).not("visitor_email", "is", null),
@@ -86,9 +93,10 @@ export default async function EmailMarketingPage({
   const templates = (templatesResult.data ?? []) as EmailMarketingTemplate[];
   const campaigns = (campaignsResult.data ?? []) as EmailMarketingCampaign[];
   const segments = (segmentsResult.data ?? []) as EmailMarketingSegment[];
+  const deliveries = (deliveriesResult.data ?? []) as EmailMarketingDelivery[];
   const profiles = (profilesResult.data ?? []) as ProfileRow[];
   const emails = (adminEmailsResult.data ?? []) as AdminEmailRow[];
-  const hasSchemaError = Boolean(templatesResult.error || campaignsResult.error || segmentsResult.error);
+  const hasSchemaError = Boolean(templatesResult.error || campaignsResult.error || segmentsResult.error || deliveriesResult.error);
 
   const selected =
     sp.template === "new"
@@ -98,6 +106,7 @@ export default async function EmailMarketingPage({
   const activeTemplateId = selected?.id ?? "new";
   const publishedTemplates = templates.filter((item) => item.status === "published");
   const draftCampaigns = campaigns.filter((item) => item.status === "draft");
+  const providerReady = marketingEmailProviderReady();
   const emailById = new Map(emails.map((item) => [item.id, item.email]));
   const mailableProfiles = profiles.filter((item) => emailById.has(item.id));
   const roleCounts = new Map<string, number>();
@@ -114,7 +123,7 @@ export default async function EmailMarketingPage({
     >
       {hasSchemaError && (
         <div className="mb-5 rounded-xl border border-red-900/50 bg-red-950/40 px-4 py-3 text-sm text-red-200">
-          A base de email marketing ainda nao respondeu. Aplique a migration mais recente do Supabase antes de usar este modulo.
+          A base de email marketing ainda não respondeu. Aplique a migration mais recente do Supabase antes de usar este módulo.
         </div>
       )}
       {sp.error && <Alert tone="error">{decodeURIComponent(sp.error)}</Alert>}
@@ -122,13 +131,16 @@ export default async function EmailMarketingPage({
       {sp.created && <Alert>Novo template criado.</Alert>}
       {sp.archived && <Alert>Template arquivado.</Alert>}
       {sp.campaign && <Alert>Campanha criada como rascunho.</Alert>}
+      {sp.queued && <Alert>{Number(sp.queued) > 0 ? `${sp.queued} destinatários entraram na fila da campanha.` : "Fila revisada, sem novos destinatários."}</Alert>}
+      {sp.cancelled && <Alert>Fila da campanha cancelada.</Alert>}
+      {sp.processed && <Alert>{`${sp.processed} entregas processadas: ${sp.sent ?? 0} enviadas e ${sp.failed ?? 0} falhas.`}</Alert>}
 
       <section className="mb-6 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
         <div className="glass rounded-2xl border border-campo-border p-6">
           <p className="text-xs uppercase tracking-[0.22em] text-gold">Super admin</p>
           <h2 className="mt-2 max-w-2xl font-serif text-3xl text-forest-100">Campanhas com a voz e o visual da Seravie Campo.</h2>
           <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-400">
-            Crie modelos prontos para clientes, produtores, anfitrioes, entregadores e leads do site publico. Os emails usam uma versao segura do glassmorphism da marca, com unsubscribe e texto puro preparados para entrega.
+            Crie modelos prontos para clientes, produtores, anfitriões, entregadores e leads do site público. Os emails usam uma versão segura do glassmorphism da marca, com descadastro e texto puro preparados para entrega.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <Link href="/admin/email-marketing?template=new" className="rounded-lg bg-gold px-4 py-2 text-sm font-medium text-campo-bg transition hover:bg-gold-light">
@@ -144,14 +156,16 @@ export default async function EmailMarketingPage({
           <Stat label="Templates" value={String(templates.length)} />
           <Stat label="Prontos para usar" value={String(publishedTemplates.length)} accent />
           <Stat label="Campanhas em rascunho" value={String(draftCampaigns.length)} />
+          <Stat label="Entregas na fila" value={String(queuedDeliveriesResult.count ?? 0)} accent />
           <Stat label="Descadastros/bloqueios" value={String(suppressionsResult.count ?? 0)} />
+          <Stat label="Provedor de envio" value={providerReady ? "Ativo" : "Pendente"} accent={providerReady} />
         </div>
       </section>
 
       <section className="mb-6 grid gap-3 md:grid-cols-5">
         <Audience label="Clientes" value={String(roleCounts.get("cliente") ?? 0)} />
         <Audience label="Produtores" value={String(roleCounts.get("produtor") ?? 0)} />
-        <Audience label="Anfitrioes" value={String(roleCounts.get("parceiro") ?? 0)} />
+        <Audience label="Anfitriões" value={String(roleCounts.get("parceiro") ?? 0)} />
         <Audience label="Entregadores" value={String(roleCounts.get("entregador") ?? 0)} />
         <Audience label="Leads do site" value={String(leadsCount)} />
       </section>
@@ -179,7 +193,7 @@ export default async function EmailMarketingPage({
             <h2 className="font-serif text-xl text-forest-100">Campanhas recentes</h2>
             <div className="mt-4 space-y-2">
               {campaigns.map((campaign) => (
-                <div key={campaign.id} className="rounded-lg border border-campo-border bg-campo-bg/45 px-3 py-2">
+                <div key={campaign.id} className="rounded-lg border border-campo-border bg-campo-bg/45 px-3 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm text-forest-100">{campaign.name}</p>
@@ -189,9 +203,62 @@ export default async function EmailMarketingPage({
                       {CAMPAIGN_STATUS_LABEL[campaign.status]}
                     </span>
                   </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-stone-500">
+                    <span>{Number(campaign.stats?.queued ?? 0)} na fila · {Number(campaign.stats?.sent ?? 0)} enviados · {Number(campaign.stats?.unsubscribed ?? 0)} descadastros</span>
+                    <div className="flex flex-wrap gap-2">
+                      {["draft", "queued", "scheduled", "paused"].includes(campaign.status) && (
+                        <form action={queueCampaign}>
+                          <input type="hidden" name="id" value={campaign.id} />
+                          <button className="rounded-lg border border-gold/45 px-3 py-1.5 text-[0.72rem] font-medium text-gold transition hover:bg-gold/10">
+                            Montar fila
+                          </button>
+                        </form>
+                      )}
+                      {campaign.status === "queued" && (
+                        <form action={sendQueuedCampaign}>
+                          <input type="hidden" name="id" value={campaign.id} />
+                          <button
+                            disabled={!providerReady}
+                            className="rounded-lg border border-forest-600 px-3 py-1.5 text-[0.72rem] font-medium text-forest-100 transition hover:border-gold/60 disabled:cursor-not-allowed disabled:opacity-45"
+                          >
+                            Enviar agora
+                          </button>
+                        </form>
+                      )}
+                      {campaign.status === "queued" && (
+                        <form action={cancelQueuedCampaign}>
+                          <input type="hidden" name="id" value={campaign.id} />
+                          <button className="rounded-lg border border-red-900/50 px-3 py-1.5 text-[0.72rem] font-medium text-red-300 transition hover:border-red-500/70">
+                            Cancelar fila
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </div>
                 </div>
               ))}
               {campaigns.length === 0 && <p className="py-3 text-sm text-stone-500">Nenhuma campanha em rascunho ainda.</p>}
+            </div>
+          </section>
+
+          <section className="mt-6 rounded-2xl border border-campo-border bg-campo-surface2/35 p-5">
+            <h2 className="font-serif text-xl text-forest-100">Fila preparada</h2>
+            <p className="mt-2 text-sm text-stone-500">Últimas entregas materializadas para auditoria antes do envio real.</p>
+            <div className="mt-4 space-y-2">
+              {deliveries.map((delivery) => (
+                <div key={delivery.id} className="rounded-lg border border-campo-border bg-campo-bg/45 px-3 py-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-forest-100">{delivery.recipient_name || delivery.recipient_email}</p>
+                      <p className="truncate text-xs text-stone-500">{delivery.recipient_email}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-gold/30 px-2 py-0.5 text-[0.65rem] uppercase tracking-[0.12em] text-gold">
+                      {DELIVERY_STATUS_LABEL[delivery.status]}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {deliveries.length === 0 && <p className="py-3 text-sm text-stone-500">Nenhuma entrega entrou na fila ainda.</p>}
             </div>
           </section>
         </section>
@@ -234,12 +301,12 @@ export default async function EmailMarketingPage({
                 </Field>
               </div>
 
-              <Field label="Descricao interna">
+              <Field label="Descrição interna">
                 <textarea name="description" defaultValue={template.description} rows={2} className={inputCls} placeholder="Quando este template deve ser usado." />
               </Field>
 
               <fieldset className="rounded-xl border border-campo-border bg-campo-bg/35 p-4">
-                <legend className="px-1 text-xs uppercase tracking-[0.14em] text-stone-500">Publico</legend>
+                <legend className="px-1 text-xs uppercase tracking-[0.14em] text-stone-500">Público</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {EMAIL_AUDIENCE_OPTIONS.map((option) => (
                     <label key={option.value} className="flex items-center gap-2 rounded-lg border border-campo-border bg-campo-surface/55 px-3 py-2 text-sm text-stone-300">
@@ -252,7 +319,7 @@ export default async function EmailMarketingPage({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Assunto">
-                  <input name="subject" defaultValue={template.subject} className={inputCls} placeholder="Seu proximo destino no campo" />
+                  <input name="subject" defaultValue={template.subject} className={inputCls} placeholder="Seu próximo destino no campo" />
                 </Field>
                 <Field label="Preheader">
                   <input name="preheader" defaultValue={template.preheader} className={inputCls} placeholder="Texto curto que aparece na caixa de entrada." />
@@ -264,10 +331,10 @@ export default async function EmailMarketingPage({
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Titulo principal">
-                  <input name="hero_title" defaultValue={template.hero_title} className={inputCls} placeholder="O campo mudou desde sua ultima visita" />
+                <Field label="Título principal">
+                  <input name="hero_title" defaultValue={template.hero_title} className={inputCls} placeholder="O campo mudou desde sua última visita" />
                 </Field>
-                <Field label="Botao">
+                <Field label="Botão">
                   <input name="cta_label" defaultValue={template.cta_label} className={inputCls} placeholder="Ver novidades" />
                 </Field>
               </div>
@@ -276,21 +343,21 @@ export default async function EmailMarketingPage({
                 <textarea name="hero_body" defaultValue={template.hero_body} rows={4} className={inputCls} />
               </Field>
 
-              <Field label="Link do botao">
+              <Field label="Link do botão">
                 <input name="cta_url" defaultValue={template.cta_url} className={inputCls} placeholder="https://seraviecampo.com/experiencias" />
               </Field>
 
               <Field label="Blocos do email">
                 <textarea name="blocks_text" defaultValue={blocksToEditableText(template.blocks)} rows={10} className={`${inputCls} font-mono text-xs leading-relaxed`} />
-                <p className="mt-2 text-xs text-stone-500">Use uma linha com o titulo, depois o texto. Separe blocos com uma linha contendo apenas ---.</p>
+                <p className="mt-2 text-xs text-stone-500">Use uma linha com o título, depois o texto. Separe blocos com uma linha contendo apenas ---.</p>
               </Field>
 
-              <Field label="Rodape legal">
+              <Field label="Rodapé legal">
                 <textarea name="footer_note" defaultValue={template.footer_note} rows={3} className={inputCls} />
               </Field>
 
               <div className="flex flex-wrap items-center justify-between gap-3 border-t border-campo-border pt-4">
-                <p className="text-xs text-stone-500">O HTML salvo inclui link de descadastro por variavel <code className="text-gold">{"{{unsubscribe_url}}"}</code>.</p>
+                <p className="text-xs text-stone-500">O HTML salvo inclui link de descadastro por variável <code className="text-gold">{"{{unsubscribe_url}}"}</code>.</p>
                 <button className="rounded-lg bg-gold px-5 py-2.5 text-sm font-medium text-campo-bg transition hover:bg-gold-light">Salvar template</button>
               </div>
             </form>
@@ -300,7 +367,7 @@ export default async function EmailMarketingPage({
             <section className="rounded-2xl border border-campo-border bg-campo-surface2/35 p-5">
               <h2 className="font-serif text-xl text-forest-100">Criar campanha</h2>
               <p className="mt-2 text-sm leading-relaxed text-stone-400">
-                A campanha nasce como rascunho com o snapshot do template selecionado. O disparo fica separado para preservar revisao, segmentacao e descadastro.
+                A campanha nasce como rascunho com o snapshot do template selecionado. Depois, use "Montar fila" em campanhas recentes para materializar destinatários, descadastros e tokens antes do envio real.
               </p>
               <form action={createCampaignDraft} className="mt-4 space-y-3">
                 <input type="hidden" name="id" value={selected?.id ?? ""} />
@@ -410,7 +477,7 @@ function EmailPreview({ template }: { template: EmailMarketingTemplate }) {
         )}
         <div className="bg-gradient-to-b from-[#1F2318]/95 to-[#191C13]/95 p-5">
           <p className="text-xs uppercase tracking-[0.16em] text-gold">{template.subject || "Assunto do email"}</p>
-          <h3 className="mt-3 font-serif text-3xl leading-tight text-forest-100">{template.hero_title || "Titulo principal do email"}</h3>
+          <h3 className="mt-3 font-serif text-3xl leading-tight text-forest-100">{template.hero_title || "Título principal do email"}</h3>
           <p className="mt-3 text-sm leading-relaxed text-cream">{template.hero_body || template.preheader || "Texto principal da campanha."}</p>
         </div>
         <div className="space-y-3 p-4">
@@ -422,10 +489,10 @@ function EmailPreview({ template }: { template: EmailMarketingTemplate }) {
           ))}
         </div>
         <div className="px-4 pb-5">
-          <span className="inline-block rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-campo-bg">{template.cta_label || "Botao da campanha"}</span>
+          <span className="inline-block rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-campo-bg">{template.cta_label || "Botão da campanha"}</span>
         </div>
         <div className="border-t border-gold/15 px-5 py-4">
-          <p className="text-xs leading-relaxed text-stone-500">{template.footer_note || "Rodape legal e descadastro."}</p>
+          <p className="text-xs leading-relaxed text-stone-500">{template.footer_note || "Rodapé legal e descadastro."}</p>
         </div>
       </div>
 

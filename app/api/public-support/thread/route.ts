@@ -58,13 +58,13 @@ export async function POST(request: Request) {
     .select("id")
     .single();
 
-  if (threadError || !thread) return NextResponse.json({ error: "Nao foi possivel iniciar a conversa." }, { status: 500 });
+  if (threadError || !thread) return NextResponse.json({ error: "Não foi possível iniciar a conversa." }, { status: 500 });
 
   const { error: messageError } = await db
     .from("public_support_messages")
     .insert({ thread_id: thread.id, sender: "visitor", body: message });
 
-  if (messageError) return NextResponse.json({ error: "Nao foi possivel enviar a mensagem." }, { status: 500 });
+  if (messageError) return NextResponse.json({ error: "Não foi possível enviar a mensagem." }, { status: 500 });
 
   return NextResponse.json({ threadId: thread.id, token });
 }

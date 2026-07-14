@@ -10,6 +10,11 @@
     { "pattern": "seraviecampo.com", "custom_domain": true },
     { "pattern": "www.seraviecampo.com", "custom_domain": true }
   ],
+  "vars": {
+    "EMAIL_MARKETING_FROM": "contato@seraviecampo.com",
+    "EMAIL_MARKETING_FROM_NAME": "Seravie Campo",
+    "EMAIL_MARKETING_REPLY_TO": "contato@seraviecampo.com"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"

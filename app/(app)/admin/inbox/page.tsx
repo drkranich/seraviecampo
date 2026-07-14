@@ -108,7 +108,7 @@ export default async function InboxPage({
                       <span className="shrink-0 text-[0.6rem] text-stone-500">{new Date(thread.last_message_at || thread.created_at).toLocaleDateString("pt-BR")}</span>
                     </div>
                     <p className="mt-1 truncate text-xs text-stone-500">
-                      {thread.status === "closed" ? "Encerrado" : "Chat publico"} · {last?.sender === "support" ? "Voce: " : ""}{last?.body || thread.subject || "Conversa iniciada pelo site"}
+                      {thread.status === "closed" ? "Encerrado" : "Chat público"} · {last?.sender === "support" ? "Você: " : ""}{last?.body || thread.subject || "Conversa iniciada pelo site"}
                     </p>
                   </Link>
                 );
@@ -138,7 +138,7 @@ export default async function InboxPage({
             <>
               <div className="glass mb-3 rounded-2xl border border-campo-border p-4 text-sm">
                 <p className="font-serif text-lg text-forest-100">
-                  {selectedPublic.visitor_name || "Visitante do site"} <span className="text-xs text-stone-500">· Chat publico</span>
+                  {selectedPublic.visitor_name || "Visitante do site"} <span className="text-xs text-stone-500">· Chat público</span>
                 </p>
                 <div className="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
                   <p className="text-stone-400">E-mail: <span className="text-stone-200">{selectedPublic.visitor_email || "-"}</span></p>

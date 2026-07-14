@@ -46,7 +46,7 @@ export async function GET(request: Request) {
   const threadId = clean(url.searchParams.get("thread_id"), 80);
   const token = clean(url.searchParams.get("token"), 120);
   const thread = await getThread(db, threadId, token);
-  if (!thread) return NextResponse.json({ error: "Conversa nao encontrada." }, { status: 404 });
+  if (!thread) return NextResponse.json({ error: "Conversa não encontrada." }, { status: 404 });
 
   const { data, error } = await db
     .from("public_support_messages")
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
     .eq("thread_id", thread.id)
     .order("created_at", { ascending: true });
 
-  if (error) return NextResponse.json({ error: "Nao foi possivel carregar a conversa." }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Não foi possível carregar a conversa." }, { status: 500 });
   return NextResponse.json({ status: thread.status, messages: (data ?? []) as PublicMessage[] });
 }
 
@@ -75,13 +75,13 @@ export async function POST(request: Request) {
   if (body.length < 1) return NextResponse.json({ error: "Escreva uma mensagem." }, { status: 400 });
 
   const thread = await getThread(db, threadId, token);
-  if (!thread) return NextResponse.json({ error: "Conversa nao encontrada." }, { status: 404 });
+  if (!thread) return NextResponse.json({ error: "Conversa não encontrada." }, { status: 404 });
   if (thread.status === "closed") return NextResponse.json({ error: "Esta conversa foi encerrada." }, { status: 409 });
 
   const { error } = await db
     .from("public_support_messages")
     .insert({ thread_id: thread.id, sender: "visitor", body });
 
-  if (error) return NextResponse.json({ error: "Nao foi possivel enviar a mensagem." }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Não foi possível enviar a mensagem." }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

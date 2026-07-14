@@ -35,7 +35,7 @@ export type EmailMarketingCampaign = {
   template_id: string | null;
   segment_id: string | null;
   name: string;
-  status: "draft" | "scheduled" | "sending" | "sent" | "paused" | "archived";
+  status: "draft" | "queued" | "scheduled" | "sending" | "sent" | "paused" | "cancelled" | "archived";
   subject: string;
   preheader: string;
   from_name: string;
@@ -44,6 +44,29 @@ export type EmailMarketingCampaign = {
   sent_at: string | null;
   content_snapshot: Record<string, unknown>;
   stats: Record<string, number>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EmailMarketingDelivery = {
+  id: string;
+  campaign_id: string;
+  subscriber_id: string | null;
+  recipient_user_id: string | null;
+  recipient_email: string;
+  recipient_name: string | null;
+  status: "queued" | "sending" | "sent" | "failed" | "skipped" | "cancelled";
+  delivery_token: string;
+  provider: string | null;
+  provider_message_id: string | null;
+  error_message: string | null;
+  attempts: number;
+  queued_at: string;
+  sending_at: string | null;
+  sent_at: string | null;
+  opened_at: string | null;
+  clicked_at: string | null;
+  unsubscribed_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -63,20 +86,20 @@ export type EmailMarketingSegment = {
 export const EMAIL_AUDIENCE_OPTIONS: Array<{ value: EmailAudienceKey; label: string }> = [
   { value: "cliente", label: "Clientes" },
   { value: "produtor", label: "Produtores rurais" },
-  { value: "parceiro", label: "Parceiros e anfitrioes" },
+  { value: "parceiro", label: "Parceiros e anfitriões" },
   { value: "entregador", label: "Entregadores" },
-  { value: "lead", label: "Leads do site publico" },
+  { value: "lead", label: "Leads do site público" },
 ];
 
 export const EMAIL_CATEGORY_OPTIONS = [
   { value: "boas-vindas", label: "Boas-vindas" },
   { value: "newsletter", label: "Newsletter" },
   { value: "destinos", label: "Destinos" },
-  { value: "experiencias", label: "Experiencias" },
+  { value: "experiencias", label: "Experiências" },
   { value: "produtores", label: "Produtores" },
   { value: "sazonal", label: "Sazonal" },
-  { value: "conversao", label: "Conversao" },
-  { value: "retencao", label: "Retencao" },
+  { value: "conversao", label: "Conversão" },
+  { value: "retencao", label: "Retenção" },
   { value: "fornecedores", label: "Fornecedores" },
 ];
 
@@ -88,11 +111,22 @@ export const EMAIL_STATUS_OPTIONS = [
 
 export const CAMPAIGN_STATUS_LABEL: Record<string, string> = {
   draft: "Rascunho",
+  queued: "Na fila",
   scheduled: "Agendada",
   sending: "Enviando",
   sent: "Enviada",
   paused: "Pausada",
+  cancelled: "Cancelada",
   archived: "Arquivada",
+};
+
+export const DELIVERY_STATUS_LABEL: Record<string, string> = {
+  queued: "Na fila",
+  sending: "Enviando",
+  sent: "Enviado",
+  failed: "Falhou",
+  skipped: "Ignorado",
+  cancelled: "Cancelado",
 };
 
 export const EMAIL_BRAND_PALETTE = {
@@ -259,7 +293,7 @@ export function renderEmailHtml(template: Pick<EmailMarketingTemplate, "subject"
             ${ctaHtml}
             <tr>
               <td style="padding: 20px 28px 28px; border-top:1px solid rgba(194,168,120,0.18);">
-                <p style="margin:0 0 10px; color:${palette.muted}; font:400 12px/1.6 Arial, sans-serif;">${textToHtml(template.footer_note || "Voce recebeu este email por interagir com a Seravie Campo.")}</p>
+                <p style="margin:0 0 10px; color:${palette.muted}; font:400 12px/1.6 Arial, sans-serif;">${textToHtml(template.footer_note || "Você recebeu este email por interagir com a Seravie Campo.")}</p>
                 <p style="margin:0; color:${palette.muted}; font:400 12px/1.6 Arial, sans-serif;">
                   <a href="{{unsubscribe_url}}" style="color:${palette.accent}; text-decoration:underline;">Descadastrar</a>
                   <span style="color:${palette.muted};"> · Seravie Campo</span>
@@ -279,6 +313,8 @@ export function templateSnapshot(template: EmailMarketingTemplate) {
     template_id: template.id,
     slug: template.slug,
     name: template.name,
+    category: template.category,
+    audience: template.audience,
     subject: template.subject,
     preheader: template.preheader,
     hero_title: template.hero_title,
@@ -291,5 +327,79 @@ export function templateSnapshot(template: EmailMarketingTemplate) {
     footer_note: template.footer_note,
     html_content: template.html_content || renderEmailHtml(template),
     plain_text: template.plain_text || templateToPlainText(template),
+  };
+}
+
+function snapshotString(snapshot: Record<string, unknown>, key: string) {
+  const value = snapshot[key];
+  return typeof value === "string" ? value : "";
+}
+
+function snapshotBlocks(snapshot: Record<string, unknown>) {
+  return cleanTemplateBlocks(snapshot.blocks);
+}
+
+function snapshotPalette(snapshot: Record<string, unknown>) {
+  const value = snapshot.palette;
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, string>) : EMAIL_BRAND_PALETTE;
+}
+
+function snapshotToRenderable(snapshot: Record<string, unknown>) {
+  return {
+    subject: snapshotString(snapshot, "subject"),
+    preheader: snapshotString(snapshot, "preheader"),
+    hero_title: snapshotString(snapshot, "hero_title"),
+    hero_body: snapshotString(snapshot, "hero_body"),
+    cta_label: snapshotString(snapshot, "cta_label"),
+    cta_url: snapshotString(snapshot, "cta_url"),
+    image_url: snapshotString(snapshot, "image_url") || null,
+    palette: snapshotPalette(snapshot),
+    blocks: snapshotBlocks(snapshot),
+    footer_note: snapshotString(snapshot, "footer_note"),
+  };
+}
+
+function encodedUrl(path: string, baseUrl: string) {
+  return new URL(path, baseUrl.replace(/\/$/, "")).toString();
+}
+
+function trackLinks(html: string, deliveryToken: string, baseUrl: string) {
+  return html.replace(/href="([^"]+)"/g, (match, rawUrl: string) => {
+    if (!rawUrl || rawUrl.includes("{{") || rawUrl.startsWith("#") || rawUrl.startsWith("mailto:") || rawUrl.startsWith("tel:")) {
+      return match;
+    }
+    if (rawUrl.includes("/api/email-marketing/unsubscribe") || rawUrl.includes("/api/email-marketing/track/")) {
+      return match;
+    }
+    const destination = new URL(rawUrl, baseUrl).toString();
+    const tracked = encodedUrl(`/api/email-marketing/track/click?token=${encodeURIComponent(deliveryToken)}&url=${encodeURIComponent(destination)}`, baseUrl);
+    return `href="${tracked}"`;
+  });
+}
+
+function addOpenPixel(html: string, deliveryToken: string, baseUrl: string) {
+  const pixel = `<img src="${encodedUrl(`/api/email-marketing/track/open?token=${encodeURIComponent(deliveryToken)}`, baseUrl)}" width="1" height="1" alt="" style="display:none; width:1px; height:1px; opacity:0;" />`;
+  return html.includes("</body>") ? html.replace("</body>", `${pixel}</body>`) : `${html}${pixel}`;
+}
+
+export function renderDeliveryContent(
+  snapshot: Record<string, unknown>,
+  deliveryToken: string,
+  options: { baseUrl?: string } = {}
+) {
+  const baseUrl = (options.baseUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://seraviecampo.com").replace(/\/$/, "");
+  const unsubscribeUrl = encodedUrl(`/api/email-marketing/unsubscribe?token=${encodeURIComponent(deliveryToken)}`, baseUrl);
+  const renderable = snapshotToRenderable(snapshot);
+  const html = snapshotString(snapshot, "html_content") || renderEmailHtml(renderable);
+  const text = snapshotString(snapshot, "plain_text") || templateToPlainText(renderable);
+  const htmlWithUnsubscribe = html.replaceAll("{{unsubscribe_url}}", unsubscribeUrl);
+  const textWithUnsubscribe = text.replaceAll("{{unsubscribe_url}}", unsubscribeUrl);
+
+  return {
+    subject: renderable.subject,
+    preheader: renderable.preheader,
+    unsubscribeUrl,
+    html: addOpenPixel(trackLinks(htmlWithUnsubscribe, deliveryToken, baseUrl), deliveryToken, baseUrl),
+    text: textWithUnsubscribe,
   };
 }
