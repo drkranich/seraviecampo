@@ -22,7 +22,7 @@ const CHAT_HASH = "#chat-seravie";
 const SUBJECT_OPTIONS = [
   { value: "Atendimento pelo site", label: "Atendimento pelo site" },
   { value: "Quero anunciar", label: "Quero anunciar" },
-  { value: "Tenho duvida sobre destinos", label: "Tenho duvida sobre destinos" },
+  { value: "Tenho dúvida sobre destinos", label: "Tenho dúvida sobre destinos" },
   { value: "Preciso de suporte", label: "Preciso de suporte" },
   { value: "Parcerias e produtores", label: "Parcerias e produtores" },
 ];
@@ -65,7 +65,7 @@ export function PublicSupportChatWidget() {
     const res = await fetch(`/api/public-support/messages?${params.toString()}`, { cache: "no-store" });
     const json = await res.json();
     if (!res.ok) {
-      setError(json.error || "Nao foi possivel carregar a conversa.");
+      setError(json.error || "Não foi possível carregar a conversa.");
       return;
     }
     setMessages(json.messages ?? []);
@@ -115,7 +115,7 @@ export function PublicSupportChatWidget() {
       }),
     });
     const json = await res.json();
-    if (!res.ok) throw new Error(json.error || "Nao foi possivel iniciar a conversa.");
+    if (!res.ok) throw new Error(json.error || "Não foi possível iniciar a conversa.");
     const nextThread = { threadId: json.threadId as string, token: json.token as string, name, email };
     storeThread(nextThread);
     setThread(nextThread);
@@ -130,7 +130,7 @@ export function PublicSupportChatWidget() {
       body: JSON.stringify({ threadId: thread.threadId, token: thread.token, body: message }),
     });
     const json = await res.json();
-    if (!res.ok) throw new Error(json.error || "Nao foi possivel enviar a mensagem.");
+    if (!res.ok) throw new Error(json.error || "Não foi possível enviar a mensagem.");
     await loadMessages(thread);
   }
 
@@ -145,7 +145,7 @@ export function PublicSupportChatWidget() {
       await sendMessage(message);
     } catch (err) {
       setText(message);
-      setError(err instanceof Error ? err.message : "Nao foi possivel enviar a mensagem.");
+      setError(err instanceof Error ? err.message : "Não foi possível enviar a mensagem.");
     } finally {
       setBusy(false);
     }
